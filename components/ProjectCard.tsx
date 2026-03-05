@@ -16,6 +16,10 @@ export type ProjectCardProps = {
   dueDate?: string | null;
   clientName?: string | null;
   designerName?: string | null;
+  /** Avatar URL du client (YouTuber) */
+  clientAvatarUrl?: string | null;
+  /** Avatar URL du graphiste */
+  designerAvatarUrl?: string | null;
   unreadCount?: number;
   /** Nombre de nouveaux messages (pastille) */
   newMessagesCount?: number;
@@ -54,6 +58,10 @@ export function ProjectCard({
   status,
   createdAt,
   dueDate,
+  clientName,
+  designerName,
+  clientAvatarUrl,
+  designerAvatarUrl,
   newMessagesCount = 0,
   newVersionsCount = 0,
   newFeedbackCount = 0,
@@ -99,6 +107,32 @@ export function ProjectCard({
         <div className="h-16 shrink-0 border-b border-white/[0.08] bg-gradient-to-r from-white/[0.04] to-transparent" />
       )}
       <div className="relative p-4">
+      {/* Noms / avatars client (YouTuber) et graphiste */}
+      {(clientName || designerName || clientAvatarUrl || designerAvatarUrl) && (
+        <div className="mb-2 flex flex-wrap items-center gap-2 text-[#9CA3AF]">
+          {clientName != null && (
+            <span className="flex items-center gap-1.5 text-xs">
+              {clientAvatarUrl ? (
+                <img src={clientAvatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-[#E5E7EB]">Y</span>
+              )}
+              <span className="truncate">{clientName}</span>
+            </span>
+          )}
+          {designerName != null && clientName != null && <span className="text-white/30">·</span>}
+          {designerName != null && (
+            <span className="flex items-center gap-1.5 text-xs">
+              {designerAvatarUrl ? (
+                <img src={designerAvatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-[#E5E7EB]">G</span>
+              )}
+              <span className="truncate">{designerName}</span>
+            </span>
+          )}
+        </div>
+      )}
       {hasNew && (
         <div className="absolute right-3 top-3 flex gap-1.5">
           {newMessagesCount > 0 && (

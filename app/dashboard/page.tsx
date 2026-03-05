@@ -9,8 +9,7 @@ import { JoinProjectModal } from "@/components/JoinProjectModal";
 import { DashboardStorageWidget } from "@/components/DashboardStorageWidget";
 import { DashboardCalendar } from "@/components/DashboardCalendar";
 import { DashboardDesignerStats } from "@/components/DashboardDesignerStats";
-import { CardTilt } from "@/components/CardTilt";
-import { Plus, Link2, MessageSquare, Layers, ArrowUpDown, Filter } from "lucide-react";
+import { Plus, Link2, MessageSquare, Layers, ArrowUpDown, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
@@ -48,6 +47,10 @@ export default function DashboardPage() {
   const [sortDesc, setSortDesc] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [latestVersionByProject, setLatestVersionByProject] = useState<Record<string, string>>({});
+  const [profileNames, setProfileNames] = useState<Record<string, { full_name: string | null; avatar_url: string | null }>>({});
+  const [collapsedProjects, setCollapsedProjects] = useState(false);
+  const [collapsedOverview, setCollapsedOverview] = useState(false);
+  const [collapsedCalendar, setCollapsedCalendar] = useState(false);
   const { byProject, rows, totalNew, loading: unreadLoading, refresh: refreshUnread } = useUnreadCounts();
 
   useEffect(() => {
@@ -97,6 +100,21 @@ export default function DashboardPage() {
       setLatestVersionByProject(map);
     })();
   }, [projects.map((p) => p.id).join(",")]);
+
+  // Profils (noms + avatars) pour afficher client/designer sur les cartes
+  useEffect(() => {
+    if (projects.length === 0) return;
+    const ids = [...new Set(projects.flatMap((p) => [p.client_id, p.designer_id].filter(Boolean) as string[]))];
+    if (ids.length === 0) return;
+    (async () => {
+      const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids);
+      const map: Record<string, { full_name: string | null; avatar_url: string | null }> = {};
+      (profiles ?? []).forEach((r: { id: string; full_name: string | null; avatar_url: string | null }) => {
+        map[r.id] = { full_name: r.full_name ?? null, avatar_url: r.avatar_url ?? null };
+      });
+      setProfileNames(map);
+    })();
+  }, [projects.map((p) => `${p.client_id}-${p.designer_id}`).join(",")]);
 
   const refreshProjects = async () => {
     const { data, error } = await supabase
@@ -227,9 +245,13 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Mes projets */}
+      {/* Mes projets — minimisable */}
       <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setCollapsedProjects((c) => !c)}
+          className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-transparent py-1 text-left transition-colors hover:border-white/[0.06]"
+        >
           <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
             <span
               className={cn(
@@ -240,17 +262,20 @@ export default function DashboardPage() {
             />
             Mes projets
           </h2>
-          <span
-            className={cn(
-              "rounded-full border px-3 py-1 text-sm font-medium tabular-nums text-[#E5E7EB]",
-              role === "youtuber" ? "border-red-500/40 bg-red-500/15" : "border-[#6366F1]/40 bg-[#6366F1]/15"
-            )}
-          >
-            {projects.length} projet{projects.length !== 1 ? "s" : ""}
+          <span className="flex items-center gap-2">
+            <span
+              className={cn(
+                "rounded-full border px-3 py-1 text-sm font-medium tabular-nums text-[#E5E7EB]",
+                role === "youtuber" ? "border-red-500/40 bg-red-500/15" : "border-[#6366F1]/40 bg-[#6366F1]/15"
+              )}
+            >
+              {projects.length} projet{projects.length !== 1 ? "s" : ""}
+            </span>
+            {collapsedProjects ? <ChevronDown className="h-5 w-5 text-[#9CA3AF]" /> : <ChevronUp className="h-5 w-5 text-[#9CA3AF]" />}
           </span>
-        </div>
+        </button>
 
-        {role && projects.length > 0 && (
+        {!collapsedProjects && role && projects.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-3 sm:px-5 backdrop-blur-[20px]">
             <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
               <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
@@ -296,6 +321,7 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {!collapsedProjects && (
         <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
           {loading ? (
             <EmptyState
@@ -325,6 +351,10 @@ export default function DashboardPage() {
                     status={project.status}
                     createdAt={project.created_at}
                     dueDate={project.due_date}
+                    clientName={project.client_id ? profileNames[project.client_id]?.full_name : null}
+                    designerName={project.designer_id ? profileNames[project.designer_id]?.full_name : null}
+                    clientAvatarUrl={project.client_id ? profileNames[project.client_id]?.avatar_url ?? undefined : undefined}
+                    designerAvatarUrl={project.designer_id ? profileNames[project.designer_id]?.avatar_url ?? undefined : undefined}
                     newMessagesCount={unread?.newMessages ?? 0}
                     newVersionsCount={unread?.newVersions ?? 0}
                     newFeedbackCount={unread?.newFeedback ?? 0}
@@ -335,34 +365,53 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        )}
       </section>
 
-      {/* Bloc graphiste : Vue d'ensemble (grille stats) + calendrier réduit */}
+      {/* Bloc graphiste : Vue d'ensemble (grille stats) + calendrier — minimisables */}
       {isDesigner && (
         <>
           <section className="space-y-4">
-            <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
-              <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366F1] to-[#3B82F6]" aria-hidden />
-              Vue d’ensemble
-            </h2>
+            <button
+              type="button"
+              onClick={() => setCollapsedOverview((c) => !c)}
+              className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-1 text-left transition-colors hover:border-white/[0.06]"
+            >
+              <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
+                <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                Vue d’ensemble
+              </h2>
+              {collapsedOverview ? <ChevronDown className="h-5 w-5 text-[#9CA3AF]" /> : <ChevronUp className="h-5 w-5 text-[#9CA3AF]" />}
+            </button>
+            {!collapsedOverview && (
             <div>
               <DashboardDesignerStats
                 projects={designerProjects}
-                storageSlot={
-                  <CardTilt>
-                    <DashboardStorageWidget />
-                  </CardTilt>
-                }
+                storageSlot={<DashboardStorageWidget />}
               />
             </div>
+            )}
           </section>
-          <section className="w-full">
+          <section className="w-full space-y-4">
+            <button
+              type="button"
+              onClick={() => setCollapsedCalendar((c) => !c)}
+              className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-1 text-left transition-colors hover:border-white/[0.06]"
+            >
+              <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
+                <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                Calendrier
+              </h2>
+              {collapsedCalendar ? <ChevronDown className="h-5 w-5 text-[#9CA3AF]" /> : <ChevronUp className="h-5 w-5 text-[#9CA3AF]" />}
+            </button>
+            {!collapsedCalendar && (
             <DashboardCalendar
               projects={designerProjects}
               currentUserId={userId}
               isDesigner={isDesigner}
               compact={false}
             />
+            )}
           </section>
         </>
       )}

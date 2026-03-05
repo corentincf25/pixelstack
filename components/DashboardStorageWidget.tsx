@@ -66,7 +66,7 @@ export function DashboardStorageWidget() {
   return (
     <Link
       href="/dashboard/storage"
-      className="glass-card block h-full rounded-2xl border border-white/10 p-4 transition-colors hover:border-primary/30 sm:p-5"
+      className="glass-card card-shine block h-full min-h-[200px] rounded-2xl border border-white/10 p-4 transition-colors hover:border-primary/30 sm:p-5"
     >
       <div className="flex items-center gap-2 border-b border-white/10 pb-3">
         <HardDrive className="h-4 w-4 text-primary" />

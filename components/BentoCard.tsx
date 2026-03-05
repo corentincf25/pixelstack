@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Minimize2, Maximize2, Shrink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CardTilt } from "@/components/CardTilt";
 
 export type BentoCardLayout = "full" | "minimized" | "reduced" | "fit";
 
@@ -47,16 +46,15 @@ export function BentoCard({
   );
 
   return (
-    <CardTilt>
-      <div
-        className={cn(
-          "glass-card flex h-full flex-col overflow-hidden rounded-2xl transition-all duration-200",
-          (compact || isFit) && "h-auto",
-          !compact && !isFit && "h-full",
-          isMinimized && "max-h-[52px]",
-          className
-        )}
-      >
+    <div
+      className={cn(
+        "card-shine glass-card flex h-full flex-col overflow-hidden rounded-2xl transition-all duration-200",
+        (compact || isFit) && "h-auto",
+        !compact && !isFit && "h-full",
+        isMinimized && "max-h-[52px]",
+        className
+      )}
+    >
       <div className="glass-card-header flex shrink-0 items-center justify-between gap-2 px-4 py-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
           {icon}
@@ -108,7 +106,6 @@ export function BentoCard({
           )}
         </div>
       )}
-      </div>
-    </CardTilt>
+    </div>
   );
 }
