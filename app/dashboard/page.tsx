@@ -249,7 +249,7 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        {isDesigner && projects.length > 0 && (
+        {role && projects.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-3 sm:px-5 backdrop-blur-[20px]">
             <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
               <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
