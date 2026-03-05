@@ -4,6 +4,7 @@ import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useProjectThumbnail } from "@/hooks/useProjectThumbnail";
+import { CardTilt } from "@/components/CardTilt";
 
 type ProjectStatus = "draft" | "in_progress" | "review" | "approved";
 
@@ -76,10 +77,11 @@ export function ProjectCard({
   const badgeStyle = statusBadgeStyles[safeStatus as ProjectStatus];
 
   return (
-    <Link
-      href={`/projects/${id}${highlightQuery}`}
-      className={`relative block overflow-hidden rounded-2xl border p-0 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] transition-all duration-300 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${cardStyle}`}
-    >
+    <CardTilt>
+      <Link
+        href={`/projects/${id}${highlightQuery}`}
+        className={`relative block h-full overflow-hidden rounded-2xl border p-0 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] transition-all duration-300 hover:shadow-[0_12px_48px_rgba(0,0,0,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${cardStyle}`}
+      >
       {/* Miniature dernière version */}
       {thumbnailUrl ? (
         <div className="relative h-24 w-full shrink-0 overflow-hidden border-b border-white/[0.08] bg-black/20">
@@ -132,5 +134,6 @@ export function ProjectCard({
       </div>
       </div>
     </Link>
+    </CardTilt>
   );
 }

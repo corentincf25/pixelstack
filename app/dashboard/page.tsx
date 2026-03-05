@@ -9,6 +9,7 @@ import { JoinProjectModal } from "@/components/JoinProjectModal";
 import { DashboardStorageWidget } from "@/components/DashboardStorageWidget";
 import { DashboardCalendar } from "@/components/DashboardCalendar";
 import { DashboardDesignerStats } from "@/components/DashboardDesignerStats";
+import { CardTilt } from "@/components/CardTilt";
 import { Plus, Link2, MessageSquare, Layers, ArrowUpDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardHeader } from "@/components/DashboardHeader";
@@ -344,13 +345,15 @@ export default function DashboardPage() {
               <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366F1] to-[#3B82F6]" aria-hidden />
               Vue d’ensemble
             </h2>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <DashboardDesignerStats projects={designerProjects} />
-              </div>
-              <div>
-                <DashboardStorageWidget />
-              </div>
+            <div>
+              <DashboardDesignerStats
+                projects={designerProjects}
+                storageSlot={
+                  <CardTilt>
+                    <DashboardStorageWidget />
+                  </CardTilt>
+                }
+              />
             </div>
           </section>
           <section className="w-full">

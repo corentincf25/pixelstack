@@ -66,28 +66,31 @@ export function DashboardStorageWidget() {
   return (
     <Link
       href="/dashboard/storage"
-      className="glass-card block rounded-2xl border border-white/10 p-4 transition-colors hover:border-primary/30 sm:p-5"
+      className="glass-card block h-full rounded-2xl border border-white/10 p-4 transition-colors hover:border-primary/30 sm:p-5"
     >
       <div className="flex items-center gap-2 border-b border-white/10 pb-3">
         <HardDrive className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Mon stockage</h3>
       </div>
       {loading ? (
-        <div className="mt-4 h-24 animate-pulse rounded-lg bg-muted/30" />
+        <div className="mt-4 h-20 animate-pulse rounded-lg bg-muted/30" />
       ) : (
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="min-h-[100px] w-full flex-1 sm:max-w-[140px]">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="min-h-[80px] w-full flex-1 sm:max-w-[100px]">
             {pieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={100}>
+              <ResponsiveContainer width="100%" height={80}>
                 <PieChart>
                   <Pie
                     data={pieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={28}
-                    outerRadius={42}
+                    innerRadius={22}
+                    outerRadius={34}
                     paddingAngle={2}
                     dataKey="value"
+                    isAnimationActive
+                    animationDuration={800}
+                    animationBegin={200}
                   >
                     {pieData.map((entry, i) => (
                       <Cell key={i} fill={entry.color} stroke="rgba(0,0,0,0.2)" strokeWidth={1} />
@@ -97,13 +100,13 @@ export function DashboardStorageWidget() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[100px] items-center justify-center rounded-lg bg-muted/20 text-xs text-muted-foreground">
+              <div className="flex h-[80px] items-center justify-center rounded-lg bg-muted/20 text-xs text-muted-foreground">
                 Vide
               </div>
             )}
           </div>
           <div className="flex-1 space-y-2">
-            <p className="text-lg font-semibold tabular-nums text-foreground">
+            <p className="text-base font-semibold tabular-nums text-foreground">
               {formatBytes(used)} <span className="text-sm font-normal text-muted-foreground">/ {formatBytes(limit)}</span>
             </p>
             <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -118,7 +121,7 @@ export function DashboardStorageWidget() {
           </div>
         </div>
       )}
-      <p className="mt-3 text-xs text-muted-foreground">Cliquer pour gérer le stockage</p>
+      <p className="mt-2 text-xs text-muted-foreground">Cliquer pour gérer le stockage</p>
     </Link>
   );
 }
