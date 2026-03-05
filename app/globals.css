@@ -441,4 +441,76 @@
   .animate-card-in {
     animation: card-in 0.5s ease-out forwards;
   }
+
+  /* Transition fluide pour les sections repliables (dashboard) */
+  .dashboard-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s ease-out;
+  }
+  .dashboard-collapse.open {
+    grid-template-rows: 1fr;
+  }
+  .dashboard-collapse > .dashboard-collapse-inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Chevron des sections repliables : rotation 180° quand la section est ouverte */
+  .dashboard-collapse-chevron {
+    transition: transform 0.35s ease-out;
+  }
+  button[aria-expanded="true"] .dashboard-collapse-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Pastilles de notification : pulsation légère */
+  @keyframes badge-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.08); opacity: 0.95; }
+  }
+  .animate-badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  /* Cartes projet : lift + ombre au hover */
+  .card-hover-lift {
+    transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+  }
+  .card-hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 32px rgba(99, 102, 241, 0.08);
+  }
+  [data-role="youtuber"] .card-hover-lift:hover {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 32px rgba(220, 38, 38, 0.12);
+  }
+
+  /* CTA : scale + glow au hover, scale down au clic */
+  .btn-cta-animate {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-cta-animate:hover {
+    transform: scale(1.02);
+  }
+  .btn-cta-animate:active {
+    transform: scale(0.98);
+  }
+
+  /* Section "Vous avez des mises à jour" : slide-in + stagger des liens */
+  @keyframes notif-section-in {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-notif-section-in {
+    animation: notif-section-in 0.45s ease-out forwards;
+  }
+  .animate-notif-item-in {
+    opacity: 0;
+    animation: notif-section-in 0.4s ease-out forwards;
+  }
+  .animate-notif-item-in:nth-child(1) { animation-delay: 0.05s; }
+  .animate-notif-item-in:nth-child(2) { animation-delay: 0.12s; }
+  .animate-notif-item-in:nth-child(3) { animation-delay: 0.19s; }
+  .animate-notif-item-in:nth-child(4) { animation-delay: 0.26s; }
+  .animate-notif-item-in:nth-child(n+5) { animation-delay: 0.33s; }
 }

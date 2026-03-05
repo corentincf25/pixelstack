@@ -9,7 +9,7 @@ import { JoinProjectModal } from "@/components/JoinProjectModal";
 import { DashboardStorageWidget } from "@/components/DashboardStorageWidget";
 import { DashboardCalendar } from "@/components/DashboardCalendar";
 import { DashboardDesignerStats } from "@/components/DashboardDesignerStats";
-import { Plus, Link2, MessageSquare, Layers, ArrowUpDown, Filter, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Link2, MessageSquare, Layers, ArrowUpDown, Filter, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { EmptyState } from "@/components/EmptyState";
@@ -163,7 +163,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setOpenJoinModal(true)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all"
+              className="btn-cta-animate inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all"
             >
               <Link2 className={cn("h-4 w-4", role === "youtuber" ? "text-red-400" : "text-[#3B82F6]")} />
               Rejoindre un projet
@@ -171,7 +171,7 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setOpenModal(true)}
-              className="btn-primary-glow inline-flex items-center gap-2"
+              className="btn-cta-animate btn-primary-glow inline-flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
               Créer un projet
@@ -182,7 +182,7 @@ export default function DashboardPage() {
 
       {/* Notifications in-app : mises à jour à ne pas manquer */}
       {hasActivity && !unreadLoading && (
-        <section className="rounded-2xl border border-white/[0.08] bg-white/[0.05] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px]">
+        <section className="animate-notif-section-in rounded-2xl border border-white/[0.08] bg-white/[0.05] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px]">
           <h2 className="mb-1 flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
             <span
               className={cn(
@@ -210,7 +210,7 @@ export default function DashboardPage() {
                 ? "border-red-500/40 bg-red-500/10 hover:bg-red-500/20 hover:shadow-[0_0_16px_rgba(220,38,38,0.2)]"
                 : "border-[#3B82F6]/40 bg-[#3B82F6]/10 hover:bg-[#3B82F6]/20 hover:shadow-[0_0_16px_rgba(59,130,246,0.2)]";
               return (
-                <li key={r.project_id} className="flex flex-wrap items-center gap-2 text-sm">
+                <li key={r.project_id} className="animate-notif-item-in flex flex-wrap items-center gap-2 text-sm">
                   {versions > 0 && (
                     <Link
                       href={`/projects/${r.project_id}?highlight=versions`}
@@ -276,57 +276,57 @@ export default function DashboardPage() {
           </div>
           <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
             {collapsedProjects ? "Afficher" : "Réduire"}
-            {collapsedProjects ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+            <ChevronDown className="dashboard-collapse-chevron h-5 w-5" aria-hidden />
           </span>
         </button>
 
-        {!collapsedProjects && role && projects.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-4 sm:px-5 backdrop-blur-[20px]">
-            <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
-              <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
-              <span className="hidden sm:inline">Trier par</span>
-            </span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortKey)}
-              className="dropdown-pixel min-w-[140px]"
-            >
-              <option value="created_at">Date de création</option>
-              <option value="due_date">Date de rendu</option>
-            </select>
-            <button
-              type="button"
-              onClick={() => setSortDesc((d) => !d)}
-              className={cn(
-                "h-9 rounded-xl px-4 py-1.5 text-sm font-medium text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0a]",
-                role === "youtuber"
-                  ? "bg-gradient-to-r from-red-500 to-red-600 shadow-[0_0_16px_rgba(220,38,38,0.3)] hover:shadow-[0_0_24px_rgba(220,38,38,0.4)] focus:ring-red-500"
-                  : "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] shadow-[0_0_16px_rgba(99,102,241,0.3)] hover:shadow-[0_0_24px_rgba(99,102,241,0.4)] focus:ring-[#6366F1]"
-              )}
-            >
-              {sortDesc ? "Plus récent" : "Plus ancien"}
-            </button>
-            <span className="text-[#6B7280] hidden sm:inline">·</span>
-            <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
-              <Filter className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
-              <span className="hidden sm:inline">État</span>
-            </span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="dropdown-pixel min-w-[100px]"
-            >
-              <option value="all">Tous</option>
-              {statusOrder.map((s) => (
-                <option key={s} value={s}>
-                  {statusLabels[s] ?? s}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {!collapsedProjects && (
+        <div className={cn("dashboard-collapse", !collapsedProjects && "open")}>
+          <div className="dashboard-collapse-inner space-y-4 pt-1">
+            {role && projects.length > 0 && (
+              <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-4 sm:px-5 backdrop-blur-[20px]">
+                <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
+                  <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
+                  <span className="hidden sm:inline">Trier par</span>
+                </span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortKey)}
+                  className="dropdown-pixel min-w-[140px]"
+                >
+                  <option value="created_at">Date de création</option>
+                  <option value="due_date">Date de rendu</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setSortDesc((d) => !d)}
+                  className={cn(
+                    "h-9 rounded-xl px-4 py-1.5 text-sm font-medium text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0a]",
+                    role === "youtuber"
+                      ? "bg-gradient-to-r from-red-500 to-red-600 shadow-[0_0_16px_rgba(220,38,38,0.3)] hover:shadow-[0_0_24px_rgba(220,38,38,0.4)] focus:ring-red-500"
+                      : "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] shadow-[0_0_16px_rgba(99,102,241,0.3)] hover:shadow-[0_0_24px_rgba(99,102,241,0.4)] focus:ring-[#6366F1]"
+                  )}
+                >
+                  {sortDesc ? "Plus récent" : "Plus ancien"}
+                </button>
+                <span className="text-[#6B7280] hidden sm:inline">·</span>
+                <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
+                  <Filter className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
+                  <span className="hidden sm:inline">État</span>
+                </span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="dropdown-pixel min-w-[100px]"
+                >
+                  <option value="all">Tous</option>
+                  {statusOrder.map((s) => (
+                    <option key={s} value={s}>
+                      {statusLabels[s] ?? s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
         <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
           {loading ? (
             <EmptyState
@@ -345,11 +345,11 @@ export default function DashboardPage() {
               onAction={() => setOpenModal(true)}
             />
           ) : (
-            <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 sm:gap-6 sm:p-5 lg:grid-cols-3 lg:gap-7">
+            <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 sm:gap-6 sm:p-5 lg:grid-cols-3 lg:gap-7 items-stretch">
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];
                 return (
-                  <div key={project.id} className="project-card-in opacity-0">
+                  <div key={project.id} className="project-card-in opacity-0 min-h-[260px] flex">
                   <ProjectCard
                     key={project.id}
                     id={project.id}
@@ -373,7 +373,8 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-        )}
+          </div>
+        </div>
       </section>
 
       {/* Bloc graphiste : Vue d'ensemble (grille stats) + calendrier — minimisables */}
@@ -395,17 +396,17 @@ export default function DashboardPage() {
               </div>
               <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
                 {collapsedOverview ? "Afficher" : "Réduire"}
-                {collapsedOverview ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+                <ChevronDown className="dashboard-collapse-chevron h-5 w-5" aria-hidden />
               </span>
             </button>
-            {!collapsedOverview && (
-            <div>
-              <DashboardDesignerStats
-                projects={designerProjects}
-                storageSlot={<DashboardStorageWidget />}
-              />
+            <div className={cn("dashboard-collapse", !collapsedOverview && "open")}>
+              <div className="dashboard-collapse-inner pt-1">
+                <DashboardDesignerStats
+                  projects={designerProjects}
+                  storageSlot={<DashboardStorageWidget />}
+                />
+              </div>
             </div>
-            )}
           </section>
           <section className="w-full space-y-5">
             <button
@@ -423,17 +424,19 @@ export default function DashboardPage() {
               </div>
               <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
                 {collapsedCalendar ? "Afficher" : "Réduire"}
-                {collapsedCalendar ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+                <ChevronDown className="dashboard-collapse-chevron h-5 w-5" aria-hidden />
               </span>
             </button>
-            {!collapsedCalendar && (
-            <DashboardCalendar
-              projects={designerProjects}
-              currentUserId={userId}
-              isDesigner={isDesigner}
-              compact={false}
-            />
-            )}
+            <div className={cn("dashboard-collapse", !collapsedCalendar && "open")}>
+              <div className="dashboard-collapse-inner pt-1">
+                <DashboardCalendar
+                  projects={designerProjects}
+                  currentUserId={userId}
+                  isDesigner={isDesigner}
+                  compact={false}
+                />
+              </div>
+            </div>
           </section>
         </>
       )}

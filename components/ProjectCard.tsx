@@ -94,10 +94,10 @@ export function ProjectCard({
   const badgeStyle = statusBadgeStyles[safeStatus as ProjectStatus];
 
   return (
-    <CardTilt>
+    <CardTilt className="h-full">
       <Link
         href={`/projects/${id}${highlightQuery}`}
-        className={`relative block h-full overflow-hidden rounded-2xl border p-0 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] transition-all duration-300 hover:shadow-[0_12px_48px_rgba(0,0,0,0.65)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${cardStyle}`}
+        className={`card-hover-lift relative flex min-h-[260px] flex-col overflow-hidden rounded-2xl border p-0 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${cardStyle}`}
       >
       {/* Miniature dernière version */}
       {thumbnailUrl ? (
@@ -148,7 +148,7 @@ export function ProjectCard({
           {newMessagesCount > 0 && (
             <span
               className={cn(
-                "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
+                "animate-badge-pulse flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
                 accentRed ? "bg-red-500 shadow-[0_0_12px_rgba(220,38,38,0.5)]" : "bg-[#3B82F6] shadow-[0_0_12px_rgba(59,130,246,0.5)]"
               )}
               title="Nouveaux messages"
@@ -159,7 +159,7 @@ export function ProjectCard({
           {newVersionsCount > 0 && (
             <span
               className={cn(
-                "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
+                "animate-badge-pulse flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
                 accentRed ? "bg-red-600 shadow-[0_0_12px_rgba(185,28,28,0.5)]" : "bg-[#6366F1] shadow-[0_0_12px_rgba(99,102,241,0.5)]"
               )}
               title="Nouvelles versions"
@@ -168,7 +168,7 @@ export function ProjectCard({
             </span>
           )}
           {newFeedbackCount > 0 && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-semibold text-white" title="Retours demandés">
+            <span className="animate-badge-pulse flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-semibold text-white" title="Retours demandés">
               {newFeedbackCount > 99 ? "99+" : newFeedbackCount}
             </span>
           )}
