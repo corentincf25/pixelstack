@@ -6,7 +6,7 @@ const EXPIRES_IN = 3600; // 1 heure
 
 /**
  * POST body: { paths: string[] } — chemins Storage (ex. "projectId/file.png").
- * Vérifie que l'utilisateur est membre du projet (client_id ou designer_id).
+ * Vérifie que l'utilisateur est membre du projet (client, graphiste ou relecteur).
  * Retourne { urls: Record<path, signedUrl> }.
  */
 export async function POST(
@@ -22,12 +22,8 @@ export async function POST(
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id, client_id, designer_id")
-    .eq("id", projectId)
-    .single();
-  if (!project || (project.client_id !== user.id && project.designer_id !== user.id)) {
+  const { data: isMember } = await supabase.rpc("is_project_member", { p_project_id: projectId });
+  if (!isMember) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

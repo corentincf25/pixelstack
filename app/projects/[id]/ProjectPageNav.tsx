@@ -47,7 +47,7 @@ export function ProjectPageNav() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="fixed right-4 top-24 z-40 flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-card/90 text-foreground shadow-lg backdrop-blur-md lg:hidden"
+        className="fixed right-4 top-24 z-40 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/10 bg-card/90 text-foreground shadow-lg backdrop-blur-md lg:hidden"
         aria-expanded={open}
         aria-label="Navigation du projet"
       >

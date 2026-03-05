@@ -260,10 +260,10 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   }
 
   return (
-    <div className="relative flex h-full max-h-[420px] min-h-[200px] flex-col">
+    <div className="relative flex h-full max-h-[420px] min-h-[200px] flex-col sm:min-h-[280px]">
       <div
         ref={scrollContainerRef}
-        className="min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden rounded-lg border border-border/50 bg-muted/20 p-3"
+        className="min-h-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden rounded-lg border border-border/50 bg-muted/20 p-3 overscroll-contain"
       >
         {messages.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
@@ -403,7 +403,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
         </button>
       )}
 
-      <form onSubmit={sendMessage} className="mt-4 flex shrink-0 flex-col gap-2">
+      <form onSubmit={sendMessage} className="sticky bottom-0 z-10 mt-4 flex shrink-0 flex-col gap-2 rounded-lg bg-background/95 py-1 backdrop-blur sm:static sm:bg-transparent sm:py-0">
         {error && <p className="text-sm text-red-400">{error}</p>}
         {pendingImage && (
           <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2">
@@ -434,7 +434,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-white/5 hover:text-foreground"
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-white/5 hover:text-foreground"
             aria-label="Joindre une image"
           >
             <ImagePlus className="h-4 w-4" />
@@ -444,13 +444,13 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={pendingImage ? "Légende (optionnel)…" : "Écris un message…"}
-            className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="min-h-[44px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             maxLength={2000}
           />
           <button
             type="submit"
             disabled={sending || (!content.trim() && !pendingImage)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </button>

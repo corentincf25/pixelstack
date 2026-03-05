@@ -83,7 +83,14 @@ export function ProjectCard({
       {/* Miniature dernière version */}
       {thumbnailUrl ? (
         <div className="relative h-24 w-full shrink-0 overflow-hidden border-b border-white/[0.08] bg-black/20">
-          <img src={thumbnailUrl} alt="" className="h-full w-full object-cover object-center" />
+          <img
+            src={thumbnailUrl}
+            alt=""
+            className="h-full w-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+            sizes="(max-width: 400px) 100vw, 320px"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </div>
       ) : (

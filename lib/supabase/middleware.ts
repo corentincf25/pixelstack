@@ -28,11 +28,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  const isLanding = pathname === "/";
   const isAuthRoute = pathname === "/login" || pathname === "/signup" || pathname.startsWith("/signup/");
   const isAuthCallback = pathname.startsWith("/auth/callback");
   const isOnboarding = pathname === "/onboarding";
   const isInvite = pathname.startsWith("/invite/");
-  const isPublic = isAuthRoute || isAuthCallback || isOnboarding || isInvite;
+  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite;
 
   const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();

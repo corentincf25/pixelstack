@@ -127,7 +127,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   }
 
   return (
-    <div className="flex w-full max-w-6xl gap-0 pb-12 pt-4 sm:pt-6 lg:gap-6">
+    <div className="flex w-full max-w-6xl flex-col gap-0 overflow-x-hidden pb-12 pt-4 sm:pt-6 lg:flex-row lg:gap-6">
       {/* Contenu principal : une colonne, sections empilées avec ancres */}
       <main className="min-w-0 flex-1 space-y-6 pr-0 lg:pr-52">
         {/* En-tête */}

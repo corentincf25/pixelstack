@@ -107,7 +107,7 @@ export function UploadZone({ projectId, onUploaded }: UploadZoneProps) {
   return (
     <div className="space-y-2">
       <div
-        className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card p-8 text-center transition-colors ${
+        className={`flex min-h-[140px] flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card p-6 text-center transition-colors sm:min-h-0 sm:p-8 ${
           dragOver ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
         } ${uploading ? "pointer-events-none opacity-80" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -117,7 +117,7 @@ export function UploadZone({ projectId, onUploaded }: UploadZoneProps) {
         <Upload className="mb-4 h-8 w-8 text-muted-foreground" />
         <p className="text-sm font-medium text-foreground">Dépose des fichiers ici</p>
         <p className="mt-1 text-sm text-muted-foreground">PNG, JPG, WEBP ou ZIP. Max 10 Mo par fichier.</p>
-        <label className="mt-4 cursor-pointer rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">
+        <label className="mt-4 flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp,.zip"

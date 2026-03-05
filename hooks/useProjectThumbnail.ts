@@ -2,12 +2,19 @@
 
 import { useEffect, useState } from "react";
 
-const PREFIX = "/object/public/assets/";
-
+/** Extrait le chemin Storage (ex. projectId/versions/file.jpg) depuis une URL Supabase ou un chemin brut. */
 function toStoragePath(url: string): string {
-  const idx = url.indexOf(PREFIX);
-  if (idx !== -1) return url.slice(idx + PREFIX.length).split("?")[0] ?? url;
-  return url;
+  const u = (url ?? "").trim().split("?")[0] ?? "";
+  // URL Supabase : .../object/public/assets/PATH ou .../storage/.../assets/PATH
+  const assetsMarker = "/assets/";
+  const idx = u.indexOf(assetsMarker);
+  if (idx !== -1) {
+    const path = u.slice(idx + assetsMarker.length);
+    if (path) return path;
+  }
+  // Déjà un chemin relatif (projectId/versions/...)
+  if (!u.startsWith("http")) return u;
+  return u;
 }
 
 /**
