@@ -53,9 +53,18 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
   const delays = ["0ms", "80ms", "160ms", "240ms", "320ms"];
 
   return (
-    <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6", CARD_MIN_HEIGHT)}>
-      <div className={cn("opacity-0 animate-card-in", cardShineWrap)} style={{ animationDelay: delays[0] }}>
-        <div className={cn(statCardBase, "h-full border-l-4 border-l-[#6366F1] flex flex-col")}>
+    <div
+      className={cn(
+        "grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6",
+        CARD_MIN_HEIGHT
+      )}
+    >
+      {/* Projets */}
+      <div
+        className={cn("opacity-0 animate-card-in lg:col-start-1", cardShineWrap)}
+        style={{ animationDelay: delays[0] }}
+      >
+        <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-[#6366F1]")}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">Projets</p>
@@ -67,8 +76,12 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
           </div>
         </div>
       </div>
-      <div className={cn("opacity-0 animate-card-in", cardShineWrap)} style={{ animationDelay: delays[1] }}>
-        <div className={cn(statCardBase, "h-full border-l-4 border-l-[#3B82F6] flex flex-col")}>
+      {/* Clients uniques */}
+      <div
+        className={cn("opacity-0 animate-card-in lg:col-start-2", cardShineWrap)}
+        style={{ animationDelay: delays[1] }}
+      >
+        <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-[#3B82F6]")}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">Clients uniques</p>
@@ -80,8 +93,12 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
           </div>
         </div>
       </div>
-      <div className={cn("opacity-0 animate-card-in", cardShineWrap)} style={{ animationDelay: delays[2] }}>
-        <div className={cn(statCardBase, "h-full border-l-4 border-l-emerald-500/70 flex flex-col")}>
+      {/* En cours */}
+      <div
+        className={cn("opacity-0 animate-card-in lg:col-start-3", cardShineWrap)}
+        style={{ animationDelay: delays[2] }}
+      >
+        <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-emerald-500/70")}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">En cours</p>
@@ -93,12 +110,23 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
           </div>
         </div>
       </div>
+      {/* Mon stockage */}
       {storageSlot != null ? (
-        <div className={cn("opacity-0 animate-card-in", "h-full", CARD_MIN_HEIGHT)} style={{ animationDelay: delays[3] }}>
+        <div
+          className={cn("opacity-0 animate-card-in h-full lg:col-start-4", CARD_MIN_HEIGHT)}
+          style={{ animationDelay: delays[3] }}
+        >
           {storageSlot}
         </div>
       ) : null}
-      <div className={cn("opacity-0 animate-card-in", cardShineWrap, "sm:col-span-2 lg:col-span-2")} style={{ animationDelay: delays[4] }}>
+      {/* Par statut */}
+      <div
+        className={cn(
+          "opacity-0 animate-card-in sm:col-span-2 lg:col-span-2 lg:col-start-5",
+          cardShineWrap
+        )}
+        style={{ animationDelay: delays[4] }}
+      >
         <div className={cn(statCardBase, "h-full border-l-4 border-l-amber-500/50 flex flex-col")}>
           <div className="mb-2 flex items-center gap-2">
             <div className="rounded-lg bg-amber-500/15 p-1.5">

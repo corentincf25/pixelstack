@@ -4,10 +4,11 @@ import Link from "next/link";
 import { LandingContainer } from "./LandingContainer";
 
 const footerLinks = [
-  { label: "Product", href: "#hero" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "#" },
-  { label: "Contact", href: "mailto:hello@pixelstack.com" },
+  { label: "Fonctionnalités", href: "#fonctionnalites" },
+  { label: "Tarifs", href: "#tarifs" },
+  { label: "Témoignages", href: "#temoignages" },
+  { label: "FAQ", href: "#faq" },
+  { label: "Contact", href: "#contact" },
 ];
 
 export function Footer() {
@@ -23,18 +24,18 @@ export function Footer() {
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-6 sm:gap-8">
             {footerLinks.map(({ label, href }) => (
-              <Link
+              <a
                 key={label}
                 href={href}
                 className="text-sm text-[#9CA3AF] transition-colors hover:text-[#E5E7EB]"
               >
                 {label}
-              </Link>
+              </a>
             ))}
           </nav>
         </div>
         <p className="mt-8 text-center text-xs text-[#6B7280] sm:text-left">
-          © {new Date().getFullYear()} Pixelstack. All rights reserved.
+          © {new Date().getFullYear()} Pixelstack. Tous droits réservés.
         </p>
       </LandingContainer>
     </footer>
