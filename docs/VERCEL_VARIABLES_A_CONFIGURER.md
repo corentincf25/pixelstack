@@ -49,6 +49,18 @@
 
 ---
 
+## 5. Cron – nettoyage des projets orphelins (optionnel)
+
+| Variable dans Vercel | À faire |
+|----------------------|--------|
+| `CRON_SECRET` | Une chaîne secrète de ton choix (ex. mot de passe fort ou `openssl rand -hex 32`). Protège l’appel à `POST /api/cron/cleanup-orphan-projects` qui supprime les projets sans graphiste après 7 jours. |
+
+**Configurer un cron (une fois par jour) :**  
+- **Vercel Cron** : dans le repo, ajouter `vercel.json` avec une entrée `crons` qui appelle l’URL avec l’en-tête `Authorization: Bearer <CRON_SECRET>`.  
+- Ou un service externe (cron-job.org, GitHub Actions) qui envoie `POST https://ton-app.vercel.app/api/cron/cleanup-orphan-projects` avec `Authorization: Bearer <CRON_SECRET>`.
+
+---
+
 ## Récap minimal pour que tout marche (auth + storage + images)
 
 - `NEXT_PUBLIC_SUPABASE_URL`

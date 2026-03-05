@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { purgeProjectStorage } from "@/lib/project-storage";
 
 /**
  * POST body: { confirm: true }
- * Supprime tout le stockage du projet (assets, versions, références) en DB et dans le bucket.
+ * Supprime tout le stockage du projet (assets, versions, références, chat) en DB et dans le bucket.
  * Réservé au graphiste du projet (designer_id = user).
  */
 export async function POST(
@@ -44,33 +45,11 @@ export async function POST(
     return NextResponse.json({ error: "Service indisponible" }, { status: 503 });
   }
 
-  const toRemove: string[] = [];
-  const { data: files } = await admin.storage.from("assets").list(projectId, { limit: 1000 });
-  if (files?.length) {
-    for (const f of files) {
-      if (f.name && f.id != null) toRemove.push(`${projectId}/${f.name}`);
-    }
-  }
-  const { data: subVersions } = await admin.storage.from("assets").list(`${projectId}/versions`, { limit: 1000 });
-  if (subVersions?.length) {
-    for (const f of subVersions) {
-      if (f.name && f.id != null) toRemove.push(`${projectId}/versions/${f.name}`);
-    }
-  }
-  const { data: subRefs } = await admin.storage.from("assets").list(`${projectId}/refs`, { limit: 1000 });
-  if (subRefs?.length) {
-    for (const f of subRefs) {
-      if (f.name && f.id != null) toRemove.push(`${projectId}/refs/${f.name}`);
-    }
-  }
-
-  if (toRemove.length > 0) {
-    await admin.storage.from("assets").remove(toRemove);
-  }
+  const removed = await purgeProjectStorage(admin, projectId);
 
   await admin.from("assets").delete().eq("project_id", projectId);
   await admin.from("versions").delete().eq("project_id", projectId);
   await admin.from("project_references").delete().eq("project_id", projectId);
 
-  return NextResponse.json({ ok: true, removed: toRemove.length });
+  return NextResponse.json({ ok: true, removed });
 }

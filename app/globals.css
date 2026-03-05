@@ -283,6 +283,18 @@
     min-width: 8rem;
   }
 
+  /* Éléments cliquables : curseur pointer */
+  a,
+  button,
+  [type="button"],
+  [type="submit"],
+  [role="button"],
+  select,
+  label[for],
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
   /* ——— DA: Glass morphism, scrollbars ——— (fond uni, pas de grain) */
 
   /* Scrollbars personnalisées (direction artistique) */

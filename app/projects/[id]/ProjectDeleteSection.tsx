@@ -44,12 +44,16 @@ export function ProjectDeleteSection({
   };
 
   const confirmDelete = async () => {
-    if (!confirm("Confirmer la suppression définitive du projet ? Cette action est irréversible.")) return;
+    if (!confirm("Confirmer la suppression définitive du projet ? Tous les fichiers (assets, versions, références, chat) seront supprimés. Cette action est irréversible.")) return;
     setLoading(true);
-    const { error } = await supabase.from("projects").delete().eq("id", projectId);
+    const res = await fetch(`/api/projects/${projectId}/delete`, { method: "POST" });
     setLoading(false);
-    if (!error) router.push("/dashboard");
-    else alert(error.message);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      router.push("/dashboard");
+      return;
+    }
+    alert(data?.error ?? "Erreur lors de la suppression");
   };
 
   if (iRequestedDelete) {

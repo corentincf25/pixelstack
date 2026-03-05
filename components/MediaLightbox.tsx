@@ -45,14 +45,14 @@ export function MediaLightbox({
 
   return (
     <div
-      className="glass-lightbox fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a0a] p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="my-8 flex min-h-0 max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#141414] shadow-2xl"
+        className="my-8 flex min-h-0 max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111111] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#1a1a1a] px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#151515] px-4 py-3">
           {title && (
             <h3 className="truncate text-sm font-semibold text-foreground">
               {title}
@@ -68,8 +68,8 @@ export function MediaLightbox({
           </button>
         </div>
 
-        {/* Contenu scrollable : image + commentaires (fond opaque) */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#141414]">
+        {/* Contenu scrollable : image + commentaires (strictement opaque) */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#111111]">
           <div className="flex shrink-0 items-center justify-center bg-[#0d0d0d] p-4">
             {type === "image" ? (
               <img
@@ -102,7 +102,7 @@ export function MediaLightbox({
           </div>
 
           {children && (
-            <div className="shrink-0 border-t border-white/10 bg-[#1a1a1a] p-4">
+            <div className="shrink-0 border-t border-white/10 bg-[#151515] p-4">
               {children}
             </div>
           )}
