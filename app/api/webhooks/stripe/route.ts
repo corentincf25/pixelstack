@@ -13,11 +13,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * L'app doit renseigner profiles.stripe_customer_id quand un client Stripe est créé
  * (lors du checkout ou de la création du client Stripe côté serveur).
  *
- * Mapping plan → stockage : free = 1 GB, pro = 10 GB, studio = 50 GB
+ * Mapping plan → stockage : free = 100 Mo, pro = 10 GB, studio = 50 GB
  */
 
 const PLAN_TO_BYTES: Record<string, number> = {
-  free: 1 * 1024 * 1024 * 1024,
+  free: 100 * 1024 * 1024,
   pro: 10 * 1024 * 1024 * 1024,
   studio: 50 * 1024 * 1024 * 1024,
 };

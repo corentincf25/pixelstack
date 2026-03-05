@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { DEFAULT_STORAGE_LIMIT_BYTES } from "@/lib/storage-limits";
 import { HardDrive, ArrowLeft, FolderKanban, Image, Layers, ArrowUpDown, Trash2 } from "lucide-react";
 import {
   PieChart,
@@ -91,7 +92,7 @@ export default function StoragePage() {
       };
       setData({
         used: Number(r.used ?? 0),
-        limit: Number(r.limit ?? 1 * 1024 * 1024 * 1024),
+        limit: Number(r.limit ?? DEFAULT_STORAGE_LIMIT_BYTES),
         assets_bytes: Number(r.assets_bytes ?? 0),
         versions_bytes: Number(r.versions_bytes ?? 0),
         refs_bytes: Number(r.refs_bytes ?? 0),
@@ -183,7 +184,7 @@ export default function StoragePage() {
   }
 
   const used = data?.used ?? 0;
-  const limit = data?.limit ?? 1 * 1024 * 1024 * 1024;
+  const limit = data?.limit ?? DEFAULT_STORAGE_LIMIT_BYTES;
   const percent = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
   const hasNoStorage = used === 0 && (data?.projects?.length ?? 0) === 0;
 

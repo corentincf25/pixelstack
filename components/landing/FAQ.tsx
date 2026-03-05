@@ -10,7 +10,7 @@ const faqs = [
   {
     question: "Existe-t-il une version gratuite ?",
     answer:
-      "Oui. Le plan Gratuit vous permet de créer jusqu’à 3 projets et d’utiliser 1 Go de stockage. Idéal pour tester Pixelstack avec vos premiers clients.",
+      "Oui. Le plan Gratuit vous permet de créer jusqu’à 3 projets et d’utiliser 100 Mo de stockage. Idéal pour tester Pixelstack avec vos premiers clients.",
   },
   {
     question: "Puis-je changer de formule plus tard ?",

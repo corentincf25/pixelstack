@@ -61,7 +61,7 @@ Résultat : ton app est en ligne, utilisable par de vrais clients pour des tests
 
 - **Plan Free Supabase** : **1 Go** de stockage total pour tous tes buckets (Storage).
 - C’est une limite **par projet Supabase**, pas par utilisateur de ton app.
-- Ton app utilise déjà cette limite de 1 Go par défaut dans les RPC (`get_designer_storage`, etc.) : si `profiles.storage_limit_bytes` est vide, on considère 1 Go.
+- Ton app utilise déjà cette limite de 100 Mo par défaut dans les RPC (`get_designer_storage`, etc.) : si `profiles.storage_limit_bytes` est vide, on considère 100 Mo.
 
 ### Où voir l’usage stockage dans Supabase
 
@@ -88,7 +88,7 @@ Supabase n’affiche pas “X Go / 1 Go” sur la page Storage. Il faut passer p
 
 3. **Ce que fait ton app**  
    - La page **Mon stockage** (côté graphiste) affiche **utilisé / limite** en s’appuyant sur les tables `assets`, `versions`, `project_references` (et la RPC `get_designer_storage_breakdown`).
-   - La “limite” affichée = `profiles.storage_limit_bytes` ou **1 Go** par défaut.
+   - La “limite” affichée = `profiles.storage_limit_bytes` ou **100 Mo** par défaut.
    - Donc côté app, tu vois déjà une estimation cohérente avec la limite Supabase Free ; côté Supabase, c’est la page Usage (et éventuellement la requête SQL ci-dessus) qui te donne le détail réel.
 
 ### En résumé
@@ -97,6 +97,6 @@ Supabase n’affiche pas “X Go / 1 Go” sur la page Storage. Il faut passer p
 |----|------|
 | **Supabase → Organization → Usage → (ton projet)** | Usage stockage du projet (aligné avec la limite 1 Go Free). |
 | **SQL Editor** (requête ci-dessus) | Taille par bucket en Mo. |
-| **Ton app → Mon stockage** | Utilisé / 1 Go par graphiste (logique métier), avec tri et purge par projet. |
+| **Ton app → Mon stockage** | Utilisé / 100 Mo par graphiste (logique métier), avec tri et purge par projet. |
 
-Pour rester sous 1 Go : utilise la page **Mon stockage** pour voir qui consomme et la **purge par projet** pour libérer de l’espace si besoin.
+Pour rester sous la limite (100 Mo en gratuit) : utilise la page **Mon stockage** pour voir qui consomme et la **purge par projet** pour libérer de l’espace si besoin.

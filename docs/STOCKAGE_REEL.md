@@ -6,7 +6,7 @@ La barre de stockage affichée dans l'interface graphiste **reflète la réalit�
   - tous les **assets** (`assets.file_size`) de ces projets ;
   - toutes les **versions** (`versions.file_size`) de ces projets ;
   - toutes les **références** images (`project_references.file_size`, kind = image) de ces projets.
-- **Limite** : lue depuis `profiles.storage_limit_bytes`. Si la valeur est `NULL`, l'application utilise **1 Go** (1 × 1024³ octets) par défaut, aligné sur le free tier Supabase.
+- **Limite** : lue depuis `profiles.storage_limit_bytes`. Si la valeur est `NULL`, l'application utilise **100 Mo** (100 × 1024² octets) par défaut (plan gratuit).
 
 **Règle importante** : le stockage est toujours comptabilisé sur le **profil du graphiste**, même si le projet a été créé par le YouTuber (client). Tous les fichiers du projet (assets, versions, références), qu’ils aient été déposés par le client ou par le graphiste, entrent dans le quota du graphiste dès que celui-ci est assigné au projet (via le lien d’invitation).
 

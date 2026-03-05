@@ -22,7 +22,7 @@ BEGIN
 
   -- Pas encore de designer sur le projet : autoriser l'upload (côté YouTuber par ex.)
   IF v_designer_id IS NULL THEN
-    RETURN jsonb_build_object('allowed', true, 'used', 0, 'limit', 1073741824);
+    RETURN jsonb_build_object('allowed', true, 'used', 0, 'limit', 104857600);
   END IF;
 
   SELECT

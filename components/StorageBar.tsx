@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { HardDrive } from "lucide-react";
 
-const DEFAULT_LIMIT = 1 * 1024 * 1024 * 1024; // 1 Go (aligné free tier Supabase)
+const DEFAULT_LIMIT = 100 * 1024 * 1024; // 100 Mo (plan gratuit)
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} Go`;

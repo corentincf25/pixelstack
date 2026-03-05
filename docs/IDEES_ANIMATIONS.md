@@ -16,7 +16,7 @@ Les pastilles (messages, versions, retours) ont une micro-animation type “puls
 ---
 
 ## 3. **Barre de progression du stockage**  
-La barre “6.9 Mo / 1.1 Go” se remplit avec une animation de gauche à droite (transition déjà en place, on peut ajouter un petit délai ou un effet d’accélération en fin de course).
+La barre “6.9 Mo / 100 Mo” se remplit avec une animation de gauche à droite (transition déjà en place, on peut ajouter un petit délai ou un effet d’accélération en fin de course).
 
 ---
 

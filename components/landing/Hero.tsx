@@ -34,7 +34,7 @@ export function Hero() {
             <h1 className="text-4xl font-bold tracking-tight text-[#E5E7EB] sm:text-5xl lg:text-6xl">
               L’espace de travail pour{" "}
               <span className="bg-gradient-to-r from-[#6366F1] to-[#3B82F6] bg-clip-text text-transparent">
-                créateurs de miniatures
+                les miniamakers
               </span>
             </h1>
           </ScrollReveal>

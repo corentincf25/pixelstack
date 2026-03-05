@@ -7,8 +7,8 @@
 - **profiles.plan** : `TEXT DEFAULT 'free'` avec contrainte `CHECK (plan IN ('free', 'pro', 'studio'))`.
 - **profiles.storage_limit_bytes** : déjà présent ; la migration met à jour les lignes existantes et le trigger signup.
 - **profiles.stripe_customer_id** : `TEXT` pour lier le client Stripe au profil (webhook).
-- **get_storage_limit_for_plan(plan)** : retourne 1 Go (free), 10 Go (pro), 50 Go (studio).
-- **handle_new_user** : à la création du profil, définit `plan = 'free'` et `storage_limit_bytes = 1 Go`.
+- **get_storage_limit_for_plan(plan)** : retourne 100 Mo (free), 10 Go (pro), 50 Go (studio).
+- **handle_new_user** : à la création du profil, définit `plan = 'free'` et `storage_limit_bytes = 100 Mo`.
 - **get_designer_storage** : inclut désormais `messages.image_size_bytes` dans le total utilisé.
 - **get_designer_storage_breakdown** : inclut le stockage chat (messages) dans le total et par projet (`chat_bytes`, `chat_size`).
 - **check_project_storage_quota(project_id, file_size)** : RPC appelable uniquement par un membre du projet ; retourne `{ allowed, used, limit }` pour le designer du projet.
@@ -52,8 +52,8 @@ La vérification est **côté serveur** (route API qui appelle la RPC).
 - **Env :** `STRIPE_WEBHOOK_SECRET`, `STRIPE_SECRET_KEY`.
 - **Logique :**
   - **created / updated :** lecture du plan (par défaut via `subscription.metadata.plan`), mise à jour de `profiles.plan` et `profiles.storage_limit_bytes` pour le profil dont `stripe_customer_id = subscription.customer`.
-  - **deleted :** passage en `plan = 'free'` et `storage_limit_bytes = 1 Go` pour ce profil.
-- **Mapping :** free → 1 Go, pro → 10 Go, studio → 50 Go.
+  - **deleted :** passage en `plan = 'free'` et `storage_limit_bytes = 100 Mo` pour ce profil.
+- **Mapping :** free → 100 Mo, pro → 10 Go, studio → 50 Go.
 
 **À faire côté app :** lors de la création d’un client Stripe (checkout ou création manuelle), enregistrer son id dans `profiles.stripe_customer_id` pour que le webhook puisse mettre à jour le bon profil.
 

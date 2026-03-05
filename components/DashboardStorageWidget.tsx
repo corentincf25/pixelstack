@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { HardDrive } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
-const DEFAULT_LIMIT = 1 * 1024 * 1024 * 1024; // 1 Go
+const DEFAULT_LIMIT = 100 * 1024 * 1024; // 100 Mo (plan gratuit)
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} Go`;

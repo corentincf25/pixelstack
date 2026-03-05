@@ -145,14 +145,14 @@ Pour un premier lancement SaaS, **Option A** suffit ; tu peux introduire Option 
 
 ### Plans visés
 
-- **Free** : 1 Go  
+- **Free** : 100 Mo  
 - **Pro** : 10 Go  
 - **Studio** : 50 Go  
 
 ### Ce qui est prêt
 
 - `profiles.storage_limit_bytes` : déjà utilisé par `get_designer_storage()`. En mettant à jour cette colonne (par défaut ou après paiement), la limite affichée et le calcul du “used” sont déjà pris en compte.
-- `lib/storage-limits.ts` : `DEFAULT_STORAGE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024` (1 Go) — cohérent avec Free.
+- `lib/storage-limits.ts` : `DEFAULT_STORAGE_LIMIT_BYTES = 100 * 1024 * 1024` (100 Mo) — cohérent avec Free.
 
 ### Ce qui manque
 
@@ -162,10 +162,10 @@ Pour un premier lancement SaaS, **Option A** suffit ; tu peux introduire Option 
 
 2. **Définition des limites par plan**  
    - Constante ou table `plans` du type :  
-     - free → 1 Go  
+     - free → 100 Mo  
      - pro → 10 Go  
      - studio → 50 Go  
-   - Au signup ou à la rétrograde Stripe : `UPDATE profiles SET plan = 'free', storage_limit_bytes = 1*1024**3 WHERE id = ...`.
+   - Au signup ou à la rétrograde Stripe : `UPDATE profiles SET plan = 'free', storage_limit_bytes = 100*1024**2 WHERE id = ...`.
 
 3. **Vérification du quota avant upload**  
    - Comme en §3 : vérifier `used + file_size <= storage_limit` (et que `storage_limit` reflète bien le plan).
@@ -179,7 +179,7 @@ Pour un premier lancement SaaS, **Option A** suffit ; tu peux introduire Option 
 
 - **Migration SQL**  
   - `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free' CHECK (plan IN ('free','pro','studio'));`  
-  - S’assurer que `storage_limit_bytes` est renseigné (ex. 1 Go pour `plan = 'free'` par défaut).  
+  - S’assurer que `storage_limit_bytes` est renseigné (ex. 100 Mo pour `plan = 'free'` par défaut).  
   - Créer une fonction `get_storage_limit_for_plan(plan TEXT)` ou une table `plans(name, storage_limit_bytes)` et l’utiliser à la création/mise à jour de profil et dans le webhook Stripe.
 
 - **Backend**  
@@ -236,7 +236,7 @@ Aucune politique **UPDATE** ou **DELETE** sur `storage.objects` pour `assets` ; 
 
 2. **Schéma prêt Stripe**  
    - Ajouter `profiles.plan` (ou table abonnements) et une source de vérité pour les limites (constantes ou table `plans`).  
-   - Définir les valeurs Free 1 Go, Pro 10 Go, Studio 50 Go et les appliquer à `storage_limit_bytes` (onboarding + webhook Stripe).
+   - Définir les valeurs Free 100 Mo, Pro 10 Go, Studio 50 Go et les appliquer à `storage_limit_bytes` (onboarding + webhook Stripe).
 
 3. **Webhook Stripe**  
    - Sur événements d’abonnement : mettre à jour `profiles.plan` et `profiles.storage_limit_bytes`.
@@ -255,7 +255,7 @@ Aucune politique **UPDATE** ou **DELETE** sur `storage.objects` pour `assets` ; 
 3. Dans chaque composant d’upload (ProjectVersions, ProjectReferences, ProjectAssets, ProjectChat, UploadZone) : appeler cette API avant l’upload ; si quota dépassé, afficher un message et ne pas envoyer le fichier.  
 4. (Optionnel) Créer une API d’upload serveur qui vérifie le quota puis uploade vers Supabase Storage.  
 5. Intégrer Stripe : produits/prix Free, Pro, Studio ; webhook pour mettre à jour `plan` et `storage_limit_bytes`.  
-6. Au signup ou à la première connexion, définir `plan = 'free'` et `storage_limit_bytes = 1 * 1024**3`.  
+6. Au signup ou à la première connexion, définir `plan = 'free'` et `storage_limit_bytes = 100 * 1024**2`.  
 7. Page “Abonnement” ou “Paramètres” listant le plan actuel et le lien vers le Customer Portal Stripe.
 
 Une fois ces points en place, le projet est prêt à être commercialisé avec des abonnements et un stockage limité par plan.

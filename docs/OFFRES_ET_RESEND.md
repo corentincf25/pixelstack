@@ -1,15 +1,15 @@
-# Offres de stockage (Free 1 Go / Payant 10 Go) et emails Resend
+# Offres de stockage (Free 100 Mo / Payant 10 Go) et emails Resend
 
-## 1. Offres de stockage : Free 1 Go vs Payant 10 Go
+## 1. Offres de stockage : Free 100 Mo vs Payant 10 Go
 
 L’app utilise la colonne **`profiles.storage_limit_bytes`** pour la limite de stockage par graphiste.
 
 | Offre      | Valeur en base                    | Comportement |
 |-----------|------------------------------------|--------------|
-| **Gratuit** | `NULL` ou `1073741824` (1 × 1024³) | 1 Go (défaut) |
+| **Gratuit** | `NULL` ou `104857600` (100 × 1024²) | 100 Mo (défaut) |
 | **Payant (ex. 10 €)** | `10737418240` (10 × 1024³)        | 10 Go        |
 
-Les RPC `get_designer_storage` et `get_designer_storage_breakdown` utilisent déjà cette colonne : si `storage_limit_bytes` est `NULL`, la limite affichée est **1 Go**.
+Les RPC `get_designer_storage` et `get_designer_storage_breakdown` utilisent déjà cette colonne : si `storage_limit_bytes` est `NULL`, la limite affichée est **100 Mo**.
 
 ### Mise à jour en base (après paiement)
 
@@ -30,7 +30,7 @@ Pour l’instant, un simple `UPDATE profiles SET storage_limit_bytes = ...` suff
 
 ### Côté interface
 
-La page **Mon stockage** et la barre de stockage lisent déjà la limite via les RPC. Aucun changement nécessaire : dès que `storage_limit_bytes` est mis à jour en base, l’UI affiche la bonne limite (1 Go ou 10 Go).
+La page **Mon stockage** et la barre de stockage lisent déjà la limite via les RPC. Aucun changement nécessaire : dès que `storage_limit_bytes` est mis à jour en base, l’UI affiche la bonne limite (100 Mo ou 10 Go).
 
 ---
 
