@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const statusOptions = [
   { value: "draft", label: "Brouillon", className: "border-slate-500/50 bg-slate-500/15 text-slate-300" },
@@ -67,19 +68,18 @@ export function ProjectActions({ projectId, status, role }: ProjectActionsProps)
                 aria-hidden
                 onClick={() => setOpenDropdown(false)}
               />
-              <ul className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-border bg-card py-1 shadow-lg">
+              <ul className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-border bg-card py-1 shadow-lg overflow-hidden">
                 {statusOptions.map((opt) => (
                   <li key={opt.value}>
                     <button
                       type="button"
                       onClick={() => updateStatus(opt.value)}
-                      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${
-                        status === opt.value
-                          ? "bg-primary/10 font-medium"
-                          : "text-foreground hover:bg-accent"
-                      }`}
+                      className={cn(
+                        "w-full px-3 py-2 text-left text-sm flex items-center gap-2",
+                        status === opt.value ? "bg-primary/10 font-medium" : "text-foreground hover:bg-accent"
+                      )}
                     >
-                      <span className={`h-2 w-2 shrink-0 rounded-full ${opt.value === "draft" ? "bg-slate-400" : opt.value === "in_progress" ? "bg-blue-400" : opt.value === "review" ? "bg-amber-400" : "bg-emerald-400"}`} />
+                      <span className={cn("h-2 w-2 shrink-0 rounded-full", opt.value === "draft" ? "bg-slate-400" : opt.value === "in_progress" ? "bg-blue-400" : opt.value === "review" ? "bg-amber-400" : "bg-emerald-400")} />
                       {opt.label}
                     </button>
                   </li>
@@ -93,6 +93,11 @@ export function ProjectActions({ projectId, status, role }: ProjectActionsProps)
     );
   }
 
+  const ctaApproveCls =
+    role === "youtuber"
+      ? "rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500 shadow-[0_0_16px_rgba(220,38,38,0.3)]"
+      : "rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90";
+
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-5 py-4">
       <span className="text-sm text-muted-foreground">Statut</span>
@@ -102,11 +107,7 @@ export function ProjectActions({ projectId, status, role }: ProjectActionsProps)
       {status === "review" && (
         <>
           <span className="text-sm text-muted-foreground">·</span>
-          <button
-            type="button"
-            onClick={handleApprove}
-            className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
+          <button type="button" onClick={handleApprove} className={ctaApproveCls}>
             Approuver
           </button>
           <button

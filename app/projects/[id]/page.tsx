@@ -196,6 +196,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 projectId={id}
                 collaborators={collaboratorsProfiles}
                 canInvite={isClient || isDesigner}
+                accentRed={role === "youtuber"}
               />
               <ProjectActions projectId={id} status={project.status} role={role} />
               {!isReviewer && (
@@ -276,7 +277,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </section>
       </main>
 
-      <ProjectPageNav />
+      <ProjectPageNav accentRed={role === "youtuber"} />
     </div>
   );
 }

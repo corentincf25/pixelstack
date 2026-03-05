@@ -246,37 +246,42 @@ export default function DashboardPage() {
       )}
 
       {/* Mes projets — minimisable */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <button
           type="button"
           onClick={() => setCollapsedProjects((c) => !c)}
-          className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-transparent py-1 text-left transition-colors hover:border-white/[0.06]"
+          className={cn(
+            "flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all sm:px-5",
+            "border-white/[0.08] bg-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.06]"
+          )}
+          aria-expanded={!collapsedProjects}
         >
-          <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
+          <div className="flex items-center gap-3">
             <span
               className={cn(
-                "h-1 w-8 rounded-full",
-                role === "youtuber" ? "bg-gradient-to-r from-red-500 to-red-600" : "bg-gradient-to-r from-[#6366F1] to-[#3B82F6]"
+                "flex h-9 w-1 shrink-0 rounded-full",
+                role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]"
               )}
               aria-hidden
             />
-            Mes projets
-          </h2>
-          <span className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Mes projets</h2>
             <span
               className={cn(
-                "rounded-full border px-3 py-1 text-sm font-medium tabular-nums text-[#E5E7EB]",
+                "rounded-full border px-2.5 py-0.5 text-xs font-medium tabular-nums text-[#E5E7EB]",
                 role === "youtuber" ? "border-red-500/40 bg-red-500/15" : "border-[#6366F1]/40 bg-[#6366F1]/15"
               )}
             >
-              {projects.length} projet{projects.length !== 1 ? "s" : ""}
+              {projects.length}
             </span>
-            {collapsedProjects ? <ChevronDown className="h-5 w-5 text-[#9CA3AF]" /> : <ChevronUp className="h-5 w-5 text-[#9CA3AF]" />}
+          </div>
+          <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
+            {collapsedProjects ? "Afficher" : "Réduire"}
+            {collapsedProjects ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
           </span>
         </button>
 
         {!collapsedProjects && role && projects.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-3 sm:px-5 backdrop-blur-[20px]">
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-4 sm:px-5 backdrop-blur-[20px]">
             <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
               <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
               <span className="hidden sm:inline">Trier par</span>
@@ -340,10 +345,11 @@ export default function DashboardPage() {
               onAction={() => setOpenModal(true)}
             />
           ) : (
-            <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 lg:grid-cols-3 lg:gap-6">
+            <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 sm:gap-6 sm:p-5 lg:grid-cols-3 lg:gap-7">
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];
                 return (
+                  <div key={project.id} className="project-card-in opacity-0">
                   <ProjectCard
                     key={project.id}
                     id={project.id}
@@ -359,7 +365,9 @@ export default function DashboardPage() {
                     newVersionsCount={unread?.newVersions ?? 0}
                     newFeedbackCount={unread?.newFeedback ?? 0}
                     latestVersionImageUrl={latestVersionByProject[project.id]}
+                    accentRed={role === "youtuber"}
                   />
+                  </div>
                 );
               })}
             </div>
@@ -371,17 +379,24 @@ export default function DashboardPage() {
       {/* Bloc graphiste : Vue d'ensemble (grille stats) + calendrier — minimisables */}
       {isDesigner && (
         <>
-          <section className="space-y-4">
+          <section className="space-y-5">
             <button
               type="button"
               onClick={() => setCollapsedOverview((c) => !c)}
-              className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-1 text-left transition-colors hover:border-white/[0.06]"
+              className={cn(
+                "flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all sm:px-5",
+                "border-white/[0.08] bg-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.06]"
+              )}
+              aria-expanded={!collapsedOverview}
             >
-              <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
-                <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366F1] to-[#3B82F6]" aria-hidden />
-                Vue d’ensemble
-              </h2>
-              {collapsedOverview ? <ChevronDown className="h-5 w-5 text-[#9CA3AF]" /> : <ChevronUp className="h-5 w-5 text-[#9CA3AF]" />}
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Vue d’ensemble</h2>
+              </div>
+              <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
+                {collapsedOverview ? "Afficher" : "Réduire"}
+                {collapsedOverview ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              </span>
             </button>
             {!collapsedOverview && (
             <div>
@@ -392,17 +407,24 @@ export default function DashboardPage() {
             </div>
             )}
           </section>
-          <section className="w-full space-y-4">
+          <section className="w-full space-y-5">
             <button
               type="button"
               onClick={() => setCollapsedCalendar((c) => !c)}
-              className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-1 text-left transition-colors hover:border-white/[0.06]"
+              className={cn(
+                "flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all sm:px-5",
+                "border-white/[0.08] bg-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.06]"
+              )}
+              aria-expanded={!collapsedCalendar}
             >
-              <h2 className="flex items-center gap-2 text-[20px] font-medium text-[#E5E7EB]">
-                <span className="h-1 w-8 rounded-full bg-gradient-to-r from-[#6366F1] to-[#3B82F6]" aria-hidden />
-                Calendrier
-              </h2>
-              {collapsedCalendar ? <ChevronDown className="h-5 w-5 text-[#9CA3AF]" /> : <ChevronUp className="h-5 w-5 text-[#9CA3AF]" />}
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Calendrier</h2>
+              </div>
+              <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
+                {collapsedCalendar ? "Afficher" : "Réduire"}
+                {collapsedCalendar ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              </span>
             </button>
             {!collapsedCalendar && (
             <DashboardCalendar

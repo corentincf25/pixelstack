@@ -304,6 +304,13 @@
   *::-webkit-scrollbar-thumb:hover {
     background: rgba(148, 163, 184, 0.5);
   }
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 
   /* Lightbox overlay — fond assombri pour mettre la modale en avant */
   .glass-lightbox {
@@ -396,7 +403,17 @@
     0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.06); }
     50% { box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25), 0 0 20px rgba(99, 102, 241, 0.06); }
   }
+  @keyframes card-edge-shine-red {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.06); }
+    50% { box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.35), 0 0 20px rgba(220, 38, 38, 0.08); }
+  }
   .card-shine {
+    animation: card-edge-shine 3s ease-in-out infinite;
+  }
+  [data-role="youtuber"] .card-shine {
+    animation: card-edge-shine-red 3s ease-in-out infinite;
+  }
+  [data-role="designer"] .card-shine {
     animation: card-edge-shine 3s ease-in-out infinite;
   }
   .card-shine > * {

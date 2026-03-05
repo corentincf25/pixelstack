@@ -49,10 +49,10 @@ export function MediaLightbox({
       onClick={onClose}
     >
       <div
-        className="glass-card my-8 flex min-h-0 max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl shadow-2xl"
+        className="my-8 flex min-h-0 max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#141414] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="glass-card-header flex shrink-0 items-center justify-between px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[#1a1a1a] px-4 py-3">
           {title && (
             <h3 className="truncate text-sm font-semibold text-foreground">
               {title}
@@ -68,9 +68,9 @@ export function MediaLightbox({
           </button>
         </div>
 
-        {/* Contenu scrollable : image + commentaires (scroll possible même image ouverte) */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          <div className="flex shrink-0 items-center justify-center bg-black/30 p-4">
+        {/* Contenu scrollable : image + commentaires (fond opaque) */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#141414]">
+          <div className="flex shrink-0 items-center justify-center bg-[#0d0d0d] p-4">
             {type === "image" ? (
               <img
                 src={url}
@@ -102,7 +102,7 @@ export function MediaLightbox({
           </div>
 
           {children && (
-            <div className="shrink-0 border-t border-white/10 bg-white/[0.03] p-4">
+            <div className="shrink-0 border-t border-white/10 bg-[#1a1a1a] p-4">
               {children}
             </div>
           )}

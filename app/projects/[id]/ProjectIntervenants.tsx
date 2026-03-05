@@ -9,9 +9,10 @@ type Props = {
   projectId: string;
   collaborators: Collaborator[];
   canInvite: boolean;
+  accentRed?: boolean;
 };
 
-export function ProjectIntervenants({ projectId, collaborators, canInvite }: Props) {
+export function ProjectIntervenants({ projectId, collaborators, canInvite, accentRed = false }: Props) {
   const [reviewerLink, setReviewerLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -77,7 +78,11 @@ export function ProjectIntervenants({ projectId, collaborators, canInvite }: Pro
               type="button"
               onClick={createReviewerInvite}
               disabled={loading}
-              className="btn-interactive inline-flex items-center gap-2 rounded-lg border border-[#6366F1]/50 bg-[#6366F1]/10 px-4 py-2.5 text-sm font-medium text-[#A5B4FC] hover:bg-[#6366F1]/20 disabled:opacity-50"
+              className={
+                accentRed
+                  ? "btn-interactive inline-flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-300 hover:bg-red-500/20 disabled:opacity-50"
+                  : "btn-interactive inline-flex items-center gap-2 rounded-lg border border-[#6366F1]/50 bg-[#6366F1]/10 px-4 py-2.5 text-sm font-medium text-[#A5B4FC] hover:bg-[#6366F1]/20 disabled:opacity-50"
+              }
             >
               <UserPlus className="h-4 w-4" />
               {loading ? "Génération…" : "Générer un lien pour inviter un intervenant"}

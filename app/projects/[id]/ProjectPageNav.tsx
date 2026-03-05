@@ -14,7 +14,9 @@ const SECTIONS = [
   { id: "chat", label: "Chat", icon: MessageSquare, group: "Échanges" },
 ] as const;
 
-export function ProjectPageNav() {
+type ProjectPageNavProps = { accentRed?: boolean };
+
+export function ProjectPageNav({ accentRed = false }: ProjectPageNavProps) {
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -47,18 +49,22 @@ export function ProjectPageNav() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="fixed right-4 top-24 z-40 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-white/10 bg-card/90 text-foreground shadow-lg backdrop-blur-md lg:hidden"
+        className={cn(
+          "fixed right-4 top-24 z-40 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border bg-card/90 text-foreground shadow-lg backdrop-blur-md lg:hidden",
+          accentRed ? "border-red-500/30 hover:border-red-500/50" : "border-white/10"
+        )}
         aria-expanded={open}
         aria-label="Navigation du projet"
       >
-        {open ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+        {open ? <ChevronRight className={cn("h-5 w-5", accentRed && "text-red-400")} /> : <ChevronLeft className={cn("h-5 w-5", accentRed && "text-red-400")} />}
       </button>
 
       <aside
         className={cn(
-          "glass-card border-white/10 transition-all duration-200",
-          "w-52 shrink-0 border-l lg:fixed lg:right-0 lg:top-[3.5rem] lg:z-30 lg:h-[calc(100vh-3.5rem)] lg:overflow-y-auto lg:rounded-l-xl",
+          "glass-card transition-all duration-200",
+          "w-52 shrink-0 border-l lg:fixed lg:right-0 lg:top-[3.5rem] lg:z-30 lg:h-[calc(100vh-3.5rem)] lg:overflow-y-auto lg:overflow-x-hidden lg:rounded-l-xl scrollbar-none",
           "fixed right-0 top-0 z-30 h-full pt-20 pb-8 lg:pt-4",
+          accentRed ? "border-l-red-500/40 shadow-[inset_4px_0_20px_-8px_rgba(220,38,38,0.25)]" : "border-white/10",
           open
             ? "translate-x-0 opacity-100"
             : "translate-x-full opacity-0 pointer-events-none lg:translate-x-0 lg:opacity-100 lg:pointer-events-auto"
@@ -78,7 +84,7 @@ export function ProjectPageNav() {
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-          <nav className="space-y-1 overflow-y-auto" aria-label="Navigation du projet">
+          <nav className="space-y-1 overflow-y-auto overflow-x-hidden flex-1 min-h-0 scrollbar-none" aria-label="Navigation du projet">
             {(["Contexte", "Contenu déposé", "Livrables", "Échanges"] as const).map((group) => {
               const items = SECTIONS.filter((s) => s.group === group);
               if (items.length === 0) return null;
@@ -95,12 +101,19 @@ export function ProjectPageNav() {
                       className={cn(
                         "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
                         activeId === id
-                          ? "bg-primary/15 text-primary"
+                          ? accentRed
+                            ? "bg-red-500/15 text-red-400"
+                            : "bg-primary/15 text-primary"
                           : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                       )}
                     >
-                      <span className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-md", activeId === id ? "bg-primary/20" : "bg-white/5")}>
-                        <Icon className="h-3.5 w-3.5" />
+                      <span
+                        className={cn(
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
+                          activeId === id ? (accentRed ? "bg-red-500/20" : "bg-primary/20") : "bg-white/5"
+                        )}
+                      >
+                        <Icon className={cn("h-3.5 w-3.5", activeId === id && accentRed && "text-red-400")} />
                       </span>
                       <span className="truncate">{label}</span>
                     </button>

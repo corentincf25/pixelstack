@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useProjectThumbnail } from "@/hooks/useProjectThumbnail";
 import { CardTilt } from "@/components/CardTilt";
+import { cn } from "@/lib/utils";
 
 type ProjectStatus = "draft" | "in_progress" | "review" | "approved";
 
@@ -29,6 +31,8 @@ export type ProjectCardProps = {
   newFeedbackCount?: number;
   /** Image URL ou chemin de la dernière version (miniature) */
   latestVersionImageUrl?: string | null;
+  /** Pastilles de notif en rouge (profil YouTuber) */
+  accentRed?: boolean;
 };
 
 const statusLabels: Record<ProjectStatus, string> = {
@@ -66,8 +70,13 @@ export function ProjectCard({
   newVersionsCount = 0,
   newFeedbackCount = 0,
   latestVersionImageUrl,
+  accentRed = false,
 }: ProjectCardProps) {
+  const [thumbLoaded, setThumbLoaded] = useState(false);
   const thumbnailUrl = useProjectThumbnail(id, latestVersionImageUrl ?? null);
+  useEffect(() => {
+    if (!thumbnailUrl) setThumbLoaded(false);
+  }, [thumbnailUrl]);
   const createdLabel = createdAt
     ? formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: fr })
     : "—";
@@ -96,10 +105,11 @@ export function ProjectCard({
           <img
             src={thumbnailUrl}
             alt=""
-            className="h-full w-full object-cover object-center"
+            className={cn("h-full w-full object-cover object-center transition-opacity duration-300", thumbLoaded ? "opacity-100" : "opacity-0")}
             loading="lazy"
             decoding="async"
             sizes="(max-width: 400px) 100vw, 320px"
+            onLoad={() => setThumbLoaded(true)}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </div>
@@ -136,12 +146,24 @@ export function ProjectCard({
       {hasNew && (
         <div className="absolute right-3 top-3 flex gap-1.5">
           {newMessagesCount > 0 && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#3B82F6] px-1.5 text-xs font-semibold text-white shadow-[0_0_12px_rgba(59,130,246,0.5)]" title="Nouveaux messages">
+            <span
+              className={cn(
+                "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
+                accentRed ? "bg-red-500 shadow-[0_0_12px_rgba(220,38,38,0.5)]" : "bg-[#3B82F6] shadow-[0_0_12px_rgba(59,130,246,0.5)]"
+              )}
+              title="Nouveaux messages"
+            >
               {newMessagesCount > 99 ? "99+" : newMessagesCount}
             </span>
           )}
           {newVersionsCount > 0 && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#6366F1] px-1.5 text-xs font-semibold text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]" title="Nouvelles versions">
+            <span
+              className={cn(
+                "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
+                accentRed ? "bg-red-600 shadow-[0_0_12px_rgba(185,28,28,0.5)]" : "bg-[#6366F1] shadow-[0_0_12px_rgba(99,102,241,0.5)]"
+              )}
+              title="Nouvelles versions"
+            >
               {newVersionsCount > 99 ? "99+" : newVersionsCount}
             </span>
           )}
