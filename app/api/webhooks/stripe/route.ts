@@ -33,7 +33,7 @@ function getStorageLimitForPlan(plan: string): number {
  */
 function getPlanFromSubscription(subscription: {
   metadata?: { plan?: string };
-  items?: { data?: Array<{ price?: { id?: string } }> };
+  items?: unknown;
 }): string {
   const fromMeta = subscription.metadata?.plan;
   if (fromMeta && (fromMeta === "free" || fromMeta === "pro" || fromMeta === "studio")) {
@@ -74,7 +74,10 @@ export async function POST(request: NextRequest) {
   }
 
   const rawCustomer = subscription.customer;
-  const customerId = typeof rawCustomer === "string" ? rawCustomer : (rawCustomer as { id?: string })?.id;
+  const customerId =
+    typeof rawCustomer === "string"
+      ? rawCustomer
+      : (rawCustomer as unknown as { id?: string } | undefined)?.id;
   if (!customerId) {
     return NextResponse.json({ received: true });
   }
