@@ -15,7 +15,7 @@ Quand un client (graphiste) souscrit à un abonnement (Pro ou Studio) via Stripe
    - le **stockage** mis à jour (barre / chiffres),
    - les **promesses du plan** (stockage, projets, support) appliquées côté app (limites basées sur `profiles.plan` et `profiles.storage_limit_bytes`).
 
-L’utilisateur peut **annuler** ou **modifier** son abonnement depuis le **portail Stripe** (bouton « Ouvrir le portail Stripe »). En cas d’annulation, Stripe envoie `customer.subscription.deleted` et le webhook repasse le profil en `plan: "free"` et `storage_limit_bytes: 100 Mo`.
+L’utilisateur peut **annuler** ou **modifier** son abonnement depuis le **portail Stripe** (bouton « Ouvrir le portail Stripe »). En cas d’annulation, Stripe envoie `customer.subscription.deleted` et le webhook repasse le profil en `plan: "free"` et `storage_limit_bytes: 25 Mo`.
 
 **En résumé : oui, si le client souscrit à un abonnement, son compte est bien mis à jour (plan, stockage), il voit le nom de son abonnement, peut l’annuler via Stripe, et les limites (stockage, etc.) sont celles du plan souscrit.**
 

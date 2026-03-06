@@ -8,14 +8,14 @@ export const dynamic = "force-dynamic";
  * Webhook Stripe :
  * - checkout.session.completed : met à jour profile (stripe_customer_id, plan, storage_limit_bytes)
  * - customer.subscription.updated / created : met à jour plan et storage_limit_bytes
- * - customer.subscription.deleted : repasse le profil en plan free (100 Mo)
+ * - customer.subscription.deleted : repasse le profil en plan free (25 Mo)
  *
  * Variables d'environnement : STRIPE_WEBHOOK_SECRET, STRIPE_SECRET_KEY
- * Mapping plan → stockage : free = 100 Mo, pro = 10 Go, studio = 50 Go
+ * Mapping plan → stockage : free = 25 Mo, pro = 10 Go, studio = 50 Go
  */
 
 const PLAN_TO_BYTES: Record<string, number> = {
-  free: 100 * 1024 * 1024,
+  free: 25 * 1024 * 1024,
   pro: 10 * 1024 * 1024 * 1024,
   studio: 50 * 1024 * 1024 * 1024,
 };

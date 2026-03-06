@@ -13,7 +13,7 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 const PLAN_DESC: Record<string, string> = {
-  free: "100 Mo de stockage, jusqu’à 3 projets.",
+  free: "25 Mo de stockage, jusqu’à 3 projets.",
   pro: "10 Go de stockage, projets illimités, support prioritaire.",
   studio: "50 Go de stockage, tout du Pro, support 24/7.",
 };

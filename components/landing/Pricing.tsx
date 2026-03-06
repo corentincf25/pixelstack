@@ -22,7 +22,7 @@ const plans = [
       "Suivi de base des projets",
       "Alertes stock limité",
       "Jusqu’à 3 projets",
-      "100 Mo de stockage",
+      "25 Mo de stockage",
     ],
     cta: "Commencer",
     href: "/signup",

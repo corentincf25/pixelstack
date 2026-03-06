@@ -28,7 +28,7 @@ export default function TermsPage() {
 
         <h2 className="text-lg font-semibold text-[#E5E7EB]">3. Politique de stockage</h2>
         <p>
-          Le stockage est limité selon le plan souscrit (Gratuit : 100 Mo, Pro : 10 Go, Studio : 50 Go).
+          Le stockage est limité selon le plan souscrit (Gratuit : 25 Mo, Pro : 10 Go, Studio : 50 Go).
           Les fichiers déposés (assets, versions, références, pièces jointes du chat) comptent dans ce quota.
           En cas de dépassement, les uploads peuvent être refusés jusqu&apos;à passage à un plan supérieur
           ou libération d&apos;espace.
@@ -45,7 +45,7 @@ export default function TermsPage() {
         <p>
           Vous pouvez annuler votre abonnement payant à tout moment depuis le portail de facturation Stripe.
           La résiliation prend effet en fin de période déjà payée. Après résiliation, votre plan repasse
-          au plan Gratuit (100 Mo). Les données restent accessibles tant que votre compte est actif ;
+          au plan Gratuit (25 Mo). Les données restent accessibles tant que votre compte est actif ;
           nous nous réservons le droit de supprimer les données des comptes inactifs selon notre politique
           de rétention.
         </p>
