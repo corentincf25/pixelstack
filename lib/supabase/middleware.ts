@@ -33,7 +33,8 @@ export async function updateSession(request: NextRequest) {
   const isAuthCallback = pathname.startsWith("/auth/callback");
   const isOnboarding = pathname === "/onboarding";
   const isInvite = pathname.startsWith("/invite/");
-  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite;
+  const isLegal = pathname.startsWith("/legal/");
+  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite || isLegal;
 
   const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();

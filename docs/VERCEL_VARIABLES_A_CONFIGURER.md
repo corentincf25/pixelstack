@@ -23,21 +23,29 @@
 
 ---
 
-## 2. Emails (Resend) – optionnel mais recommandé
+## 2. Emails (Resend) – notifications projet
 
 | Variable dans Vercel | Où trouver la valeur | À faire |
 |----------------------|----------------------|--------|
-| `RESEND_API_KEY` | **https://resend.com** → **API Keys** → créer ou copier une clé (commence par `re_`). | Coller dans **Value**. |
-| `RESEND_FROM` | Adresse d’envoi autorisée dans Resend (ex. `Pixelstack <onvoi@tondomaine.com>` ou `onboarding@resend.dev` pour les tests). | Optionnel ; par défaut le code utilise `Pixelstack <onboarding@resend.dev>`. |
+| `RESEND_API_KEY` | **https://resend.com** → **API Keys** → **Create API Key** (nom ex. « Pixelstack Vercel ») → copier la clé (commence par `re_`). Tu peux recréer une clé dédiée pour la prod. | Coller dans **Value**. |
+| `RESEND_FROM` | Adresse d’envoi autorisée dans Resend (ex. `Pixelstack <contact@tondomaine.com>` ou `onboarding@resend.dev` pour les tests). | Optionnel ; par défaut le code utilise `Pixelstack <onboarding@resend.dev>`. |
+
+**Comportement :** quand quelqu’un dépose une version, des assets, un message ou une référence, **tous les autres membres du projet** (client YouTuber, graphiste, relecteurs) reçoivent un email — chacun à son adresse. L’email du destinataire est récupéré via l’API Auth (fiable pour Google/OAuth), puis en secours via la base.
 
 ---
 
-## 3. Stripe – optionnel (pour abonnements plus tard)
+## 3. Stripe – abonnements (Checkout + portail facturation)
 
 | Variable dans Vercel | Où trouver la valeur | À faire |
 |----------------------|----------------------|--------|
 | `STRIPE_SECRET_KEY` | **https://dashboard.stripe.com** → **Developers** → **API keys** → "Secret key" (commence par `sk_live_` en prod, `sk_test_` en test). | Coller dans **Value**. |
-| `STRIPE_WEBHOOK_SECRET` | **Stripe** → **Developers** → **Webhooks** → ajouter un endpoint (URL de ton app + `/api/webhooks/stripe`) → après création, cliquer sur le webhook → "Signing secret" (commence par `whsec_`). | Coller dans **Value**. À configurer seulement si tu actives les webhooks. |
+| `STRIPE_WEBHOOK_SECRET` | **Stripe** → **Developers** → **Webhooks** → ajouter un endpoint (URL de ton app + `/api/webhooks/stripe`) → après création, cliquer sur le webhook → "Signing secret" (commence par `whsec_`). Événements à écouter : `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`. | Coller dans **Value**. |
+| `STRIPE_PRICE_PRO_MONTHLY` | **Stripe** → **Products** → Pro → prix mensuel → ID (price_…). | Plan Pro facturé au mois. |
+| `STRIPE_PRICE_PRO_YEARLY` | **Stripe** → **Products** → Pro → prix annuel → ID (price_…). | Plan Pro facturé à l’année. |
+| `STRIPE_PRICE_STUDIO_MONTHLY` | **Stripe** → **Products** → Studio → prix mensuel → ID (price_…). | Plan Studio facturé au mois. |
+| `STRIPE_PRICE_STUDIO_YEARLY` | **Stripe** → **Products** → Studio → prix annuel → ID (price_…). | Plan Studio facturé à l’année. |
+
+Dans Stripe, pour chaque **Produit** (Pro, Studio), configurer le **metadata** du prix ou de la souscription avec `plan: "pro"` ou `plan: "studio"` pour que le webhook mette à jour correctement le profil (voir doc webhook). Lors de la création de la Checkout Session, l’app envoie déjà `subscription_data.metadata.plan`.
 
 ---
 

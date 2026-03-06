@@ -24,13 +24,17 @@ export async function GET(
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
+  const { data: isMember } = await supabase.rpc("is_project_member", { p_project_id: projectId });
+  if (!isMember) {
+    return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+  }
+
   const { data: project } = await supabase
     .from("projects")
-    .select("id, client_id, designer_id")
+    .select("id")
     .eq("id", projectId)
     .single();
-
-  if (!project || (project.client_id !== user.id && project.designer_id !== user.id)) {
+  if (!project) {
     return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
   }
 

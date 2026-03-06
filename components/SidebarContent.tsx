@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, FolderKanban, Settings, LogOut, Palette, Video, HardDrive } from "lucide-react";
+import { LayoutDashboard, FolderKanban, Settings, LogOut, Palette, Video, HardDrive, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StorageBar } from "@/components/StorageBar";
 
@@ -20,6 +20,11 @@ const storageNavItem: NavItem = {
   href: "/dashboard/storage",
   label: "Mon stockage",
   icon: <HardDrive className="h-4 w-4" />,
+};
+const billingNavItem: NavItem = {
+  href: "/dashboard/billing",
+  label: "Facturation",
+  icon: <CreditCard className="h-4 w-4" />,
 };
 
 export type Role = "designer" | "youtuber" | null;
@@ -93,7 +98,7 @@ export function SidebarContent({
         {[
           baseNavItems[0],
           baseNavItems[1],
-          ...(role === "designer" ? [storageNavItem] : []),
+          ...(role === "designer" ? [storageNavItem, billingNavItem] : []),
           baseNavItems[2],
         ].map((item) => {
           const active =

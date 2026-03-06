@@ -12,10 +12,20 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  const requireAgreement = () => {
+    if (!agreedToTerms) {
+      setError("Tu dois accepter les Conditions d'utilisation et la Politique de confidentialité pour créer un compte.");
+      return false;
+    }
+    return true;
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!requireAgreement()) return;
     setLoading(true);
     const { data, error: err } = await supabase.auth.signUp({
       email,
@@ -43,6 +53,7 @@ export default function SignupPage() {
 
   const handleGoogleSignup = async () => {
     setError(null);
+    if (!requireAgreement()) return;
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -95,6 +106,26 @@ export default function SignupPage() {
             minLength={6}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
+        </div>
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="terms"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary"
+          />
+          <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
+            J&apos;accepte les{" "}
+            <Link href="/legal/terms" className="font-medium text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+              Conditions d&apos;utilisation
+            </Link>
+            {" "}et la{" "}
+            <Link href="/legal/privacy" className="font-medium text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+              Politique de confidentialité
+            </Link>
+            .
+          </label>
         </div>
         <button
           type="submit"

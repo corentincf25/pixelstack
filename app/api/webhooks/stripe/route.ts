@@ -2,18 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
- * Webhook Stripe : customer.subscription.created | updated | deleted
- * Met à jour profiles.plan et profiles.storage_limit_bytes selon le plan.
+ * Webhook Stripe :
+ * - checkout.session.completed : met à jour profile (stripe_customer_id, plan, storage_limit_bytes)
+ * - customer.subscription.updated / created : met à jour plan et storage_limit_bytes
+ * - customer.subscription.deleted : repasse le profil en plan free (100 Mo)
  *
- * Prérequis : npm install stripe
- * Variables d'environnement :
- *   STRIPE_WEBHOOK_SECRET — secret du webhook (whsec_...)
- *   STRIPE_SECRET_KEY    — clé secrète Stripe (sk_...) pour instancier le client
- *
- * L'app doit renseigner profiles.stripe_customer_id quand un client Stripe est créé
- * (lors du checkout ou de la création du client Stripe côté serveur).
- *
- * Mapping plan → stockage : free = 100 Mo, pro = 10 GB, studio = 50 GB
+ * Variables d'environnement : STRIPE_WEBHOOK_SECRET, STRIPE_SECRET_KEY
+ * Mapping plan → stockage : free = 100 Mo, pro = 10 Go, studio = 50 Go
  */
 
 const PLAN_TO_BYTES: Record<string, number> = {
@@ -26,24 +21,50 @@ function getStorageLimitForPlan(plan: string): number {
   return PLAN_TO_BYTES[plan] ?? PLAN_TO_BYTES.free;
 }
 
-/**
- * Récupère le plan depuis la souscription Stripe.
- * Option 1 : subscription.metadata.plan (recommandé)
- * Option 2 : mapper price.id ou product.id vers free | pro | studio
- */
 function getPlanFromSubscription(subscription: {
   metadata?: { plan?: string };
-  items?: unknown;
 }): string {
   const fromMeta = subscription.metadata?.plan;
   if (fromMeta && (fromMeta === "free" || fromMeta === "pro" || fromMeta === "studio")) {
     return fromMeta;
   }
-  // Option 2 : mapper les price_id Stripe (à adapter selon tes Price IDs)
-  // const priceId = subscription.items?.data?.[0]?.price?.id;
-  // if (priceId === process.env.STRIPE_PRICE_PRO) return 'pro';
-  // if (priceId === process.env.STRIPE_PRICE_STUDIO) return 'studio';
   return "free";
+}
+
+async function updateProfileByCustomerId(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  customerId: string,
+  plan: string
+) {
+  const storageLimitBytes = getStorageLimitForPlan(plan);
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      plan,
+      storage_limit_bytes: storageLimitBytes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("stripe_customer_id", customerId);
+  return error;
+}
+
+async function updateProfileByUserId(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  userId: string,
+  plan: string,
+  customerId: string
+) {
+  const storageLimitBytes = getStorageLimitForPlan(plan);
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      stripe_customer_id: customerId,
+      plan,
+      storage_limit_bytes: storageLimitBytes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+  return error;
 }
 
 export async function POST(request: NextRequest) {
@@ -54,32 +75,20 @@ export async function POST(request: NextRequest) {
   }
 
   let payload: string;
-  let event: { type: string; data?: { object?: { customer?: string; metadata?: { plan?: string }; items?: unknown } } };
+  let event: { type: string; data?: { object?: unknown } };
 
   try {
     payload = await request.text();
-    // Vérification de la signature Stripe (nécessite le SDK stripe)
-    // npm install stripe
     const stripe = await import("stripe").then((m) => new m.default(process.env.STRIPE_SECRET_KEY ?? ""));
-    event = stripe.webhooks.constructEvent(payload, request.headers.get("stripe-signature") ?? "", webhookSecret) as typeof event;
+    event = stripe.webhooks.constructEvent(
+      payload,
+      request.headers.get("stripe-signature") ?? "",
+      webhookSecret
+    ) as typeof event;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[Stripe webhook] Signature ou parsing invalide:", message);
     return NextResponse.json({ error: "Invalid signature or payload" }, { status: 400 });
-  }
-
-  const subscription = event.data?.object;
-  if (!subscription || typeof subscription !== "object") {
-    return NextResponse.json({ received: true });
-  }
-
-  const rawCustomer = subscription.customer;
-  const customerId =
-    typeof rawCustomer === "string"
-      ? rawCustomer
-      : (rawCustomer as unknown as { id?: string } | undefined)?.id;
-  if (!customerId) {
-    return NextResponse.json({ received: true });
   }
 
   const admin = createAdminClient();
@@ -89,35 +98,67 @@ export async function POST(request: NextRequest) {
   }
 
   switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data?.object as {
+        customer?: string;
+        subscription?: string;
+        metadata?: { plan?: string; supabase_user_id?: string };
+        client_reference_id?: string;
+      };
+      const rawCustomer = session?.customer;
+      const customerId = typeof rawCustomer === "string" ? rawCustomer : (rawCustomer as unknown as { id?: string } | undefined)?.id;
+      const plan = session?.metadata?.plan && ["pro", "studio"].includes(session.metadata.plan) ? session.metadata.plan : "free";
+      const userId = session?.metadata?.supabase_user_id || session?.client_reference_id;
+
+      if (customerId && userId) {
+        const err = await updateProfileByUserId(admin, userId, plan, customerId);
+        if (err) {
+          console.error("[Stripe webhook] Update profile (checkout.session.completed):", err);
+          return NextResponse.json({ error: "Update failed" }, { status: 500 });
+        }
+      }
+      break;
+    }
+
     case "customer.subscription.created":
     case "customer.subscription.updated": {
+      const subscription = event.data?.object as {
+        customer?: string | { id?: string };
+        metadata?: { plan?: string };
+      };
+      if (!subscription) break;
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : (subscription.customer as { id?: string })?.id;
+      if (!customerId) break;
+
       const plan = getPlanFromSubscription(subscription);
-      const storageLimitBytes = getStorageLimitForPlan(plan);
-      const { error } = await admin
-        .from("profiles")
-        .update({ plan, storage_limit_bytes: storageLimitBytes, updated_at: new Date().toISOString() })
-        .eq("stripe_customer_id", customerId);
-      if (error) {
-        console.error("[Stripe webhook] Update profile failed:", error);
+      const err = await updateProfileByCustomerId(admin, customerId, plan);
+      if (err) {
+        console.error("[Stripe webhook] Update profile (subscription):", err);
         return NextResponse.json({ error: "Update failed" }, { status: 500 });
       }
       break;
     }
+
     case "customer.subscription.deleted": {
-      const { error } = await admin
-        .from("profiles")
-        .update({
-          plan: "free",
-          storage_limit_bytes: getStorageLimitForPlan("free"),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("stripe_customer_id", customerId);
-      if (error) {
-        console.error("[Stripe webhook] Update profile (deleted) failed:", error);
+      const subscription = event.data?.object as { customer?: string | { id?: string } };
+      if (!subscription) break;
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : (subscription.customer as { id?: string })?.id;
+      if (!customerId) break;
+
+      const err = await updateProfileByCustomerId(admin, customerId, "free");
+      if (err) {
+        console.error("[Stripe webhook] Update profile (deleted):", err);
         return NextResponse.json({ error: "Update failed" }, { status: 500 });
       }
       break;
     }
+
     default:
       break;
   }

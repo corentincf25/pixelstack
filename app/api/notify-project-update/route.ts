@@ -10,6 +10,50 @@ const MOTIFS: Record<string, string> = {
   reference: "Une nouvelle référence ou inspiration a été ajoutée.",
 };
 
+type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
+
+/**
+ * Récupère l'email d'un utilisateur avec priorité à l'API Auth (fiable pour OAuth/Google).
+ * Puis fallback RPC get_user_email, puis profiles.email.
+ */
+async function getEmailForUserId(admin: AdminClient, userId: string): Promise<string | null> {
+  // 1) Auth API — le plus fiable pour Google/OAuth (email + identities)
+  const {
+    data: { user: authUser },
+  } = await admin.auth.admin.getUserById(userId);
+  if (authUser) {
+    const u = authUser as unknown as Record<string, unknown>;
+    const top = u.email;
+    if (top && typeof top === "string" && top.length > 0) return top.trim();
+    const meta = u.user_metadata as Record<string, unknown> | undefined;
+    if (meta?.email && typeof meta.email === "string") return String(meta.email).trim();
+    const identities = u.identities as Array<{ identity_data?: Record<string, unknown> }> | undefined;
+    if (identities?.length) {
+      for (const id of identities) {
+        const d = id.identity_data;
+        const em = d && (d.email ?? d.provider_email ?? (d as Record<string, unknown>).user_email);
+        if (em && typeof em === "string") return String(em).trim();
+      }
+    }
+  }
+
+  // 2) RPC get_user_email (auth.users en SQL)
+  try {
+    const { data: rpcData, error: rpcErr } = await admin.rpc("get_user_email", { target_id: userId });
+    if (!rpcErr && rpcData != null) {
+      const raw = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      const str = typeof raw === "string" ? raw : (raw && typeof raw === "object" && "get_user_email" in raw ? String((raw as { get_user_email: unknown }).get_user_email) : null);
+      if (str && str.trim()) return str.trim();
+    }
+  } catch (_) {}
+
+  // 3) profiles.email
+  const { data: row } = await admin.from("profiles").select("email").eq("id", userId).single();
+  if (row?.email && typeof row.email === "string" && row.email.trim()) return row.email.trim();
+
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -30,6 +74,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
+    const { data: isMember } = await supabase.rpc("is_project_member", { p_project_id: projectId });
+    if (!isMember) {
+      return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+    }
+
     const { data: project } = await supabase
       .from("projects")
       .select("id, title, client_id, designer_id")
@@ -40,78 +89,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
     }
 
-    const recipientId =
-      project.client_id === actor.id ? project.designer_id : project.client_id;
-    if (!recipientId) {
-      return NextResponse.json({ error: "Aucun interlocuteur à notifier" }, { status: 400 });
-    }
-    if (recipientId === actor.id) {
-      return NextResponse.json({ error: "Destinataire invalide" }, { status: 400 });
-    }
-
     const admin = createAdminClient();
     if (!admin) {
       console.warn("SUPABASE_SERVICE_ROLE_KEY manquant : notification email non envoyée.");
       return NextResponse.json({ ok: true, skipped: "no_service_role" });
     }
 
-    // 1) RPC get_user_email (lecture directe auth.users) — le plus fiable
-    let recipientEmail: string | null = null;
-    try {
-      const { data: rpcData, error: rpcErr } = await admin.rpc("get_user_email", { target_id: recipientId });
-      if (!rpcErr && rpcData !== null && rpcData !== undefined) {
-        if (typeof rpcData === "string" && rpcData.length > 0) recipientEmail = rpcData;
-        else if (Array.isArray(rpcData) && rpcData[0] != null) {
-          const first = rpcData[0];
-          if (typeof first === "string") recipientEmail = first;
-          else if (typeof first === "object" && first !== null && "get_user_email" in first)
-            recipientEmail = String((first as { get_user_email: unknown }).get_user_email || "").trim() || null;
-        } else if (typeof rpcData === "object" && rpcData !== null && "get_user_email" in rpcData)
-          recipientEmail = String((rpcData as { get_user_email: unknown }).get_user_email || "").trim() || null;
-      }
-    } catch (_) {}
+    // Tous les membres à notifier = client + designer + relecteurs, SAUF l'acteur
+    const recipientIds = new Set<string>();
+    if (project.client_id && project.client_id !== actor.id) recipientIds.add(project.client_id);
+    if (project.designer_id && project.designer_id !== actor.id) recipientIds.add(project.designer_id);
 
-    // 2) Table profiles.email (synchronisée à la connexion)
-    if (!recipientEmail) {
-      const { data: row } = await admin.from("profiles").select("email").eq("id", recipientId).single();
-      if (row?.email && typeof row.email === "string") recipientEmail = row.email.trim();
-    }
-
-    // 3) Auth API getUserById + extraction
-    if (!recipientEmail) {
-      const {
-        data: { user: recipientUser },
-        error: userError,
-      } = await admin.auth.admin.getUserById(recipientId);
-      function extractEmail(u: typeof recipientUser): string | null {
-        if (!u) return null;
-        const uu = u as unknown as Record<string, unknown>;
-        const fromTop = uu.email;
-        if (fromTop && typeof fromTop === "string") return fromTop;
-        const fromMeta = uu.user_metadata && typeof uu.user_metadata === "object" && (uu.user_metadata as Record<string, unknown>).email;
-        if (fromMeta && typeof fromMeta === "string") return fromMeta;
-        const identities = uu.identities as Array<{ identity_data?: Record<string, unknown> }> | undefined;
-        if (identities?.length) {
-          for (const id of identities) {
-            const idData = id.identity_data as Record<string, unknown> | undefined;
-            const em = idData?.email ?? idData?.provider_email ?? idData?.user_email;
-            if (em && typeof em === "string") return em;
-          }
-        }
-        return null;
-      }
-      recipientEmail = extractEmail(recipientUser);
-      if (!recipientEmail && userError) {
-        console.warn("Notification email: getUserById error", { recipientId, message: userError.message });
+    const { data: collaborators } = await admin
+      .from("project_collaborators")
+      .select("user_id")
+      .eq("project_id", projectId);
+    if (collaborators?.length) {
+      for (const c of collaborators) {
+        if (c.user_id && c.user_id !== actor.id) recipientIds.add(c.user_id);
       }
     }
 
-    if (!recipientEmail) {
-      console.error("Notification email: aucun email trouvé pour destinataire", { recipientId });
-      return NextResponse.json(
-        { error: "Impossible de récupérer l'email du destinataire" },
-        { status: 500 }
-      );
+    if (recipientIds.size === 0) {
+      return NextResponse.json({ ok: true, skipped: "no_recipients" });
     }
 
     const apiKey = process.env.RESEND_API_KEY;
@@ -128,25 +128,31 @@ export async function POST(req: Request) {
     const appUrl = `${baseUrl}/dashboard`;
     const motif = MOTIFS[type];
 
-    const { error: sendError } = await resend.emails.send({
-      from,
-      to: [recipientEmail],
-      subject: `[Pixelstack] À consulter : ${project.title}`,
-      html: `
-        <p>Bonjour,</p>
-        <p><strong>${motif}</strong></p>
-        <p>Projet concerné : « ${project.title } ». Connecte-toi à l'application pour voir les mises à jour.</p>
-        <p><a href="${appUrl}" style="color: #3b82f6; text-decoration: underline;">Ouvrir Pixelstack</a></p>
-        <p>— L'équipe Pixelstack</p>
-      `,
-    });
+    const emailsSent = new Set<string>();
+    for (const recipientId of recipientIds) {
+      const email = await getEmailForUserId(admin, recipientId);
+      if (!email || emailsSent.has(email.toLowerCase())) continue;
+      emailsSent.add(email.toLowerCase());
 
-    if (sendError) {
-      console.error("Resend error:", sendError);
-      return NextResponse.json({ error: "Échec envoi email" }, { status: 500 });
+      const { error: sendError } = await resend.emails.send({
+        from,
+        to: [email],
+        subject: `[Pixelstack] À consulter : ${project.title}`,
+        html: `
+          <p>Bonjour,</p>
+          <p><strong>${motif}</strong></p>
+          <p>Projet concerné : « ${project.title } ». Connecte-toi à l'application pour voir les mises à jour.</p>
+          <p><a href="${appUrl}" style="color: #3b82f6; text-decoration: underline;">Ouvrir Pixelstack</a></p>
+          <p>— L'équipe Pixelstack</p>
+        `,
+      });
+
+      if (sendError) {
+        console.error("Resend error:", sendError, "to:", email);
+      }
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, sent: emailsSent.size });
   } catch (e) {
     console.error("notify-project-update:", e);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

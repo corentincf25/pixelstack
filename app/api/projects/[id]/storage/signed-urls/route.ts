@@ -37,6 +37,13 @@ export async function POST(
   if (paths.length === 0) {
     return NextResponse.json({ urls: {} });
   }
+  const MAX_PATHS = 200;
+  if (paths.length > MAX_PATHS) {
+    return NextResponse.json(
+      { error: `Trop de chemins (max ${MAX_PATHS})`, urls: {} },
+      { status: 400 }
+    );
+  }
 
   const admin = createAdminClient();
   if (!admin) {
@@ -46,6 +53,7 @@ export async function POST(
   const urls: Record<string, string> = {};
   for (const path of paths) {
     if (!path || typeof path !== "string") continue;
+    if (path.includes("..") || path.startsWith("/")) continue;
     if (!path.startsWith(projectId + "/") && path !== projectId) {
       continue;
     }

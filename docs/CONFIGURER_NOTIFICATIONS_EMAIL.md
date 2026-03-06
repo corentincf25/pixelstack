@@ -6,14 +6,14 @@ Quand ton graphiste ou ton client dépose une version, envoie un message, etc., 
 
 ## Étape 1 : La clé Resend (pour envoyer les emails)
 
-**C’est quoi ?** Resend est un service qui envoie les emails à ta place. Sans cette clé, thumb.io ne peut pas envoyer d’emails.
+**C’est quoi ?** Resend est un service qui envoie les emails à ta place. Sans cette clé, Pixelstack ne peut pas envoyer d’emails.
 
 **Ce que tu fais :**
 
 1. Va sur **https://resend.com** et crée un compte (gratuit).
 2. Une fois connecté, va dans **API Keys** (menu ou **https://resend.com/api-keys**).
 3. Clique sur **Create API Key**.
-4. Donne un nom (ex. « thumb.io ») et valide.
+4. Donne un nom (ex. « Pixelstack prod ») et valide.
 5. **Copie la clé** qui s’affiche (elle commence par `re_`). Tu ne pourras plus la revoir après !
 
 **Où la mettre :** dans ton fichier `.env.local` à la racine du projet :

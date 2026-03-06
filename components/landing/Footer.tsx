@@ -9,6 +9,8 @@ const footerLinks = [
   { label: "Témoignages", href: "#temoignages" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
+  { label: "CGU", href: "/legal/terms" },
+  { label: "Confidentialité", href: "/legal/privacy" },
 ];
 
 export function Footer() {
@@ -23,15 +25,25 @@ export function Footer() {
             <span className="font-semibold tracking-tight">Pixelstack</span>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-6 sm:gap-8">
-            {footerLinks.map(({ label, href }) => (
-              <a
-                key={label}
-                href={href}
-                className="text-sm text-[#9CA3AF] transition-colors hover:text-[#E5E7EB]"
-              >
-                {label}
-              </a>
-            ))}
+            {footerLinks.map(({ label, href }) =>
+              href.startsWith("/") ? (
+                <Link
+                  key={label}
+                  href={href}
+                  className="text-sm text-[#9CA3AF] transition-colors hover:text-[#E5E7EB]"
+                >
+                  {label}
+                </Link>
+              ) : (
+                <a
+                  key={label}
+                  href={href}
+                  className="text-sm text-[#9CA3AF] transition-colors hover:text-[#E5E7EB]"
+                >
+                  {label}
+                </a>
+              )
+            )}
           </nav>
         </div>
         <p className="mt-8 text-center text-xs text-[#6B7280] sm:text-left">
