@@ -189,7 +189,7 @@ export function Pricing() {
                     {yearly ? plan.priceYear : plan.priceMonth}
                   </span>
                   <span className="text-sm text-[#9CA3AF]">
-                    {"periodYear" in plan && "periodMonth" in plan ? (yearly ? plan.periodYear : plan.periodMonth) : plan.period}
+                    {yearly ? plan.periodYear : plan.periodMonth}
                   </span>
                 </div>
                 <ul className="mt-6 space-y-3">
