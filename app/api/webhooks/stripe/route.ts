@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 /**
  * Webhook Stripe :
  * - checkout.session.completed : met à jour profile (stripe_customer_id, plan, storage_limit_bytes)
@@ -77,17 +80,20 @@ export async function POST(request: NextRequest) {
   let payload: string;
   let event: { type: string; data?: { object?: unknown } };
 
+  const signature = request.headers.get("stripe-signature");
+  if (!signature) {
+    console.error("[Stripe webhook] Header stripe-signature manquant");
+    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+  }
+
   try {
     payload = await request.text();
     const stripe = await import("stripe").then((m) => new m.default(process.env.STRIPE_SECRET_KEY ?? ""));
-    event = stripe.webhooks.constructEvent(
-      payload,
-      request.headers.get("stripe-signature") ?? "",
-      webhookSecret
-    ) as typeof event;
+    event = stripe.webhooks.constructEvent(payload, signature, webhookSecret) as typeof event;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[Stripe webhook] Signature ou parsing invalide:", message);
+    const isSignature = message.toLowerCase().includes("signature") || (err as { type?: string })?.type === "StripeSignatureVerificationError";
+    console.error("[Stripe webhook] Échec vérification:", isSignature ? "signature invalide (vérifier STRIPE_WEBHOOK_SECRET)" : message);
     return NextResponse.json({ error: "Invalid signature or payload" }, { status: 400 });
   }
 
