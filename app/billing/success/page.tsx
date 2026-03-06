@@ -80,10 +80,12 @@ function BillingSuccessContent() {
   if (hasUser === false) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
-        <div className="w-full max-w-lg rounded-2xl border border-amber-500/20 bg-amber-500/5 p-8 text-center shadow-lg">
-          <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-amber-400" />
-          <h1 className="text-2xl font-bold text-[#E5E7EB]">Paiement reçu</h1>
-          <p className="mt-3 text-[#9CA3AF]">
+        <div className="w-full max-w-lg rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8 text-center shadow-lg">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20">
+            <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#E5E7EB]">Merci pour votre achat</h1>
+          <p className="mt-2 text-[#9CA3AF]">
             Votre abonnement a bien été enregistré. Reconnecte-toi pour accéder à ton dashboard et voir ton plan mis à jour.
           </p>
           <Link
