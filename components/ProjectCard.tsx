@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useProjectThumbnail } from "@/hooks/useProjectThumbnail";
 import { cn } from "@/lib/utils";
+
+const TILT_MAX = 6;
+const TILT_PERSPECTIVE = 1200;
+const TILT_SMOOTH_MS = 120;
 
 type ProjectStatus = "draft" | "in_progress" | "review" | "approved";
 
@@ -69,10 +73,32 @@ export function ProjectCard({
   accentRed = false,
 }: ProjectCardProps) {
   const [thumbLoaded, setThumbLoaded] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
   const thumbnailUrl = useProjectThumbnail(id, latestVersionImageUrl ?? null);
+
   useEffect(() => {
     if (!thumbnailUrl) setThumbLoaded(false);
   }, [thumbnailUrl]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const el = cardRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (w <= 0 || h <= 0) return;
+      const x = (e.clientX - rect.left) / w - 0.5;
+      const y = (e.clientY - rect.top) / h - 0.5;
+      setTilt({ x: -y * TILT_MAX, y: x * TILT_MAX });
+    },
+    []
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    setTilt({ x: 0, y: 0 });
+  }, []);
 
   const createdLabel = createdAt
     ? formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: fr })
@@ -93,11 +119,21 @@ export function ProjectCard({
   return (
     <Link
       href={`/projects/${id}${highlightQuery}`}
-      className={cn(
-        "card-hover-lift flex h-full flex-col overflow-hidden rounded-2xl border shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]",
-        cardStyle
-      )}
+      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] block h-full"
     >
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className={cn(
+          "flex h-full flex-col overflow-hidden rounded-2xl border shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] transition-transform ease-out",
+          cardStyle
+        )}
+        style={{
+          transform: `perspective(${TILT_PERSPECTIVE}px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+          transitionDuration: tilt.x === 0 && tilt.y === 0 ? `${TILT_SMOOTH_MS}ms` : "0ms",
+        }}
+      >
       {/* Zone image : hauteur fixe identique pour toutes les cards */}
       <div
         className="relative w-full shrink-0 overflow-hidden border-b border-white/[0.08] bg-black/20"
@@ -192,6 +228,7 @@ export function ProjectCard({
             <span>{createdLabel}</span>
           </div>
         </div>
+      </div>
       </div>
     </Link>
   );
