@@ -62,7 +62,6 @@ export function Features() {
           ))}
         </div>
 
-        {/* Blocs détaillés avec placeholders d’images */}
         <FeatureBlock
           tag="Piloté par les données"
           title="Des insights stratégiques pour vos projets"

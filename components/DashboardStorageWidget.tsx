@@ -5,8 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { HardDrive } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-
-const DEFAULT_LIMIT = 100 * 1024 * 1024; // 100 Mo (plan gratuit)
+import { DEFAULT_STORAGE_LIMIT_BYTES } from "@/lib/storage-limits";
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} Go`;
@@ -19,7 +18,7 @@ const PIE_COLORS = ["#6366f1", "#475569", "#8b5cf6"];
 
 export function DashboardStorageWidget() {
   const [used, setUsed] = useState<number>(0);
-  const [limit, setLimit] = useState<number>(DEFAULT_LIMIT);
+  const [limit, setLimit] = useState<number>(DEFAULT_STORAGE_LIMIT_BYTES);
   const [assetsBytes, setAssetsBytes] = useState<number>(0);
   const [versionsBytes, setVersionsBytes] = useState<number>(0);
   const [refsBytes, setRefsBytes] = useState<number>(0);
@@ -37,7 +36,7 @@ export function DashboardStorageWidget() {
         const fallbackRaw = Array.isArray(fallback.data) ? fallback.data[0] : fallback.data;
         if (fallbackRaw && typeof fallbackRaw === "object" && "used" in fallbackRaw) {
           setUsed(Number((fallbackRaw as { used: number }).used));
-          setLimit(Number((fallbackRaw as { limit: number }).limit) || DEFAULT_LIMIT);
+          setLimit(Number((fallbackRaw as { limit: number }).limit) || DEFAULT_STORAGE_LIMIT_BYTES);
         }
         setError(!!err);
         return;
@@ -46,7 +45,7 @@ export function DashboardStorageWidget() {
       const r = raw && typeof raw === "object" ? raw as Record<string, unknown> : null;
       if (r) {
         setUsed(Number(r.used ?? 0));
-        setLimit(Number(r.limit ?? DEFAULT_LIMIT));
+        setLimit(Number(r.limit ?? DEFAULT_STORAGE_LIMIT_BYTES));
         setAssetsBytes(Number(r.assets_bytes ?? 0));
         setVersionsBytes(Number(r.versions_bytes ?? 0));
         setRefsBytes(Number((r as { refs_bytes?: number }).refs_bytes ?? 0));

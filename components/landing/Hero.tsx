@@ -87,13 +87,7 @@ export function Hero() {
                   <p className="text-sm font-medium text-[#E5E7EB]">
                     Capture d’écran de l’application
                   </p>
-                  <p className="mt-1 text-xs text-[#9CA3AF]">
-                    Remplacez cette zone par un screenshot de votre dashboard ou d’une page projet
-                  </p>
                 </div>
-                <p className="rounded-lg border border-dashed border-white/20 bg-white/[0.03] px-4 py-2 text-xs text-[#6B7280]">
-                  Recommandé : 1200×675 px (16:9) ou 1920×1080 px
-                </p>
               </div>
             </div>
           </div>

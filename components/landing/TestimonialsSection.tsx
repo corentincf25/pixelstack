@@ -51,11 +51,6 @@ export function TestimonialsSection() {
             </ScrollReveal>
           ))}
         </div>
-        <ScrollReveal delay={400}>
-          <p className="mt-8 text-center text-xs text-[#6B7280]">
-            Remplacez ces blocs par de vrais témoignages et noms lorsque vous en avez.
-          </p>
-        </ScrollReveal>
       </LandingContainer>
     </section>
   );

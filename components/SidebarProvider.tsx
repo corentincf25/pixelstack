@@ -8,6 +8,7 @@ import type { Role } from "@/components/SidebarContent";
 
 type SidebarState = {
   role: Role;
+  plan: string;
   avatarUrl: string | null;
   logoError: boolean;
   unreadBadge: number;
@@ -28,6 +29,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<Role>(null);
+  const [plan, setPlan] = useState<string>("free");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [logoError, setLogoError] = useState(false);
   const { totalNew } = useUnreadCounts();
@@ -38,12 +40,13 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role, avatar_url")
+      .select("role, plan, avatar_url")
       .eq("id", user.id)
       .single();
     if (profile?.role === "designer" || profile?.role === "youtuber") {
       setRole(profile.role);
     }
+    setPlan(String(profile?.plan ?? "free"));
     setAvatarUrl(profile?.avatar_url ?? null);
   }, []);
 
@@ -70,6 +73,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
   const value: SidebarState = {
     role,
+    plan,
     avatarUrl,
     logoError,
     unreadBadge,

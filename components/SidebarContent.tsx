@@ -32,6 +32,7 @@ export type Role = "designer" | "youtuber" | null;
 export type SidebarContentProps = {
   pathname: string;
   role: Role;
+  plan: string;
   avatarUrl: string | null;
   unreadBadge: number;
   onLogout: () => void;
@@ -41,9 +42,16 @@ export type SidebarContentProps = {
   compact?: boolean;
 };
 
+const PLAN_BADGE: Record<string, string> = {
+  free: "Gratuit",
+  pro: "Pro",
+  studio: "Studio",
+};
+
 export function SidebarContent({
   pathname,
   role,
+  plan,
   avatarUrl,
   unreadBadge,
   onLogout,
@@ -139,13 +147,25 @@ export function SidebarContent({
       </nav>
 
       <div className="space-y-0.5 border-t border-border px-3 py-4">
-        <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground">
           {avatarUrl ? (
             <img src={avatarUrl} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-white/10" />
           ) : (
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
           )}
-          Connecté
+          <span>Connecté</span>
+          {role && (
+            <span
+              className={cn(
+                "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                plan === "pro" && "bg-[#6366F1]/20 text-[#A5B4FC] border border-[#6366F1]/40",
+                plan === "studio" && "bg-[#6366F1]/25 text-[#C7D2FE] border border-[#6366F1]/50",
+                (plan === "free" || !plan) && "bg-white/10 text-[#9CA3AF] border border-white/20"
+              )}
+            >
+              {PLAN_BADGE[plan] ?? "Gratuit"}
+            </span>
+          )}
         </div>
         <button
           type="button"

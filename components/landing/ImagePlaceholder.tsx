@@ -12,7 +12,7 @@ type ImagePlaceholderProps = {
 
 export function ImagePlaceholder({
   label,
-  description = "Remplacez par une capture d’écran de l’app",
+  description = "Aperçu",
   aspectRatio = "video",
   className,
 }: ImagePlaceholderProps) {

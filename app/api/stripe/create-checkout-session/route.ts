@@ -100,14 +100,15 @@ export async function POST(request: NextRequest) {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: {
+        user_id: user.id,
         plan,
         supabase_user_id: user.id,
       },
       client_reference_id: user.id,
-      success_url: `${baseUrl}/dashboard/billing/success`,
+      success_url: `${baseUrl}/dashboard/billing/success?plan=${plan}`,
       cancel_url: `${baseUrl}/dashboard/billing?canceled=1`,
       subscription_data: {
-        metadata: { plan },
+        metadata: { plan, user_id: user.id },
       },
     });
 

@@ -54,10 +54,10 @@ export default function TermsPage() {
         <p>
           Pour toute question relative aux conditions d&apos;utilisation :{" "}
           <a
-            href="mailto:contact@pixelstack.app"
+            href="mailto:blend.psd@gmail.com"
             className="text-[#6366F1] hover:underline"
           >
-            contact@pixelstack.app
+            blend.psd@gmail.com
           </a>
         </p>
       </section>

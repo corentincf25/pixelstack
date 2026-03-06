@@ -22,11 +22,11 @@ export function ContactSection() {
               Envoyez-nous un email et nous vous répondrons au plus vite.
             </p>
             <Link
-              href="mailto:hello@pixelstack.com"
+              href="mailto:blend.psd@gmail.com"
               className="btn-cta-animate mt-8 inline-flex items-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-6 py-3 text-[#E5E7EB] transition-colors hover:border-[#6366F1]/40 hover:bg-[#6366F1]/10"
             >
               <Mail className="h-4 w-4" />
-              hello@pixelstack.com
+              blend.psd@gmail.com
             </Link>
           </div>
         </ScrollReveal>

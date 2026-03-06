@@ -34,7 +34,8 @@ export async function updateSession(request: NextRequest) {
   const isOnboarding = pathname === "/onboarding";
   const isInvite = pathname.startsWith("/invite/");
   const isLegal = pathname.startsWith("/legal/");
-  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite || isLegal;
+  const isBillingSuccess = pathname === "/dashboard/billing/success";
+  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite || isLegal || isBillingSuccess;
 
   const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();

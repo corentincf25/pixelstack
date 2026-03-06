@@ -1,13 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const REDIRECT_DELAY_MS = 5000;
 
-export default function BillingSuccessPage() {
+const PLAN_LABELS: Record<string, string> = {
+  pro: "Pro",
+  studio: "Studio",
+};
+
+function BillingSuccessContent() {
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan");
+  const planLabel = planParam && PLAN_LABELS[planParam] ? PLAN_LABELS[planParam] : null;
   const [countdown, setCountdown] = useState(REDIRECT_DELAY_MS / 1000);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        await supabase.auth.refreshSession();
+      } catch {
+        // ignore
+      }
+      if (!mounted) return;
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -23,6 +46,10 @@ export default function BillingSuccessPage() {
     return () => clearInterval(t);
   }, []);
 
+  const title = planLabel
+    ? `Merci pour votre abonnement à Pixelstack ${planLabel}.`
+    : "Merci pour votre paiement";
+
   return (
     <div className="mx-auto max-w-lg space-y-8 pb-12 pt-8">
       <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8 text-center shadow-[0_10px_40px_rgba(0,0,0,0.4)]">
@@ -30,7 +57,7 @@ export default function BillingSuccessPage() {
           <CheckCircle2 className="h-10 w-10 text-emerald-400" />
         </div>
         <h1 className="text-2xl font-bold text-[#E5E7EB] sm:text-3xl">
-          Merci pour votre paiement
+          {title}
         </h1>
         <p className="mt-3 text-[#9CA3AF]">
           Votre abonnement est actif. Votre compte a été mis à jour (plan et stockage).
@@ -45,7 +72,7 @@ export default function BillingSuccessPage() {
             href="/dashboard"
             className="inline-flex items-center gap-2 rounded-xl bg-[#6366F1] px-5 py-2.5 text-sm font-medium text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:bg-[#5558e3]"
           >
-            Aller au dashboard
+            Accéder au dashboard
           </Link>
           <Link
             href="/dashboard/billing"
@@ -62,5 +89,17 @@ export default function BillingSuccessPage() {
         </p>
       )}
     </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-lg pb-12 pt-8 flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#6366F1]" />
+      </div>
+    }>
+      <BillingSuccessContent />
+    </Suspense>
   );
 }

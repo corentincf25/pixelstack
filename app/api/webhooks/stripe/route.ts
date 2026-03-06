@@ -5,14 +5,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * Webhook Stripe :
  * - checkout.session.completed : met à jour profile (stripe_customer_id, plan, storage_limit_bytes)
  * - customer.subscription.updated / created : met à jour plan et storage_limit_bytes
- * - customer.subscription.deleted : repasse le profil en plan free (100 Mo)
+ * - customer.subscription.deleted : repasse le profil en plan free (1 Go)
  *
  * Variables d'environnement : STRIPE_WEBHOOK_SECRET, STRIPE_SECRET_KEY
- * Mapping plan → stockage : free = 100 Mo, pro = 10 Go, studio = 50 Go
+ * Mapping plan → stockage : free = 1 Go, pro = 10 Go, studio = 50 Go
  */
 
 const PLAN_TO_BYTES: Record<string, number> = {
-  free: 100 * 1024 * 1024,
+  free: 1 * 1024 * 1024 * 1024,
   pro: 10 * 1024 * 1024 * 1024,
   studio: 50 * 1024 * 1024 * 1024,
 };
@@ -113,13 +113,16 @@ export async function POST(request: NextRequest) {
       const session = event.data?.object as {
         customer?: string;
         subscription?: string;
-        metadata?: { plan?: string; supabase_user_id?: string };
+        metadata?: { plan?: string; user_id?: string; supabase_user_id?: string };
         client_reference_id?: string;
       };
       const rawCustomer = session?.customer;
       const customerId = typeof rawCustomer === "string" ? rawCustomer : (rawCustomer as unknown as { id?: string } | undefined)?.id;
       const plan = session?.metadata?.plan && ["pro", "studio"].includes(session.metadata.plan) ? session.metadata.plan : "free";
-      const userId = session?.metadata?.supabase_user_id || session?.client_reference_id;
+      const userId =
+        session?.metadata?.user_id ||
+        session?.metadata?.supabase_user_id ||
+        (typeof session?.client_reference_id === "string" ? session.client_reference_id : undefined);
 
       if (customerId && userId) {
         const err = await updateProfileByUserId(admin, userId, plan, customerId);
@@ -127,6 +130,12 @@ export async function POST(request: NextRequest) {
           logFailure("checkout.session.completed", { customerId, userId, plan }, err);
           return NextResponse.json({ error: "Update failed" }, { status: 500 });
         }
+      } else {
+        console.error("[Stripe webhook] checkout.session.completed: customerId ou userId manquant", {
+          customerId: !!customerId,
+          userId: !!userId,
+          metadata: session?.metadata,
+        });
       }
       break;
     }

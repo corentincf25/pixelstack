@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { HardDrive } from "lucide-react";
-
-const DEFAULT_LIMIT = 100 * 1024 * 1024; // 100 Mo (plan gratuit)
+import { DEFAULT_STORAGE_LIMIT_BYTES } from "@/lib/storage-limits";
 
 function formatBytes(bytes: number): string {
   if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} Go`;
@@ -30,7 +29,7 @@ export function StorageBar() {
           limit: Number((raw as { limit: number }).limit),
         });
       } else {
-        setData({ used: 0, limit: DEFAULT_LIMIT });
+        setData({ used: 0, limit: DEFAULT_STORAGE_LIMIT_BYTES });
       }
     };
     load();
@@ -38,7 +37,7 @@ export function StorageBar() {
   }, []);
 
   const used = data?.used ?? 0;
-  const limit = data?.limit ?? DEFAULT_LIMIT;
+  const limit = data?.limit ?? DEFAULT_STORAGE_LIMIT_BYTES;
   const percent = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
 
   return (
