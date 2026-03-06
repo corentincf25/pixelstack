@@ -66,22 +66,22 @@ export function CreateProjectModal({
     setInviteLink(null);
 
     try {
-      const projectPayload =
-        role === "youtuber"
-          ? { title, status: "draft", client_id: userId, designer_id: null, due_date: dueDate ? dueDate.toISOString().split("T")[0] : null }
-          : { title, status: "draft", client_id: null, designer_id: userId, due_date: dueDate ? dueDate.toISOString().split("T")[0] : null };
+      const asRole = role === "youtuber" ? "client" : "designer";
+      const dueDateIso = dueDate ? dueDate.toISOString() : null;
 
-      const { data: project, error: insertError } = await supabase
-        .from("projects")
-        .insert(projectPayload)
-        .select("id")
-        .single();
+      const { data: projectId, error: rpcError } = await supabase.rpc("create_project", {
+        p_title: title.trim(),
+        p_due_date: dueDateIso,
+        p_as_role: asRole,
+      });
 
-      if (insertError) {
-        setError(insertError.message);
+      if (rpcError || !projectId) {
+        setError(rpcError?.message ?? "Impossible de créer le projet.");
         setSubmitting(false);
         return;
       }
+
+      const project = { id: projectId as string };
 
       const { error: briefError } = await supabase.from("briefs").insert({
         project_id: project.id,

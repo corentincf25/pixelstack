@@ -6,7 +6,7 @@ import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { notifyProjectUpdate } from "@/lib/notify";
 import { ImagePlus, Link as LinkIcon, Trash2, ExternalLink } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
-import { MediaLightbox } from "@/components/MediaLightbox";
+import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 
 type Ref = { id: string; kind: "image" | "youtube"; url: string; comment: string | null };
 
@@ -236,17 +236,18 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
         </p>
       )}
 
-      <MediaLightbox
+      <ImagePreviewModal
         open={!!lightboxRef}
         onClose={() => setLightboxRef(null)}
         type={lightboxRef?.kind ?? "image"}
         url={lightboxRef ? getRefImageUrl(lightboxRef) : ""}
         title={lightboxRef ? (lightboxRef.kind === "youtube" ? "Référence YouTube" : "Référence") : undefined}
+        showComments
       >
         {lightboxRef && (
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-foreground">Commentaire</h4>
-            <p className="min-h-[2.5rem] text-sm text-muted-foreground">
+            <h4 className="text-sm font-semibold text-[#E5E7EB]">Commentaire</h4>
+            <p className="min-h-[2.5rem] text-sm text-[#9CA3AF]">
               {lightboxRef.comment || "Aucun commentaire pour l’instant."}
             </p>
             <input
@@ -256,11 +257,11 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
               onBlur={() => saveComment(lightboxRef.id)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveComment(lightboxRef.id); } }}
               placeholder="J'aime bien le texte, style à reproduire…"
-              className="w-full rounded-xl border border-white/10 bg-background/80 px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
             />
           </div>
         )}
-      </MediaLightbox>
+      </ImagePreviewModal>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ProjectCard } from "@/components/ProjectCard";
+import { ProjectCard, PROJECT_CARD_HEIGHT } from "@/components/ProjectCard";
 import { useUnreadCounts } from "@/hooks/use-unread-counts";
 import { ArrowUpDown, Filter } from "lucide-react";
 
@@ -91,11 +91,14 @@ export function ProjectsList({ projects, showSortAndFilter = false }: ProjectsLi
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+      <div
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6"
+        style={{ gridAutoRows: `${PROJECT_CARD_HEIGHT}px` }}
+      >
         {sortedAndFiltered.map((project) => {
           const unread = byProject[project.id];
           return (
-            <div key={project.id} className="project-card-in opacity-0 h-[280px] min-h-[280px] w-full flex [&>div]:h-full [&>div]:min-h-0 [&>div>a]:h-full">
+            <div key={project.id} className="project-card-in opacity-0 h-full min-h-0">
               <ProjectCard
                 id={project.id}
                 title={project.title}

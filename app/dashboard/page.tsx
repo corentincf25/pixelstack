@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { ProjectCard, type ProjectCardProps } from "@/components/ProjectCard";
+import { ProjectCard, type ProjectCardProps, PROJECT_CARD_HEIGHT } from "@/components/ProjectCard";
 import { CreateProjectModal } from "@/components/CreateProjectModal";
 import { JoinProjectModal } from "@/components/JoinProjectModal";
 import { DashboardStorageWidget } from "@/components/DashboardStorageWidget";
@@ -51,6 +51,7 @@ export default function DashboardPage() {
   const [collapsedProjects, setCollapsedProjects] = useState(false);
   const [collapsedOverview, setCollapsedOverview] = useState(false);
   const [collapsedCalendar, setCollapsedCalendar] = useState(false);
+  const [versionsCount, setVersionsCount] = useState(0);
   const { byProject, rows, totalNew, loading: unreadLoading, refresh: refreshUnread } = useUnreadCounts();
 
   useEffect(() => {
@@ -140,6 +141,20 @@ export default function DashboardPage() {
     () => (userId && isDesigner ? projects.filter((p) => (p as RawProject).designer_id === userId) : []),
     [projects, userId, isDesigner]
   );
+
+  // Nombre de versions envoyées (projets du graphiste) pour la vue d'ensemble
+  useEffect(() => {
+    if (!isDesigner || designerProjects.length === 0) {
+      setVersionsCount(0);
+      return;
+    }
+    const ids = designerProjects.map((p) => p.id);
+    supabase
+      .from("versions")
+      .select("*", { count: "exact", head: true })
+      .in("project_id", ids)
+      .then(({ count }) => setVersionsCount(count ?? 0));
+  }, [isDesigner, designerProjects.map((p) => p.id).join(",")]);
 
   const sortedAndFiltered = useMemo(() => {
     let list = [...projects];
@@ -345,11 +360,14 @@ export default function DashboardPage() {
               onAction={() => setOpenModal(true)}
             />
           ) : (
-            <div className="grid grid-cols-1 gap-5 p-4 sm:grid-cols-2 sm:gap-6 sm:p-5 lg:grid-cols-3 lg:gap-7 items-stretch">
+            <div
+              className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 lg:grid-cols-3 lg:gap-6"
+              style={{ gridAutoRows: `${PROJECT_CARD_HEIGHT}px` }}
+            >
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];
                 return (
-                  <div key={project.id} className="project-card-in opacity-0 h-[280px] min-h-[280px] w-full flex [&>div]:h-full [&>div]:min-h-0 [&>div>a]:h-full">
+                  <div key={project.id} className="project-card-in opacity-0 h-full min-h-0">
                   <ProjectCard
                     key={project.id}
                     id={project.id}
@@ -407,6 +425,7 @@ export default function DashboardPage() {
                 <DashboardDesignerStats
                   projects={designerProjects}
                   storageSlot={<DashboardStorageWidget />}
+                  versionsCount={versionsCount}
                 />
               </div>
             </div>

@@ -7,7 +7,7 @@ import { Download, FileImage, FileArchive, DownloadCloud, MessageSquare, Send } 
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
-import { MediaLightbox } from "@/components/MediaLightbox";
+import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 
 type Asset = {
   id: string;
@@ -174,12 +174,13 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
       )}
 
       {lightboxAsset && isImage(lightboxAsset) && (
-        <MediaLightbox
+        <ImagePreviewModal
           open={!!lightboxAsset}
           onClose={() => setLightboxAsset(null)}
           type="image"
           url={getAssetUrl(lightboxAsset)}
           title={lightboxAsset.file_name || "Asset"}
+          showComments
         >
           <div className="space-y-4">
             <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -229,7 +230,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
               </div>
             )}
           </div>
-        </MediaLightbox>
+        </ImagePreviewModal>
       )}
     </div>
   );

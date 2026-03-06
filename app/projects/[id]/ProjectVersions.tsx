@@ -7,7 +7,7 @@ import { notifyProjectUpdate } from "@/lib/notify";
 import { markProjectVersionsRead, markProjectFeedbackRead } from "@/lib/project-read";
 import { Download, Upload, MessageSquare, Send, Reply } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
-import { MediaLightbox } from "@/components/MediaLightbox";
+import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -340,12 +340,13 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
         </div>
       )}
 
-      <MediaLightbox
+      <ImagePreviewModal
         open={!!lightboxVersion}
         onClose={() => setLightboxVersion(null)}
         type="image"
         url={lightboxVersion ? getVersionUrl(lightboxVersion) : ""}
         title={lightboxVersion ? (lightboxVersion.version_name || `Version ${lightboxVersion.version_number}`) : undefined}
+        showComments
       >
         {lightboxVersion && (() => {
           const { roots, byId } = tree(lightboxVersion.id);
@@ -410,7 +411,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
             </div>
           );
         })()}
-      </MediaLightbox>
+      </ImagePreviewModal>
     </div>
   );
 }

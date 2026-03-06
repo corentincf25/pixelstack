@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { FolderKanban, Users, BarChart3, Activity } from "lucide-react";
+import { FolderKanban, Users, BarChart3, Activity, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCountUp } from "@/hooks/useCountUp";
 
@@ -25,9 +25,9 @@ const statCardBase =
 const CARD_MIN_HEIGHT = "min-h-[200px]";
 const cardShineWrap = `card-shine h-full ${CARD_MIN_HEIGHT}`;
 
-type Props = { projects: ProjectForStats[]; storageSlot?: ReactNode };
+type Props = { projects: ProjectForStats[]; storageSlot?: ReactNode; versionsCount?: number };
 
-export function DashboardDesignerStats({ projects, storageSlot }: Props) {
+export function DashboardDesignerStats({ projects, storageSlot, versionsCount = 0 }: Props) {
   const total = projects.length;
   const uniqueClients = new Set(projects.map((p) => p.client_id).filter(Boolean)).size;
   const inProgressCount = projects.filter((p) => p.status === "in_progress" || p.status === "draft").length;
@@ -40,6 +40,7 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
   const displayTotal = useCountUp(total, 500, countUpReady);
   const displayClients = useCountUp(uniqueClients, 500, countUpReady);
   const displayInProgress = useCountUp(inProgressCount, 500, countUpReady);
+  const displayVersions = useCountUp(versionsCount, 500, countUpReady);
 
   const byStatus = Object.entries(
     projects.reduce<Record<string, number>>((acc, p) => {
@@ -50,20 +51,17 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
     .map(([status, count]) => ({ status, count, label: statusLabels[status] ?? status }))
     .sort((a, b) => ["draft", "in_progress", "review", "approved"].indexOf(a.status) - ["draft", "in_progress", "review", "approved"].indexOf(b.status));
 
-  const delays = ["0ms", "80ms", "160ms", "240ms", "320ms"];
+  const delays = ["0ms", "80ms", "160ms", "240ms", "320ms", "400ms"];
 
   return (
     <div
       className={cn(
-        "grid w-full grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4",
+        "grid w-full grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3",
         CARD_MIN_HEIGHT
       )}
     >
       {/* Projets */}
-      <div
-        className={cn("opacity-0 animate-card-in lg:col-start-1", cardShineWrap)}
-        style={{ animationDelay: delays[0] }}
-      >
+      <div className={cn("animate-card-in", cardShineWrap)} style={{ animationDelay: delays[0] }}>
         <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-[#6366F1]")}>
           <div className="flex items-start justify-between">
             <div>
@@ -77,10 +75,7 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
         </div>
       </div>
       {/* Clients uniques */}
-      <div
-        className={cn("opacity-0 animate-card-in lg:col-start-2", cardShineWrap)}
-        style={{ animationDelay: delays[1] }}
-      >
+      <div className={cn("animate-card-in", cardShineWrap)} style={{ animationDelay: delays[1] }}>
         <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-[#3B82F6]")}>
           <div className="flex items-start justify-between">
             <div>
@@ -93,15 +88,12 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
           </div>
         </div>
       </div>
-      {/* En cours (projets en cours) */}
-      <div
-        className={cn("opacity-0 animate-card-in lg:col-start-3", cardShineWrap)}
-        style={{ animationDelay: delays[2] }}
-      >
+      {/* Projets actifs / En cours */}
+      <div className={cn("animate-card-in", cardShineWrap)} style={{ animationDelay: delays[2] }}>
         <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-emerald-500/70")}>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">Projets en cours</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">Projets actifs</p>
               <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-[#E5E7EB]">{displayInProgress}</p>
             </div>
             <div className="rounded-xl bg-emerald-500/15 p-2.5">
@@ -112,20 +104,28 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
       </div>
       {/* Mon stockage */}
       {storageSlot != null ? (
-        <div
-          className={cn("opacity-0 animate-card-in h-full lg:col-start-4", CARD_MIN_HEIGHT)}
-          style={{ animationDelay: delays[3] }}
-        >
+        <div className={cn("animate-card-in h-full", CARD_MIN_HEIGHT)} style={{ animationDelay: delays[3] }}>
           {storageSlot}
         </div>
       ) : null}
-      {/* Par statut */}
+      {/* Versions envoyées */}
+      <div className={cn("animate-card-in", cardShineWrap)} style={{ animationDelay: delays[4] }}>
+        <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-amber-500/70")}>
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">Versions envoyées</p>
+              <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-[#E5E7EB]">{displayVersions}</p>
+            </div>
+            <div className="rounded-xl bg-amber-500/15 p-2.5">
+              <Send className="h-5 w-5 text-amber-400" />
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Par statut (full width) */}
       <div
-        className={cn(
-          "opacity-0 animate-card-in col-span-2 sm:col-span-2 lg:col-span-4",
-          cardShineWrap
-        )}
-        style={{ animationDelay: delays[4] }}
+        className={cn("animate-card-in col-span-2 lg:col-span-3", cardShineWrap)}
+        style={{ animationDelay: delays[5] ?? "400ms" }}
       >
         <div className={cn(statCardBase, "h-full border-l-4 border-l-amber-500/50 flex flex-col")}>
           <div className="mb-2 flex items-center gap-2">
