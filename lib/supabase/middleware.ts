@@ -34,7 +34,11 @@ export async function updateSession(request: NextRequest) {
   const isOnboarding = pathname === "/onboarding";
   const isInvite = pathname.startsWith("/invite/");
   const isLegal = pathname.startsWith("/legal/");
-  const isBillingSuccess = pathname === "/dashboard/billing/success";
+  const isBillingSuccess =
+    pathname === "/billing/success" ||
+    pathname.startsWith("/billing/success/") ||
+    pathname === "/dashboard/billing/success" ||
+    pathname.startsWith("/dashboard/billing/success/");
   const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite || isLegal || isBillingSuccess;
 
   const redirectTo = (path: string) => {

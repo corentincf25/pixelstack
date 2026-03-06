@@ -13,7 +13,7 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 const PLAN_DESC: Record<string, string> = {
-  free: "1 Go de stockage, jusqu’à 3 projets.",
+  free: "100 Mo de stockage, jusqu’à 3 projets.",
   pro: "10 Go de stockage, projets illimités, support prioritaire.",
   studio: "50 Go de stockage, tout du Pro, support 24/7.",
 };
@@ -265,7 +265,11 @@ export default function BillingPage() {
                 <span className="font-semibold text-foreground">Pro</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">10 €/mois</span> ou 100 €/an · 10 Go, projets illimités, support prioritaire.
+                {billingInterval === "yearly" ? (
+                  <><span className="font-semibold text-foreground">100 €/an</span> (soit ~8,33 €/mois) · 10 Go, projets illimités, support prioritaire.</>
+                ) : (
+                  <><span className="font-semibold text-foreground">10 €/mois</span> · 10 Go, projets illimités, support prioritaire.</>
+                )}
               </p>
               <button
                 type="button"
@@ -283,7 +287,11 @@ export default function BillingPage() {
                 <span className="font-semibold text-foreground">Studio</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">25 €/mois</span> ou 250 €/an · 50 Go, tout du Pro, support 24/7.
+                {billingInterval === "yearly" ? (
+                  <><span className="font-semibold text-foreground">250 €/an</span> (soit ~20,83 €/mois) · 50 Go, tout du Pro, support 24/7.</>
+                ) : (
+                  <><span className="font-semibold text-foreground">25 €/mois</span> · 50 Go, tout du Pro, support 24/7.</>
+                )}
               </p>
               <button
                 type="button"

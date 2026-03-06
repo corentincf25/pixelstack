@@ -16,6 +16,8 @@ const plans = [
     priceMonth: "0 €",
     priceYear: "0 €",
     period: "pour toujours",
+    periodMonth: "pour toujours",
+    periodYear: "pour toujours",
     features: [
       "Suivi de base des projets",
       "Alertes stock limité",
@@ -32,6 +34,8 @@ const plans = [
     priceMonth: "10 €",
     priceYear: "100 €",
     period: "par mois",
+    periodMonth: "par mois",
+    periodYear: "par an",
     features: [
       "Tout du plan Gratuit",
       "Projets illimités",
@@ -47,6 +51,8 @@ const plans = [
     priceMonth: "25 €",
     priceYear: "250 €",
     period: "par mois",
+    periodMonth: "par mois",
+    periodYear: "par an",
     features: [
       "Tout du plan Pro",
       "50 Go de stockage",
@@ -182,7 +188,9 @@ export function Pricing() {
                   <span className="text-3xl font-bold text-[#E5E7EB]">
                     {yearly ? plan.priceYear : plan.priceMonth}
                   </span>
-                  <span className="text-sm text-[#9CA3AF]">{plan.period}</span>
+                  <span className="text-sm text-[#9CA3AF]">
+                    {"periodYear" in plan && "periodMonth" in plan ? (yearly ? plan.periodYear : plan.periodMonth) : plan.period}
+                  </span>
                 </div>
                 <ul className="mt-6 space-y-3">
                   {plan.features.map((f) => (

@@ -180,7 +180,6 @@ export default function OnboardingPage() {
                     <p className="text-sm leading-relaxed text-[#9CA3AF]">
                       Je crée des miniatures pour mes clients. Briefs, versions et retours au même endroit.
                     </p>
-                    <p className="text-xs font-medium text-emerald-400/90">100% gratuit pour votre rôle.</p>
                     {role === "designer" && (
                       <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1] text-xs font-bold text-white">
                         ✓
@@ -220,7 +219,11 @@ export default function OnboardingPage() {
                 <button
                   type="submit"
                   disabled={!role || loading}
-                  className="w-full rounded-xl bg-[#6366F1] py-3.5 text-base font-semibold text-white shadow-lg shadow-[#6366F1]/25 transition hover:bg-[#5558e3] disabled:opacity-50 disabled:shadow-none"
+                  className={`w-full rounded-xl py-3.5 text-base font-semibold text-white shadow-lg transition disabled:opacity-50 disabled:shadow-none ${
+                    role === "youtuber"
+                      ? "bg-red-500 shadow-red-500/25 hover:bg-red-600"
+                      : "bg-[#6366F1] shadow-[#6366F1]/25 hover:bg-[#5558e3]"
+                  }`}
                 >
                   {loading ? "Enregistrement…" : "Continuer"}
                 </button>
