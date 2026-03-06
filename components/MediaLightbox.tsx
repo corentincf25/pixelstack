@@ -45,7 +45,8 @@ export function MediaLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a0a] p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto opacity-100"
+      style={{ backgroundColor: "rgba(5,5,5,0.98)" }}
       onClick={onClose}
     >
       <div

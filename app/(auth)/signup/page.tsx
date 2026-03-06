@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [role, setRole] = useState<"designer" | "youtuber" | null>(null);
 
   const requireAgreement = () => {
     if (!agreedToTerms) {
@@ -26,11 +27,19 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     if (!requireAgreement()) return;
+    if (!role) {
+      setError("Choisis ton rôle : Graphiste ou YouTuber.");
+      return;
+    }
     setLoading(true);
+    const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
     const { data, error: err } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName || undefined } },
+      options: {
+        data: { full_name: fullName || undefined, role },
+        emailRedirectTo: redirectTo,
+      },
     });
     setLoading(false);
     if (err) {
@@ -65,7 +74,7 @@ export default function SignupPage() {
     <div className="space-y-6 rounded-xl border border-border bg-card p-6">
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold text-foreground">Créer un compte</h1>
-        <p className="text-sm text-muted-foreground">Pixelstack — Choisis ton rôle à l’étape suivante.</p>
+        <p className="text-sm text-muted-foreground">Pixelstack — Inscris-toi puis confirme ton email. Choisis ton rôle ci-dessous. ton rôle à l’étape suivante.</p>
       </div>
 
       {error && (
@@ -106,6 +115,33 @@ export default function SignupPage() {
             minLength={6}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Tu es</label>
+          <div className="flex gap-3">
+            <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-4 py-3 has-[:checked]:border-[#6366F1] has-[:checked]:bg-[#6366F1]/10">
+              <input
+                type="radio"
+                name="role"
+                value="designer"
+                checked={role === "designer"}
+                onChange={() => setRole("designer")}
+                className="h-4 w-4 border-border text-[#6366F1] focus:ring-[#6366F1]"
+              />
+              <span className="text-sm font-medium text-foreground">Graphiste</span>
+            </label>
+            <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-4 py-3 has-[:checked]:border-red-500 has-[:checked]:bg-red-500/10">
+              <input
+                type="radio"
+                name="role"
+                value="youtuber"
+                checked={role === "youtuber"}
+                onChange={() => setRole("youtuber")}
+                className="h-4 w-4 border-border text-red-500 focus:ring-red-500"
+              />
+              <span className="text-sm font-medium text-foreground">YouTuber</span>
+            </label>
+          </div>
         </div>
         <div className="flex items-start gap-3">
           <input
@@ -168,3 +204,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

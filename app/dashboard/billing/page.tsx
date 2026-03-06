@@ -1,15 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { BackLink } from "@/components/BackLink";
-import { CreditCard, HardDrive, Loader2, ExternalLink, Sparkles } from "lucide-react";
+import { CreditCard, HardDrive, Loader2, ExternalLink, Sparkles, Check } from "lucide-react";
 import { DEFAULT_STORAGE_LIMIT_BYTES } from "@/lib/storage-limits";
 
 const PLAN_LABELS: Record<string, string> = {
   free: "Gratuit",
   pro: "Pro",
   studio: "Studio",
+};
+
+const PLAN_DESC: Record<string, string> = {
+  free: "100 Mo de stockage, jusqu’à 3 projets.",
+  pro: "10 Go de stockage, projets illimités, support prioritaire.",
+  studio: "50 Go de stockage, tout du Pro, support 24/7.",
 };
 
 function formatBytes(bytes: number): string {
@@ -31,12 +37,15 @@ export default function BillingPage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
 
-  useEffect(() => {
-    const init = async () => {
+  const loadProfile = useCallback(async () => {
+    try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -46,7 +55,7 @@ export default function BillingPage() {
 
       if (profile) {
         setRole(profile.role as "designer" | "youtuber" | null);
-        setPlan(profile.plan ?? "free");
+        setPlan(String(profile.plan ?? "free"));
         setStorageLimit(Number(profile.storage_limit_bytes) || DEFAULT_STORAGE_LIMIT_BYTES);
         setHasStripeCustomer(!!profile.stripe_customer_id);
       }
@@ -58,22 +67,42 @@ export default function BillingPage() {
           setStorageUsed(Number((raw as { used: number }).used));
         }
       }
-
+    } catch {
+      // Éviter tout crash au retour Stripe / bfcache
+    } finally {
       setLoading(false);
-    };
-    init();
+    }
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    loadProfile();
+  }, [loadProfile]);
+
+  // Recharger les données au retour (ex. bouton retour depuis Stripe / bfcache)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) loadProfile();
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [loadProfile]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
     const success = params.get("success");
     const canceled = params.get("canceled");
+    const error = params.get("error");
     if (success === "1") {
       setMessage({ type: "success", text: "Paiement réussi. Votre abonnement est à jour." });
-      if (typeof window !== "undefined") window.history.replaceState({}, "", "/dashboard/billing");
+      window.history.replaceState({}, "", "/dashboard/billing");
     } else if (canceled === "1") {
       setMessage({ type: "error", text: "Paiement annulé." });
-      if (typeof window !== "undefined") window.history.replaceState({}, "", "/dashboard/billing");
+      window.history.replaceState({}, "", "/dashboard/billing");
+    } else if (error === "1") {
+      setMessage({ type: "error", text: "Impossible de créer la session de paiement. Réessaie ou contacte le support." });
+      window.history.replaceState({}, "", "/dashboard/billing");
     }
   }, []);
 
@@ -125,6 +154,8 @@ export default function BillingPage() {
     );
   }
 
+  const currentPlanLabel = PLAN_LABELS[plan] ?? "Gratuit";
+
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-12">
       <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-5">
@@ -146,51 +177,63 @@ export default function BillingPage() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-white/10 bg-card/40 p-5 sm:p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6366F1]/20">
-            <CreditCard className="h-5 w-5 text-[#6366F1]" />
+      {/* Bloc 1 : Votre forfait actuel — toujours visible */}
+      <div className="rounded-2xl border border-white/10 bg-card/40 p-5 sm:p-6 space-y-5">
+        <h2 className="text-sm font-medium uppercase tracking-wider text-[#9CA3AF]">
+          Votre forfait actuel
+        </h2>
+        <div className="flex flex-wrap items-center gap-4">
+          <div
+            className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
+              plan === "free"
+                ? "border-white/15 bg-white/5"
+                : "border-[#6366F1]/30 bg-[#6366F1]/10"
+            }`}
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6366F1]/20">
+              <CreditCard className="h-5 w-5 text-[#6366F1]" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{currentPlanLabel}</p>
+              <p className="text-sm text-muted-foreground">
+                {PLAN_DESC[plan] ?? PLAN_DESC.free}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Plan actuel</p>
-            <p className="text-lg font-semibold text-foreground">
-              {PLAN_LABELS[plan] ?? "Gratuit"}
+          {plan === "free" && (
+            <p className="text-sm text-muted-foreground">
+              Vous pouvez souscrire à <strong className="text-foreground">Pro</strong> ou <strong className="text-foreground">Studio</strong> ci-dessous pour augmenter votre stockage et débloquer plus de projets.
             </p>
-          </div>
+          )}
         </div>
 
         {role === "designer" && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 border-t border-white/10 pt-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
               <HardDrive className="h-5 w-5 text-[#9CA3AF]" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Stockage</p>
+              <p className="text-sm text-muted-foreground">Stockage utilisé</p>
               <p className="text-lg font-semibold text-foreground">
                 {storageUsed != null ? formatBytes(storageUsed) : "—"} / {formatBytes(storageLimit)}
               </p>
             </div>
           </div>
         )}
-
-        <div className="border-t border-white/10 pt-4">
-          <p className="text-sm text-muted-foreground mb-1">Statut de l&apos;abonnement</p>
-          <p className="text-foreground">
-            {hasStripeCustomer
-              ? "Compte Stripe associé — vous pouvez gérer votre facturation ci-dessous."
-              : "Aucun abonnement payant. Passez à Pro ou Studio pour plus de stockage."}
-          </p>
-        </div>
       </div>
 
+      {/* Bloc 2 : Choisir un abonnement (Pro ou Studio) — graphistes */}
       {role === "designer" && (
-        <div className="rounded-2xl border border-white/10 bg-card/40 p-5 sm:p-6 space-y-4">
-          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+        <div className="rounded-2xl border border-white/10 bg-card/40 p-5 sm:p-6 space-y-5">
+          <h2 className="text-sm font-medium uppercase tracking-wider text-[#9CA3AF] flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-[#6366F1]" />
-            Passer à un plan supérieur
+            Choisir un abonnement payant
           </h2>
           <p className="text-sm text-muted-foreground">
-            Pro : 10 Go · Studio : 50 Go. Choisis la facturation puis le plan.
+            Deux offres disponibles : <strong className="text-foreground">Pro</strong> (10 Go) et <strong className="text-foreground">Studio</strong> (50 Go). Après souscription, votre compte sera mis à jour automatiquement (stockage, nom du plan).
+          </p>
+          <p className="text-sm text-muted-foreground rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+            Pour passer de Pro à Studio (ou l’inverse), utilisez le portail Stripe ci-dessous ou souscrivez à l’autre plan dans les cartes ci‑dessous.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-muted-foreground">Facturation :</span>
@@ -215,33 +258,51 @@ export default function BillingPage() {
               </button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              disabled={upgradeLoading !== null}
-              onClick={() => handleUpgrade("pro", billingInterval)}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#6366F1] px-4 py-2.5 text-sm font-medium text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:bg-[#5558e3] disabled:opacity-50"
-            >
-              {upgradeLoading === "pro" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Plan Pro (10 Go) {billingInterval === "yearly" ? "— Annuel" : "— Mensuel"}
-            </button>
-            <button
-              type="button"
-              disabled={upgradeLoading !== null}
-              onClick={() => handleUpgrade("studio", billingInterval)}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#6366F1]/50 bg-[#6366F1]/15 px-4 py-2.5 text-sm font-medium text-[#A5B4FC] hover:bg-[#6366F1]/25 disabled:opacity-50"
-            >
-              {upgradeLoading === "studio" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Plan Studio (50 Go) {billingInterval === "yearly" ? "— Annuel" : "— Mensuel"}
-            </button>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-[#6366F1]/30 bg-[#6366F1]/5 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-[#6366F1]" />
+                <span className="font-semibold text-foreground">Pro</span>
+              </div>
+              <p className="text-sm text-muted-foreground">10 Go, projets illimités, support prioritaire.</p>
+              <button
+                type="button"
+                disabled={upgradeLoading !== null || plan === "pro"}
+                onClick={() => handleUpgrade("pro", billingInterval)}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#6366F1] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5558e3] disabled:opacity-50"
+              >
+                {upgradeLoading === "pro" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Souscrire — Pro {billingInterval === "yearly" ? "Annuel" : "Mensuel"}
+              </button>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-[#9CA3AF]" />
+                <span className="font-semibold text-foreground">Studio</span>
+              </div>
+              <p className="text-sm text-muted-foreground">50 Go, tout du Pro, support 24/7.</p>
+              <button
+                type="button"
+                disabled={upgradeLoading !== null || plan === "studio"}
+                onClick={() => handleUpgrade("studio", billingInterval)}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-[#6366F1]/50 bg-[#6366F1]/15 px-4 py-2.5 text-sm font-medium text-[#A5B4FC] hover:bg-[#6366F1]/25 disabled:opacity-50"
+              >
+                {upgradeLoading === "studio" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Souscrire — Studio {billingInterval === "yearly" ? "Annuel" : "Mensuel"}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
+      {/* Bloc 3 : Gérer l'abonnement (portail Stripe) */}
       <div className="rounded-2xl border border-white/10 bg-card/40 p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-foreground mb-2">Gérer la facturation</h2>
+        <h2 className="text-base font-semibold text-foreground mb-2 flex items-center gap-2">
+          <ExternalLink className="h-4 w-4" />
+          Gérer mon abonnement
+        </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Mettre à jour votre moyen de paiement, télécharger des factures ou annuler votre abonnement.
+          Mettre à jour votre moyen de paiement, télécharger des factures ou <strong>annuler votre abonnement</strong> (retour au forfait Gratuit).
         </p>
         <button
           type="button"
@@ -254,7 +315,7 @@ export default function BillingPage() {
           ) : (
             <ExternalLink className="h-4 w-4" />
           )}
-          {hasStripeCustomer ? "Ouvrir le portail Stripe" : "Disponible après un premier abonnement"}
+          {hasStripeCustomer ? "Ouvrir le portail Stripe" : "Disponible après avoir souscrit à Pro ou Studio"}
         </button>
       </div>
     </div>

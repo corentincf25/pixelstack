@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
         supabase_user_id: user.id,
       },
       client_reference_id: user.id,
-      success_url: `${baseUrl}/dashboard/billing?success=1`,
+      success_url: `${baseUrl}/dashboard/billing/success`,
       cancel_url: `${baseUrl}/dashboard/billing?canceled=1`,
       subscription_data: {
         metadata: { plan },

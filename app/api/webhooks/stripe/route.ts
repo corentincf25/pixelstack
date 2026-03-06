@@ -93,9 +93,20 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
   if (!admin) {
-    console.error("[Stripe webhook] Supabase admin indisponible");
+    console.error("[Stripe webhook] ALERT: Supabase admin indisponible — réconciliation manuelle requise. event_id=", (event as { id?: string }).id);
     return NextResponse.json({ error: "Service indisponible" }, { status: 503 });
   }
+
+  const logFailure = (context: string, detail: Record<string, unknown>, err: unknown) => {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error("[Stripe webhook] ALERT: Échec mise à jour profil — réconciliation manuelle possible.", {
+      context,
+      event_type: event.type,
+      event_id: (event as { id?: string }).id,
+      ...detail,
+      error: errMsg,
+    });
+  };
 
   switch (event.type) {
     case "checkout.session.completed": {
@@ -113,7 +124,7 @@ export async function POST(request: NextRequest) {
       if (customerId && userId) {
         const err = await updateProfileByUserId(admin, userId, plan, customerId);
         if (err) {
-          console.error("[Stripe webhook] Update profile (checkout.session.completed):", err);
+          logFailure("checkout.session.completed", { customerId, userId, plan }, err);
           return NextResponse.json({ error: "Update failed" }, { status: 500 });
         }
       }
@@ -136,7 +147,7 @@ export async function POST(request: NextRequest) {
       const plan = getPlanFromSubscription(subscription);
       const err = await updateProfileByCustomerId(admin, customerId, plan);
       if (err) {
-        console.error("[Stripe webhook] Update profile (subscription):", err);
+        logFailure("subscription.updated", { customerId, plan }, err);
         return NextResponse.json({ error: "Update failed" }, { status: 500 });
       }
       break;
@@ -153,7 +164,7 @@ export async function POST(request: NextRequest) {
 
       const err = await updateProfileByCustomerId(admin, customerId, "free");
       if (err) {
-        console.error("[Stripe webhook] Update profile (deleted):", err);
+        logFailure("subscription.deleted", { customerId }, err);
         return NextResponse.json({ error: "Update failed" }, { status: 500 });
       }
       break;

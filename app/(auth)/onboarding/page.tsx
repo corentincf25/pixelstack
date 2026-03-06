@@ -15,7 +15,13 @@ export default function OnboardingPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(() => setCheckingAuth(false));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const meta = session?.user?.user_metadata as { role?: string } | undefined;
+      if (meta?.role === "designer" || meta?.role === "youtuber") {
+        setRole(meta.role as "designer" | "youtuber");
+      }
+      setCheckingAuth(false);
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

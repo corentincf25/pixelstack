@@ -14,6 +14,25 @@ export default async function InvitePage({ params }: Props) {
     redirect(`/login?next=${encodeURIComponent(`/invite/${token}`)}`);
   }
 
+  const { data: inviteRow } = await supabase
+    .from("project_invites")
+    .select("project_id")
+    .eq("token", token)
+    .gt("expires_at", new Date().toISOString())
+    .limit(1)
+    .maybeSingle();
+
+  if (inviteRow?.project_id) {
+    const { data: project } = await supabase
+      .from("projects")
+      .select("client_id, designer_id")
+      .eq("id", inviteRow.project_id)
+      .single();
+    if (project && (project.client_id === user.id || project.designer_id === user.id)) {
+      redirect(`/projects/${inviteRow.project_id}?already=1`);
+    }
+  }
+
   const { data: projectId, error: rpcError } = await supabase.rpc("accept_project_invite", {
     invite_token: token,
   });

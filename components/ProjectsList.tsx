@@ -95,7 +95,7 @@ export function ProjectsList({ projects, showSortAndFilter = false }: ProjectsLi
         {sortedAndFiltered.map((project) => {
           const unread = byProject[project.id];
           return (
-            <div key={project.id} className="project-card-in opacity-0">
+            <div key={project.id} className="project-card-in opacity-0 flex h-[280px]">
               <ProjectCard
                 id={project.id}
                 title={project.title}

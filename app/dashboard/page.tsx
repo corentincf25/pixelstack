@@ -349,7 +349,7 @@ export default function DashboardPage() {
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];
                 return (
-                  <div key={project.id} className="project-card-in opacity-0 min-h-[260px] flex">
+                  <div key={project.id} className="project-card-in opacity-0 flex h-[280px]">
                   <ProjectCard
                     key={project.id}
                     id={project.id}

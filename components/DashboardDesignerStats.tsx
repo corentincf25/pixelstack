@@ -55,7 +55,7 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
   return (
     <div
       className={cn(
-        "grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6",
+        "grid w-full grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4",
         CARD_MIN_HEIGHT
       )}
     >
@@ -93,7 +93,7 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
           </div>
         </div>
       </div>
-      {/* En cours */}
+      {/* En cours (projets en cours) */}
       <div
         className={cn("opacity-0 animate-card-in lg:col-start-3", cardShineWrap)}
         style={{ animationDelay: delays[2] }}
@@ -101,7 +101,7 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
         <div className={cn(statCardBase, "h-full flex flex-col border-l-4 border-l-emerald-500/70")}>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">En cours</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-[#9CA3AF]">Projets en cours</p>
               <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-[#E5E7EB]">{displayInProgress}</p>
             </div>
             <div className="rounded-xl bg-emerald-500/15 p-2.5">
@@ -122,7 +122,7 @@ export function DashboardDesignerStats({ projects, storageSlot }: Props) {
       {/* Par statut */}
       <div
         className={cn(
-          "opacity-0 animate-card-in sm:col-span-2 lg:col-span-2 lg:col-start-5",
+          "opacity-0 animate-card-in col-span-2 sm:col-span-2 lg:col-span-4",
           cardShineWrap
         )}
         style={{ animationDelay: delays[4] }}

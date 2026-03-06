@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { UploadZone } from "@/components/UploadZone";
-import { Download, FileImage, FileArchive, DownloadCloud } from "lucide-react";
+import { Download, FileImage, FileArchive, DownloadCloud, MessageSquare, Send } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
+import { MediaLightbox } from "@/components/MediaLightbox";
 
 type Asset = {
   id: string;
@@ -18,6 +19,15 @@ type Asset = {
   created_at: string;
 };
 
+type AssetFeedback = {
+  id: string;
+  asset_id: string;
+  user_id: string;
+  content: string;
+  parent_id: string | null;
+  created_at: string;
+};
+
 type ProjectAssetsProps = {
   projectId: string;
 };
@@ -26,6 +36,15 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
+  const [lightboxAsset, setLightboxAsset] = useState<Asset | null>(null);
+  const [feedbackByAsset, setFeedbackByAsset] = useState<Record<string, AssetFeedback[]>>({});
+  const [commentByAsset, setCommentByAsset] = useState<Record<string, string>>({});
+  const [sendingComment, setSendingComment] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -41,6 +60,22 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
     load();
   }, [projectId, refresh]);
 
+  useEffect(() => {
+    if (assets.length === 0) return;
+    const ids = assets.map((a) => a.id);
+    supabase
+      .from("asset_feedback")
+      .select("id, asset_id, user_id, content, parent_id, created_at")
+      .in("asset_id", ids)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        const list = (data ?? []) as AssetFeedback[];
+        const byAsset: Record<string, AssetFeedback[]> = {};
+        ids.forEach((id) => { byAsset[id] = list.filter((f) => f.asset_id === id); });
+        setFeedbackByAsset(byAsset);
+      });
+  }, [assets, refresh]);
+
   const formatSize = (bytes: number | null) => {
     if (bytes == null) return "—";
     if (bytes < 1024) return `${bytes} o`;
@@ -50,6 +85,27 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
 
   const paths = useMemo(() => assets.map((a) => extractStoragePath(a.file_url)).filter(Boolean) as string[], [assets]);
   const signedUrls = useSignedUrls(projectId, paths);
+
+  const getAssetUrl = (asset: Asset) =>
+    signedUrls[extractStoragePath(asset.file_url) ?? ""] ?? asset.file_url;
+
+  const sendComment = async (assetId: string) => {
+    const content = (commentByAsset[assetId] ?? "").trim();
+    if (!content || !currentUserId) return;
+    setSendingComment(assetId);
+    const { error } = await supabase.from("asset_feedback").insert({
+      asset_id: assetId,
+      user_id: currentUserId,
+      content,
+    });
+    setSendingComment(null);
+    if (!error) {
+      setCommentByAsset((prev) => ({ ...prev, [assetId]: "" }));
+      setRefresh((r) => r + 1);
+    }
+  };
+
+  const isImage = (a: Asset) => a.kind === "image" || (a.mime_type?.startsWith("image/") ?? false);
 
   return (
     <div className="space-y-4">
@@ -90,10 +146,19 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
                   {formatSize(asset.file_size)} · {format(new Date(asset.created_at), "d MMM à HH:mm", { locale: fr })}
                 </p>
               </div>
+              {isImage(asset) ? (
+                <button
+                  type="button"
+                  onClick={() => setLightboxAsset(asset)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
+                >
+                  Voir
+                </button>
+              ) : null}
               <a
-                href={signedUrls[extractStoragePath(asset.file_url) ?? ""] ?? asset.file_url}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={getAssetUrl(asset)}
+                download
+                onClick={(e) => e.stopPropagation()}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
               >
                 <Download className="h-3.5 w-3.5" />
@@ -106,6 +171,65 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
         <p className="text-sm text-muted-foreground">
           Aucun fichier déposé. Dépose des images ou un ZIP ci-dessus.
         </p>
+      )}
+
+      {lightboxAsset && isImage(lightboxAsset) && (
+        <MediaLightbox
+          open={!!lightboxAsset}
+          onClose={() => setLightboxAsset(null)}
+          type="image"
+          url={getAssetUrl(lightboxAsset)}
+          title={lightboxAsset.file_name || "Asset"}
+        >
+          <div className="space-y-4">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <MessageSquare className="h-4 w-4" />
+              Commentaires
+            </h4>
+            <div className="max-h-48 space-y-2 overflow-y-auto">
+              {(feedbackByAsset[lightboxAsset.id] ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun commentaire.</p>
+              ) : (
+                (feedbackByAsset[lightboxAsset.id] ?? []).map((f) => (
+                  <div
+                    key={f.id}
+                    className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-foreground"
+                  >
+                    {f.content}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+            {currentUserId && (
+              <div className="flex gap-2 pt-2">
+                <input
+                  type="text"
+                  value={commentByAsset[lightboxAsset.id] ?? ""}
+                  onChange={(e) => setCommentByAsset((prev) => ({ ...prev, [lightboxAsset.id]: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      sendComment(lightboxAsset.id);
+                    }
+                  }}
+                  placeholder="Ajouter un commentaire…"
+                  className="min-w-0 flex-1 rounded-xl border border-white/10 bg-background/80 px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => sendComment(lightboxAsset.id)}
+                  disabled={sendingComment === lightboxAsset.id || !(commentByAsset[lightboxAsset.id] ?? "").trim()}
+                  className="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        </MediaLightbox>
       )}
     </div>
   );

@@ -52,7 +52,14 @@ export function CreateProjectModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !role || !userId) return;
+    if (!title.trim()) {
+      setError("Indique un titre pour le projet.");
+      return;
+    }
+    if (!role || !userId) {
+      setError("Ton profil n'a pas de rôle. Va dans Paramètres ou déconnecte-toi puis réinscris-toi en choisissant Graphiste ou YouTuber.");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);

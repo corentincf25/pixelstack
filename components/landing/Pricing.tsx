@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { LandingContainer } from "./LandingContainer";
 import { ScrollReveal } from "./ScrollReveal";
 import { cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 const plans = [
   {
     name: "Gratuit",
+    id: "free" as const,
     priceMonth: "0 €",
     priceYear: "0 €",
     period: "pour toujours",
@@ -25,6 +28,7 @@ const plans = [
   },
   {
     name: "Pro",
+    id: "pro" as const,
     priceMonth: "10 €",
     priceYear: "100 €",
     period: "par mois",
@@ -34,12 +38,12 @@ const plans = [
       "10 Go de stockage",
       "Support prioritaire",
     ],
-    cta: "Essai gratuit",
-    href: "/signup",
+    cta: "Souscrire",
     highlighted: true,
   },
   {
     name: "Studio",
+    id: "studio" as const,
     priceMonth: "25 €",
     priceYear: "250 €",
     period: "par mois",
@@ -49,14 +53,50 @@ const plans = [
       "Support 24/7",
       "Intégrations sur mesure",
     ],
-    cta: "Nous contacter",
-    href: "/signup",
+    cta: "Souscrire",
     highlighted: false,
   },
 ];
 
 export function Pricing() {
   const [yearly, setYearly] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user: u } }) => setUser(u ?? null));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSubscribe = async (planId: "pro" | "studio") => {
+    if (!user) {
+      window.location.href = `/login?next=${encodeURIComponent("/dashboard/billing")}`;
+      return;
+    }
+    setSubscribingPlan(planId);
+    try {
+      const res = await fetch("/api/stripe/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, interval: yearly ? "yearly" : "monthly" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      window.location.href = `/dashboard/billing?error=1`;
+    } catch {
+      window.location.href = `/dashboard/billing?error=1`;
+    } finally {
+      setSubscribingPlan(null);
+    }
+  };
 
   return (
     <section id="tarifs" className="py-20 sm:py-28">
@@ -155,17 +195,36 @@ export function Pricing() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={plan.href}
-                  className={cn(
-                    "btn-cta-animate mt-8 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-medium transition-all",
-                    plan.highlighted
-                      ? "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] text-white shadow-[0_0_20px_rgba(99,102,241,0.35)] hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]"
-                      : "border border-white/[0.12] bg-white/[0.05] text-[#E5E7EB] hover:bg-white/[0.08]"
-                  )}
-                >
-                  {plan.cta}
-                </Link>
+                {plan.id === "free" ? (
+                  <Link
+                    href={user ? "/dashboard" : plan.href}
+                    className={cn(
+                      "btn-cta-animate mt-8 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-medium transition-all",
+                      plan.highlighted
+                        ? "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] text-white shadow-[0_0_20px_rgba(99,102,241,0.35)] hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]"
+                        : "border border-white/[0.12] bg-white/[0.05] text-[#E5E7EB] hover:bg-white/[0.08]"
+                    )}
+                  >
+                    {user ? "Accéder au dashboard" : plan.cta}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={!!subscribingPlan}
+                    className={cn(
+                      "btn-cta-animate mt-8 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-all disabled:opacity-70",
+                      plan.highlighted
+                        ? "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] text-white shadow-[0_0_20px_rgba(99,102,241,0.35)] hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]"
+                        : "border border-white/[0.12] bg-white/[0.05] text-[#E5E7EB] hover:bg-white/[0.08]"
+                    )}
+                  >
+                    {subscribingPlan === plan.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : null}
+                    {user ? plan.cta : "Se connecter pour souscrire"}
+                  </button>
+                )}
               </div>
             </ScrollReveal>
           ))}
