@@ -264,7 +264,9 @@ export default function BillingPage() {
                 <Check className="h-4 w-4 text-[#6366F1]" />
                 <span className="font-semibold text-foreground">Pro</span>
               </div>
-              <p className="text-sm text-muted-foreground">10 Go, projets illimités, support prioritaire.</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">10 €/mois</span> ou 100 €/an · 10 Go, projets illimités, support prioritaire.
+              </p>
               <button
                 type="button"
                 disabled={upgradeLoading !== null || plan === "pro"}
@@ -280,7 +282,9 @@ export default function BillingPage() {
                 <Check className="h-4 w-4 text-[#9CA3AF]" />
                 <span className="font-semibold text-foreground">Studio</span>
               </div>
-              <p className="text-sm text-muted-foreground">50 Go, tout du Pro, support 24/7.</p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">25 €/mois</span> ou 250 €/an · 50 Go, tout du Pro, support 24/7.
+              </p>
               <button
                 type="button"
                 disabled={upgradeLoading !== null || plan === "studio"}

@@ -349,7 +349,7 @@ export default function DashboardPage() {
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];
                 return (
-                  <div key={project.id} className="project-card-in opacity-0 flex h-[280px]">
+                  <div key={project.id} className="project-card-in opacity-0 h-[280px] min-h-[280px] w-full flex [&>div]:h-full [&>div]:min-h-0 [&>div>a]:h-full">
                   <ProjectCard
                     key={project.id}
                     id={project.id}
@@ -390,9 +390,12 @@ export default function DashboardPage() {
               )}
               aria-expanded={!collapsedOverview}
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
-                <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Vue d’ensemble</h2>
+              <div className="flex flex-col items-start gap-0.5">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                  <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Vue d’ensemble</h2>
+                </div>
+                <p className="text-xs text-[#9CA3AF] pl-4">Projets, clients uniques, en cours, stockage, répartition par statut</p>
               </div>
               <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">
                 {collapsedOverview ? "Afficher" : "Réduire"}

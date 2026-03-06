@@ -94,10 +94,10 @@ export function ProjectCard({
   const badgeStyle = statusBadgeStyles[safeStatus as ProjectStatus];
 
   return (
-    <CardTilt className="h-full">
+    <CardTilt className="h-full min-h-0">
       <Link
         href={`/projects/${id}${highlightQuery}`}
-        className={`card-hover-lift relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-2xl border p-0 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${cardStyle}`}
+        className={`card-hover-lift relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border p-0 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-[20px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${cardStyle}`}
       >
       {/* Miniature dernière version */}
       {thumbnailUrl ? (
