@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -16,6 +17,7 @@ const navLinks = [
 
 export function LandingNav() {
   const [user, setUser] = useState<User | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user: u } }) => setUser(u ?? null));
@@ -26,6 +28,19 @@ export function LandingNav() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setAvatarUrl(null);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => setAvatarUrl(data?.avatar_url ?? null));
+  }, [user?.id]);
 
   return (
     <nav
@@ -40,12 +55,18 @@ export function LandingNav() {
       >
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-[#E5E7EB] transition-opacity hover:opacity-90"
+          className="flex shrink-0 items-center gap-3 text-[#E5E7EB] transition-opacity hover:opacity-90"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#6366F1] to-[#3B82F6] text-sm font-bold text-white shadow-[0_0_20px_rgba(99,102,241,0.3)]">
-            P
-          </span>
-          <span className="font-semibold tracking-tight">Pixelstack</span>
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl">
+            <Image
+              src="/logo.png"
+              alt=""
+              width={40}
+              height={40}
+              className="h-full w-full object-contain"
+            />
+          </div>
+          <span className="text-lg font-semibold tracking-tight">Pixelstack</span>
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">
@@ -62,25 +83,31 @@ export function LandingNav() {
 
         <div className="flex shrink-0 items-center gap-2">
           {user ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="hidden text-sm font-medium text-[#9CA3AF] transition-colors hover:text-[#E5E7EB] sm:inline-block"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard"
-                className={cn(
-                  "btn-cta-animate inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white",
-                  "bg-gradient-to-r from-[#6366F1] to-[#3B82F6]",
-                  "shadow-[0_0_20px_rgba(99,102,241,0.35)]",
-                  "hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]"
-                )}
-              >
-                Mon espace
-              </Link>
-            </>
+            <Link
+              href="/dashboard"
+              className={cn(
+                "btn-cta-animate inline-flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-white",
+                "bg-gradient-to-r from-[#6366F1] to-[#3B82F6]",
+                "shadow-[0_0_20px_rgba(99,102,241,0.35)]",
+                "hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]"
+              )}
+            >
+              {avatarUrl ? (
+                <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full ring-2 ring-white/20">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </span>
+              ) : (
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-medium">
+                  {user.email?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              )}
+              Mon espace
+            </Link>
           ) : (
             <>
               <Link

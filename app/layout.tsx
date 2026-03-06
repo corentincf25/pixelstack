@@ -6,6 +6,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Pixelstack",
   description: "Gérez vos miniatures YouTube en un seul endroit — graphistes et YouTubers",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { ScrollReveal } from "./ScrollReveal";
 import { ImagePlaceholder } from "./ImagePlaceholder";
 import { cn } from "@/lib/utils";
@@ -10,6 +12,8 @@ type FeatureBlockProps = {
   title: string;
   description: string;
   listItems?: string[];
+  /** Chemin vers la capture d’écran (ex. /landing/dashboard.png). Si fourni, affiche l’image au lieu du placeholder. */
+  imageSrc?: string;
   imagePlaceholderLabel: string;
   imagePlaceholderDescription?: string;
   imageRight?: boolean;
@@ -21,11 +25,15 @@ export function FeatureBlock({
   title,
   description,
   listItems,
+  imageSrc,
   imagePlaceholderLabel,
   imagePlaceholderDescription,
   imageRight = false,
   children,
 }: FeatureBlockProps) {
+  const [imageError, setImageError] = useState(false);
+  const showImage = imageSrc && !imageError;
+
   const textBlock = (
     <div className="flex flex-col justify-center">
       <ScrollReveal delay={0}>
@@ -62,11 +70,24 @@ export function FeatureBlock({
 
   const imageBlock = (
     <ScrollReveal delay={120} direction={imageRight ? "left" : "right"}>
-      <ImagePlaceholder
-        label={imagePlaceholderLabel}
-        description={imagePlaceholderDescription}
-        aspectRatio="video"
-      />
+      {showImage ? (
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0f172a]">
+          <Image
+            src={imageSrc!}
+            alt={imagePlaceholderLabel}
+            fill
+            className="object-contain"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            onError={() => setImageError(true)}
+          />
+        </div>
+      ) : (
+        <ImagePlaceholder
+          label={imagePlaceholderLabel}
+          description={imagePlaceholderDescription}
+          aspectRatio="video"
+        />
+      )}
     </ScrollReveal>
   );
 

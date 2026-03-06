@@ -1,12 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
 import { LandingContainer } from "./LandingContainer";
 import { ScrollReveal } from "./ScrollReveal";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Play, ImageIcon } from "lucide-react";
 
+/** Screenshot principal : dépose hero.png ou hero.jpg dans public/landing/ */
+const HERO_IMAGE = "/landing/hero.png";
+
 export function Hero() {
+  const [heroImageError, setHeroImageError] = useState(false);
+  const showPlaceholder = heroImageError;
+
   return (
     <section id="hero" className="relative pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-40 lg:pb-32">
       {/* Lueur discrète en haut à droite (DA Pixelstack) */}
@@ -72,24 +80,34 @@ export function Hero() {
           </ScrollReveal>
         </div>
 
-        {/* Placeholder : capture d’écran de l’app */}
+        {/* Screenshot principal : dépose public/landing/hero.png pour l’afficher */}
         <ScrollReveal delay={320} direction="up">
           <div
             id="demo-app"
             className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm"
           >
-            <div className="flex aspect-video w-full items-center justify-center bg-[#0f172a] p-8 sm:p-12">
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.05]">
-                  <ImageIcon className="h-8 w-8 text-[#6366F1]" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-[#E5E7EB]">
-                    Capture d’écran de l’application
-                  </p>
+            {showPlaceholder ? (
+              <div className="flex aspect-video w-full items-center justify-center bg-[#0f172a] p-8 sm:p-12">
+                <div className="flex flex-col items-center gap-4 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.05]">
+                    <ImageIcon className="h-8 w-8 text-[#6366F1]" />
+                  </div>
+                  <p className="text-sm font-medium text-[#E5E7EB]">Capture d’écran de l’application</p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="relative aspect-video w-full bg-[#0f172a]">
+                <Image
+                  src={HERO_IMAGE}
+                  alt="Aperçu de l’application Pixelstack"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1280px) 100vw, 1280px"
+                  onError={() => setHeroImageError(true)}
+                  priority
+                />
+              </div>
+            )}
           </div>
         </ScrollReveal>
       </LandingContainer>
