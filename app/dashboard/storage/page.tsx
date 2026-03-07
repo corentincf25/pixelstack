@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { DEFAULT_STORAGE_LIMIT_BYTES } from "@/lib/storage-limits";
-import { HardDrive, ArrowLeft, FolderKanban, Image, Layers, ArrowUpDown, Trash2 } from "lucide-react";
+import { HardDrive, ArrowLeft, FolderKanban, Image, Layers, ArrowUpDown, Trash2, Package } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -58,6 +58,7 @@ export default function StoragePage() {
   const [purgeProjectId, setPurgeProjectId] = useState<string | null>(null);
   const [purgeProjectTitle, setPurgeProjectTitle] = useState<string>("");
   const [purging, setPurging] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -132,6 +133,27 @@ export default function StoragePage() {
       }
     } finally {
       setPurging(false);
+    }
+  };
+
+  const handleExportAll = async () => {
+    setExportLoading(true);
+    try {
+      const res = await fetch("/api/export-user-data", { method: "GET", credentials: "include" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err?.error || "Erreur lors de la préparation de l’archive.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pixelstack-export-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -247,14 +269,25 @@ export default function StoragePage() {
             <HardDrive className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold text-foreground">Résumé</h2>
           </div>
-          <button
-            type="button"
-            onClick={handleRecalculate}
-            disabled={backfilling}
-            className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
-          >
-            {backfilling ? "Recalcul…" : "Recalculer le stockage"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportAll}
+              disabled={exportLoading}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+            >
+              <Package className="h-4 w-4" />
+              {exportLoading ? "Préparation…" : "Télécharger toutes mes données"}
+            </button>
+            <button
+              type="button"
+              onClick={handleRecalculate}
+              disabled={backfilling}
+              className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+            >
+              {backfilling ? "Recalcul…" : "Recalculer le stockage"}
+            </button>
+          </div>
         </div>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-baseline gap-2">

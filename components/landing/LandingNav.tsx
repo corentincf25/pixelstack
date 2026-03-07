@@ -77,8 +77,8 @@ export function LandingNav() {
       >
         <div
           className={cn(
-            "flex h-14 items-center justify-between gap-4 rounded-2xl border border-white/[0.08] px-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
-            "bg-[#0B0F19]/90 backdrop-blur-[20px] sm:h-14 sm:px-6"
+            "flex h-14 items-stretch justify-between gap-4 overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
+            "bg-[#0B0F19]/90 backdrop-blur-[20px] pl-4 sm:pl-6 pr-0"
           )}
         >
           <Link
@@ -109,11 +109,11 @@ export function LandingNav() {
             ))}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-stretch gap-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-[#E5E7EB] transition-colors hover:bg-white/[0.08] md:hidden"
+              className="flex h-10 w-10 items-center justify-center self-center rounded-lg text-[#E5E7EB] transition-colors hover:bg-white/[0.08] md:hidden"
               aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={mobileMenuOpen}
             >
@@ -123,11 +123,11 @@ export function LandingNav() {
               <Link
                 href="/dashboard"
                 className={cn(
-                  "btn-cta-animate inline-flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-white",
+                  "btn-cta-animate inline-flex h-full items-center gap-2.5 rounded-r-2xl rounded-l-xl px-4 text-sm font-medium text-white",
                   "bg-gradient-to-r from-[#6366F1] to-[#3B82F6]",
                   "shadow-[0_0_20px_rgba(99,102,241,0.35)]",
                   "hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]",
-                  "max-md:px-3 max-md:py-2 max-md:text-xs"
+                  "max-md:px-3 max-md:text-xs"
                 )}
               >
                 {avatarUrl ? (
@@ -150,17 +150,19 @@ export function LandingNav() {
               <>
                 <Link
                   href="/login"
-                  className="hidden text-sm font-medium text-[#9CA3AF] transition-colors hover:text-[#E5E7EB] sm:inline-block"
+                  className="hidden items-center pr-2 text-sm font-medium text-[#9CA3AF] transition-colors hover:text-[#E5E7EB] sm:inline-flex"
                 >
                   Connexion
                 </Link>
                 <Link
                   href="/signup"
                   className={cn(
-                    "btn-cta-animate hidden items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium text-white sm:inline-flex",
+                    "btn-cta-animate flex h-full items-center justify-center px-5 text-sm font-medium text-white",
+                    "rounded-r-2xl rounded-l-xl",
                     "bg-gradient-to-r from-[#6366F1] to-[#3B82F6]",
                     "shadow-[0_0_20px_rgba(99,102,241,0.35)]",
-                    "hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]"
+                    "hover:shadow-[0_0_28px_rgba(99,102,241,0.45)]",
+                    "hidden sm:flex"
                   )}
                 >
                   Commencer gratuitement

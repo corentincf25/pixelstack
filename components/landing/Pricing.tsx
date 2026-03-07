@@ -35,6 +35,8 @@ const plans = [
     id: "pro" as const,
     priceMonth: "10 €",
     priceYear: "100 €",
+    priceMonthNum: 10,
+    priceYearNum: 100,
     period: "par mois",
     periodMonth: "par mois",
     periodYear: "par an",
@@ -53,6 +55,8 @@ const plans = [
     id: "studio" as const,
     priceMonth: "25 €",
     priceYear: "250 €",
+    priceMonthNum: 25,
+    priceYearNum: 250,
     period: "par mois",
     periodMonth: "par mois",
     periodYear: "par an",
@@ -189,13 +193,25 @@ export function Pricing() {
                 <h3 className="text-lg font-semibold text-[#E5E7EB]">
                   {plan.name}
                 </h3>
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-[#E5E7EB]">
-                    {yearly ? plan.priceYear : plan.priceMonth}
-                  </span>
-                  <span className="text-sm text-[#9CA3AF]">
-                    {yearly ? plan.periodYear : plan.periodMonth}
-                  </span>
+                <div className="mt-4 flex flex-col gap-0.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-[#E5E7EB]">
+                      {yearly ? plan.priceYear : plan.priceMonth}
+                    </span>
+                    <span className="text-sm text-[#9CA3AF]">
+                      {yearly ? plan.periodYear : plan.periodMonth}
+                    </span>
+                  </div>
+                  {"priceYearNum" in plan && "priceMonthNum" in plan && yearly && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
+                      <span className="text-[#9CA3AF]">
+                        Soit {((plan as { priceYearNum: number }).priceYearNum / 12).toFixed(2).replace(".", ",")} €/mois
+                      </span>
+                      <span className="text-emerald-400/90 font-medium">
+                        Économisez {(plan as { priceMonthNum: number }).priceMonthNum * 12 - (plan as { priceYearNum: number }).priceYearNum} €/an
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <ul className="mt-6 space-y-3">
                   {plan.features.map((f) => (

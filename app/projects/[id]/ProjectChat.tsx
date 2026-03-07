@@ -8,10 +8,11 @@ import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { compressImageForChat } from "@/lib/compress-image";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Send, ArrowDown, ImagePlus, X } from "lucide-react";
+import { Send, ArrowDown, ImagePlus, X, FileText, Download } from "lucide-react";
 import { MediaLightbox } from "@/components/MediaLightbox";
 
 const RECENT_MESSAGES_COUNT = 5; // Barre "Derniers messages" au-dessus des N derniers
+const MAX_PDF_SIZE_BYTES = 4 * 1024 * 1024; // 4 Mo pour les PDF dans le chat
 
 type Message = {
   id: string;
@@ -45,6 +46,16 @@ function getMessageImagePath(projectId: string, imageUrl: string | null): string
   return extracted ?? imageUrl;
 }
 
+function isPdfAttachment(imageUrl: string | null): boolean {
+  return !!imageUrl && imageUrl.toLowerCase().endsWith(".pdf");
+}
+
+function getAttachmentBasename(imageUrl: string | null): string {
+  if (!imageUrl) return "document.pdf";
+  const parts = imageUrl.split("/");
+  return parts[parts.length - 1] || "document.pdf";
+}
+
 export function ProjectChat({ projectId, currentUserId, designerId, clientId }: ProjectChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
@@ -52,7 +63,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [pendingAttachment, setPendingAttachment] = useState<File | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name?: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -61,14 +72,18 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!pendingImage) {
+    if (!pendingAttachment) {
       setPreviewUrl(null);
       return;
     }
-    const url = URL.createObjectURL(pendingImage);
+    if (!pendingAttachment.type.startsWith("image/")) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(pendingAttachment);
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [pendingImage]);
+  }, [pendingAttachment]);
 
   const imagePaths = useMemo(
     () => messages.map((m) => getMessageImagePath(projectId, m.image_url)).filter(Boolean) as string[],
@@ -196,16 +211,38 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = content.trim();
-    const hasImage = !!pendingImage;
-    if ((!text && !hasImage) || sending) return;
+    const hasAttachment = !!pendingAttachment;
+    if ((!text && !hasAttachment) || sending) return;
+
+    if (pendingAttachment?.type === "application/pdf" && pendingAttachment.size > MAX_PDF_SIZE_BYTES) {
+      setError("PDF trop volumineux (max 4 Mo).");
+      return;
+    }
 
     setSending(true);
     let imagePath: string | null = null;
     let imageSize: number | null = null;
 
-    if (pendingImage) {
+    if (pendingAttachment) {
       try {
-        const blob = await compressImageForChat(pendingImage);
+        let blob: Blob;
+        let contentType: string;
+        let ext: string;
+
+        if (pendingAttachment.type === "application/pdf") {
+          blob = pendingAttachment;
+          contentType = "application/pdf";
+          ext = "pdf";
+        } else if (pendingAttachment.type.startsWith("image/")) {
+          blob = await compressImageForChat(pendingAttachment);
+          contentType = "image/jpeg";
+          ext = "jpg";
+        } else {
+          setError("Type de fichier non accepté (image ou PDF).");
+          setSending(false);
+          return;
+        }
+
         const quotaRes = await fetch("/api/storage/check-quota", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -217,10 +254,9 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
           setSending(false);
           return;
         }
-        const ext = "jpg";
         const path = `${projectId}/chat/${crypto.randomUUID()}.${ext}`;
         const { error: uploadErr } = await supabase.storage.from("assets").upload(path, blob, {
-          contentType: "image/jpeg",
+          contentType,
           upsert: false,
         });
         if (uploadErr) {
@@ -245,7 +281,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
     setSending(false);
     if (!error) {
       setContent("");
-      setPendingImage(null);
+      setPendingAttachment(null);
       setError(null);
       notifyProjectUpdate(projectId, "message");
     }
@@ -302,6 +338,22 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                       <p className="text-xs font-medium opacity-90">{name}</p>
                       {msg.image_url && (() => {
                         const url = getImageUrl(msg);
+                        if (isPdfAttachment(msg.image_url)) {
+                          return (
+                            <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                              <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                              <span className="min-w-0 truncate text-sm text-foreground">{getAttachmentBasename(msg.image_url)}</span>
+                              {url ? (
+                                <a href={url} download={getAttachmentBasename(msg.image_url)} className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30" target="_blank" rel="noopener noreferrer">
+                                  <Download className="h-3.5 w-3.5" />
+                                  Télécharger
+                                </a>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">Chargement…</span>
+                              )}
+                            </div>
+                          );
+                        }
                         return url ? (
                           <button
                             type="button"
@@ -365,6 +417,22 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                     <p className="text-xs font-medium opacity-90">{name}</p>
                     {msg.image_url && (() => {
                       const url = getImageUrl(msg);
+                      if (isPdfAttachment(msg.image_url)) {
+                        return (
+                          <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                            <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                            <span className="min-w-0 truncate text-sm text-foreground">{getAttachmentBasename(msg.image_url)}</span>
+                            {url ? (
+                              <a href={url} download={getAttachmentBasename(msg.image_url)} className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30" target="_blank" rel="noopener noreferrer">
+                                <Download className="h-3.5 w-3.5" />
+                                Télécharger
+                              </a>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Chargement…</span>
+                            )}
+                          </div>
+                        );
+                      }
                       return url ? (
                         <button
                           type="button"
@@ -405,15 +473,23 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
 
       <form onSubmit={sendMessage} className="sticky bottom-0 z-10 mt-4 flex shrink-0 flex-col gap-2 rounded-lg bg-background/95 py-1 backdrop-blur sm:static sm:bg-transparent sm:py-0">
         {error && <p className="text-sm text-red-400">{error}</p>}
-        {pendingImage && (
+        {pendingAttachment && (
           <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2">
-            {previewUrl ? <img src={previewUrl} alt="" className="h-14 w-14 rounded object-cover" /> : <div className="h-14 w-14 rounded bg-white/10 animate-pulse" />}
-            <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{pendingImage.name}</span>
+            {pendingAttachment.type.startsWith("image/") && previewUrl ? (
+              <img src={previewUrl} alt="" className="h-14 w-14 rounded object-cover" />
+            ) : pendingAttachment.type === "application/pdf" ? (
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white/10">
+                <FileText className="h-7 w-7 text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="h-14 w-14 rounded bg-white/10 animate-pulse" />
+            )}
+            <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{pendingAttachment.name}</span>
             <button
               type="button"
-              onClick={() => setPendingImage(null)}
+              onClick={() => setPendingAttachment(null)}
               className="rounded p-1 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-              aria-label="Retirer l’image"
+              aria-label="Retirer la pièce jointe"
             >
               <X className="h-4 w-4" />
             </button>
@@ -423,11 +499,22 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,application/pdf"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f && /^image\//.test(f.type)) setPendingImage(f);
+              if (!f) return;
+              const isImage = f.type.startsWith("image/");
+              const isPdf = f.type === "application/pdf";
+              if (isPdf && f.size > MAX_PDF_SIZE_BYTES) {
+                setError("PDF trop volumineux (max 4 Mo).");
+                e.target.value = "";
+                return;
+              }
+              if (isImage || isPdf) {
+                setError(null);
+                setPendingAttachment(f);
+              }
               e.target.value = "";
             }}
           />
@@ -435,7 +522,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
             type="button"
             onClick={() => fileInputRef.current?.click()}
             className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-white/5 hover:text-foreground"
-            aria-label="Joindre une image"
+            aria-label="Joindre une image ou un PDF"
           >
             <ImagePlus className="h-4 w-4" />
           </button>
@@ -443,13 +530,13 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
             type="text"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={pendingImage ? "Légende (optionnel)…" : "Écris un message…"}
+            placeholder={pendingAttachment ? "Légende (optionnel)…" : "Écris un message…"}
             className="min-h-[44px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             maxLength={2000}
           />
           <button
             type="submit"
-            disabled={sending || (!content.trim() && !pendingImage)}
+            disabled={sending || (!content.trim() && !pendingAttachment)}
             className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
