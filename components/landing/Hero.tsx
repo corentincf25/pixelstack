@@ -84,7 +84,7 @@ export function Hero() {
         <ScrollReveal delay={320} direction="up">
           <div
             id="demo-app"
-            className="relative w-full max-w-6xl overflow-hidden rounded-xl border border-white/[0.06] bg-[#111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+            className="relative w-full max-w-5xl overflow-hidden rounded-xl border border-white/[0.06] bg-[#111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm"
           >
             {showPlaceholder ? (
               <div className="flex aspect-video w-full items-center justify-center bg-[#0f172a] p-8 sm:p-12">

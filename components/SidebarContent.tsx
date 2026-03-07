@@ -61,7 +61,11 @@ export function SidebarContent({
 }: SidebarContentProps) {
   return (
     <>
-      <div className="glass-card-header flex h-14 items-center gap-3 px-5">
+      <Link
+        href="/"
+        className="glass-card-header flex h-14 items-center gap-3 px-5 transition-opacity hover:opacity-90"
+        aria-label="Retour à l'accueil"
+      >
         <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#0a0a0a]">
           <img
             src="/logo.png"
@@ -79,7 +83,7 @@ export function SidebarContent({
           )}
         </div>
         <span className="text-sm font-semibold tracking-tight text-[#E5E7EB]">Pixelstack</span>
-      </div>
+      </Link>
 
       {role && (
         <div className="border-b border-border px-3 py-3">

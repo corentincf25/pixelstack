@@ -39,7 +39,9 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/billing/success/") ||
     pathname === "/dashboard/billing/success" ||
     pathname.startsWith("/dashboard/billing/success/");
-  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite || isLegal || isBillingSuccess;
+  const isAnonProject = pathname.startsWith("/p/");
+  const isAnonApi = pathname.startsWith("/api/anon/");
+  const isPublic = isLanding || isAuthRoute || isAuthCallback || isOnboarding || isInvite || isLegal || isBillingSuccess || isAnonProject || isAnonApi;
 
   const redirectTo = (path: string) => {
     const url = request.nextUrl.clone();

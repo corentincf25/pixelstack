@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Palette, Video, Camera, Loader2 } from "lucide-react";
 import { fireConfetti } from "@/lib/confetti";
@@ -116,7 +116,9 @@ export default function OnboardingPage() {
     if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("avatar-updated"));
     fireConfetti();
     router.refresh();
-    router.push("/dashboard");
+    const next = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+    router.push(safeNext || "/dashboard");
   };
 
   if (checkingAuth) {

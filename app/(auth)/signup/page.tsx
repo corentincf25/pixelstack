@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-export default function SignupPage() {
+function SignupContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -57,7 +59,8 @@ export default function SignupPage() {
     }
     router.refresh();
     if (data.session) {
-      router.push("/onboarding");
+      const q = nextParam ? `?next=${encodeURIComponent(nextParam)}` : "";
+      router.push(`/onboarding${q}`);
     } else {
       router.push("/signup/confirm-email");
     }
@@ -224,5 +227,13 @@ export default function SignupPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center text-[#9CA3AF]">Chargement…</div>}>
+      <SignupContent />
+    </Suspense>
   );
 }

@@ -114,3 +114,35 @@ En pratique, les écritures anonymes passent souvent par des **API routes** qui 
 5. Ajouter la conversion : bouton, signup avec `next`, API `convert`, redirection vers `/projects/[id]`.
 
 Une fois cette base en place, les points 3, 4 et 5 de ta demande sont couverts de façon sécurisée et évolutive.
+
+---
+
+## 8. Implémentation réalisée
+
+### Migrations SQL
+- **`026_anonymous_sessions_and_anon_access.sql`** :
+  - Table `anonymous_sessions` (id, project_id, invite_token, created_at)
+  - `messages` : colonne `anonymous_session_id`, `sender_id` nullable, contrainte (sender OU anonymous_session)
+  - `assets` : colonne `anonymous_session_id`
+  - `version_feedback` et `asset_feedback` : colonne `anonymous_session_id`, `user_id` nullable
+  - RPC `get_project_id_by_invite_token(p_token)` pour valider le token
+
+### Routes modifiées / créées
+- **`/invite/[token]`** : si non connecté, affiche « Rejoindre ce projet » avec 3 boutons (Continuer sans compte → `/p/[token]`, Se connecter, Créer un compte)
+- **`/p/[token]`** : page projet anonyme (layout dédié, pas de sidebar dashboard). Charge les données via API, affiche « Invité », bannière conversion, chat, messages (limite 5), uploads (limite 3)
+
+### APIs créées
+- **POST `/api/anon/session`** : body `{ token }` → crée ou récupère une session anonyme, pose le cookie `ps_anon_sid`, retourne `{ sessionId, projectId }`
+- **GET `/api/anon/project?token=xxx`** : cookie requis → retourne projet, messages, versions, assets, brief, refs, anonUploadCount
+- **POST `/api/anon/message`** : body `{ token, content }` + cookie → insère message avec `anonymous_session_id`, limite 5 messages
+- **POST `/api/anon/upload`** : FormData `token` + `file` + cookie → upload storage + insert asset avec `anonymous_session_id`, limite 3 uploads
+- **POST `/api/anon/convert`** : body `{ token }` + auth (utilisateur connecté) → rattache messages/assets/feedback à l’utilisateur, met à jour client_id ou designer_id selon l’invite, supprime la session anonyme, retourne `{ projectId }`
+
+### Middleware
+- Les routes `/p/*` et `/api/anon/*` sont en accès public (pas de redirection vers login).
+
+### Limites anonymes
+- Max 5 messages, max 3 uploads par session ; au-delà, message « Créer un compte gratuit pour continuer ».
+
+### Conversion
+- Depuis `/p/[token]`, bouton « Créer un compte » → `/signup?convert=1&next=/p/[token]`. Après inscription → onboarding avec `?next=/p/[token]` → à la fin redirection vers `/p/[token]`. La page `/p/[token]` détecte l’utilisateur connecté, appelle `POST /api/anon/convert` avec le token, puis redirige vers `/projects/[id]`.
