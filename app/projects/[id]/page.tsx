@@ -9,6 +9,7 @@ import { ProjectInviteLink } from "./ProjectInviteLink";
 import { ProjectChat } from "./ProjectChat";
 import { ProjectDeleteSection } from "./ProjectDeleteSection";
 import { ProjectBrief } from "./ProjectBrief";
+import { ProjectDueDateEdit } from "./ProjectDueDateEdit";
 import { ProjectVersions } from "./ProjectVersions";
 import { ProjectReferences } from "./ProjectReferences";
 import { format } from "date-fns";
@@ -205,6 +206,11 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             controls
             defaultLayout="fit"
           >
+            <ProjectDueDateEdit
+              projectId={id}
+              initialDueDate={project.due_date}
+              canEdit={isClient || isDesigner}
+            />
             <ProjectBrief
               projectId={id}
               initialBrief={brief ? { concept: brief.concept, hook: brief.hook, notes: brief.notes } : null}
