@@ -133,8 +133,8 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111]/90 shadow-xl backdrop-blur-sm px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111]/90 shadow-xl backdrop-blur-sm px-6 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-12">
         <div className="relative space-y-10 sm:space-y-12">
           {step === "role" && (
             <>
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
                 <h1 className="text-2xl font-bold tracking-tight text-[#E5E7EB] sm:text-3xl lg:text-4xl">
                   Bienvenue sur Pixelstack
                 </h1>
-                <p className="text-sm text-[#9CA3AF] sm:text-base max-w-xl mx-auto leading-relaxed">
+                <p className="text-sm text-[#9CA3AF] sm:text-base max-w-2xl mx-auto leading-relaxed">
                   Tu crées des miniatures ou tu en commandes ? Choisis ton profil pour commencer.
                 </p>
               </div>
@@ -161,11 +161,11 @@ export default function OnboardingPage() {
               )}
 
               <form onSubmit={handleRoleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:gap-8">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 lg:gap-10">
                   <button
                     type="button"
                     onClick={() => setRole("designer")}
-                    className={`group relative flex min-h-[200px] flex-col items-center gap-5 rounded-2xl border-2 p-6 text-center transition-all duration-200 sm:min-h-[220px] sm:p-7 lg:gap-6 lg:p-8 ${
+                    className={`group relative flex min-h-[200px] flex-col items-center justify-center gap-5 rounded-2xl border-2 p-8 text-center transition-all duration-200 sm:min-h-[200px] sm:p-10 lg:p-12 ${
                       role === "designer"
                         ? "border-[#6366F1] bg-[#6366F1]/15 shadow-lg shadow-[#6366F1]/10"
                         : "border-white/[0.08] bg-white/[0.03] hover:border-[#6366F1]/50 hover:bg-[#6366F1]/5"
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
                       <Palette className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
                     <span className="text-lg font-semibold text-[#E5E7EB]">Graphiste</span>
-                    <p className="text-sm leading-relaxed text-[#9CA3AF] max-w-[260px]">
+                    <p className="text-sm leading-relaxed text-[#9CA3AF] w-full max-w-md">
                       Je crée des miniatures pour mes clients. Briefs, versions et retours au même endroit.
                     </p>
                     {role === "designer" && (
@@ -192,7 +192,7 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={() => setRole("youtuber")}
-                    className={`group relative flex min-h-[200px] flex-col items-center gap-5 rounded-2xl border-2 p-6 text-center transition-all duration-200 sm:min-h-[220px] sm:p-7 lg:gap-6 lg:p-8 ${
+                    className={`group relative flex min-h-[200px] flex-col items-center justify-center gap-5 rounded-2xl border-2 p-8 text-center transition-all duration-200 sm:min-h-[200px] sm:p-10 lg:p-12 ${
                       role === "youtuber"
                         ? "border-red-500/80 bg-red-500/15 shadow-lg shadow-red-500/10"
                         : "border-white/[0.08] bg-white/[0.03] hover:border-red-500/50 hover:bg-red-500/5"
@@ -206,7 +206,7 @@ export default function OnboardingPage() {
                       <Video className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
                     <span className="text-lg font-semibold text-[#E5E7EB]">YouTuber & équipe</span>
-                    <p className="text-sm leading-relaxed text-[#9CA3AF] max-w-[260px]">
+                    <p className="text-sm leading-relaxed text-[#9CA3AF] w-full max-w-md">
                       Créateurs, agents, managers… Toute personne qui commande ou suit des miniatures avec un graphiste.
                     </p>
                     <p className="text-xs font-medium text-emerald-400/90">100% gratuit pour votre rôle.</p>
