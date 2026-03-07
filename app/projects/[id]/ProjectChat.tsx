@@ -378,7 +378,10 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                           const downloadKey = path ? `${path}-download` : "";
                           const isDownloading = pdfActionLoading === downloadKey;
                           return (
-                            <div className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                            <div
+                              className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+                              title="Cliquer pour télécharger"
+                            >
                               <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                               <span className="min-w-0 truncate text-sm text-foreground">{filename}</span>
                               {path ? (
@@ -480,7 +483,10 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                         const downloadKey = path ? `${path}-download` : "";
                         const isDownloading = pdfActionLoading === downloadKey;
                         return (
-                          <div className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                          <div
+                            className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+                            title="Cliquer pour télécharger"
+                          >
                             <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                             <span className="min-w-0 truncate text-sm text-foreground">{filename}</span>
                             {path ? (

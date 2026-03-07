@@ -71,6 +71,17 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
   const getVersionUrl = (v: Version) =>
     signedUrls[extractStoragePath(v.image_url) ?? ""] ?? v.image_url;
 
+  const getVersionDownloadUrl = (v: Version): string | null => {
+    const path = extractStoragePath(v.image_url);
+    if (!path) return null;
+    return `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=attachment`;
+  };
+  const getVersionDownloadFilename = (v: Version): string => {
+    const path = extractStoragePath(v.image_url);
+    const base = path?.split("/").pop();
+    return base || `version-${v.version_number}.png`;
+  };
+
   useEffect(() => {
     const load = async () => {
       const { data, error: e } = await supabase
@@ -271,8 +282,8 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
                     />
                   </button>
                   <a
-                    href={getVersionUrl(v)}
-                    download
+                    href={getVersionDownloadUrl(v) ?? getVersionUrl(v)}
+                    download={getVersionDownloadFilename(v)}
                     onClick={(e) => e.stopPropagation()}
                     className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-lg bg-black/60 px-2 py-1.5 text-xs font-medium text-white hover:bg-black/80"
                   >
@@ -355,8 +366,8 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
               <div className="flex items-center justify-between gap-2">
                 <h4 className="text-sm font-semibold text-foreground">Avis et retours</h4>
                 <a
-                  href={getVersionUrl(lightboxVersion)}
-                  download
+                  href={getVersionDownloadUrl(lightboxVersion) ?? getVersionUrl(lightboxVersion)}
+                  download={getVersionDownloadFilename(lightboxVersion)}
                   className="btn-primary-glow inline-flex items-center gap-1.5 px-3 py-2 text-sm"
                 >
                   <Download className="h-4 w-4" />
