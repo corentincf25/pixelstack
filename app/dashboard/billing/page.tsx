@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { BackLink } from "@/components/BackLink";
 import { CreditCard, HardDrive, Loader2, ExternalLink, Sparkles, Check } from "lucide-react";
-import { DEFAULT_STORAGE_LIMIT_BYTES } from "@/lib/storage-limits";
+import { DEFAULT_STORAGE_LIMIT_BYTES, PLAN_PROJECTS_ESTIMATE } from "@/lib/storage-limits";
 
 const PLAN_LABELS: Record<string, string> = {
   free: "Gratuit",
@@ -14,8 +14,8 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_DESC: Record<string, string> = {
   free: "25 Mo de stockage, jusqu’à 3 projets.",
-  pro: "10 Go de stockage, projets illimités, support prioritaire.",
-  studio: "50 Go de stockage, tout du Pro, support 24/7.",
+  pro: "2 Go de stockage, support prioritaire.",
+  studio: "10 Go de stockage, tout du Pro, support 24/7.",
 };
 
 function formatBytes(bytes: number): string {
@@ -217,6 +217,11 @@ export default function BillingPage() {
               <p className="text-lg font-semibold text-foreground">
                 {storageUsed != null ? formatBytes(storageUsed) : "—"} / {formatBytes(storageLimit)}
               </p>
+              {PLAN_PROJECTS_ESTIMATE[plan] && (
+                <p className="mt-1 text-xs text-[#9CA3AF]">
+                  {PLAN_PROJECTS_ESTIMATE[plan]}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -230,7 +235,7 @@ export default function BillingPage() {
             Choisir un abonnement payant
           </h2>
           <p className="text-sm text-muted-foreground">
-            Deux offres disponibles : <strong className="text-foreground">Pro</strong> (10 Go) et <strong className="text-foreground">Studio</strong> (50 Go). Après souscription, votre compte sera mis à jour automatiquement (stockage, nom du plan).
+            Deux offres disponibles : <strong className="text-foreground">Pro</strong> (2 Go) et <strong className="text-foreground">Studio</strong> (10 Go). Après souscription, votre compte sera mis à jour automatiquement (stockage, nom du plan).
           </p>
           <p className="text-sm text-muted-foreground rounded-lg border border-white/10 bg-white/5 px-3 py-2">
             Pour passer de Pro à Studio (ou l’inverse), utilisez le portail Stripe ci-dessous ou souscrivez à l'autre plan dans les cartes ci-dessous. Si vous êtes en mensuel, vous pouvez souscrire au même plan en annuel pour économiser.
@@ -266,11 +271,12 @@ export default function BillingPage() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {billingInterval === "yearly" ? (
-                  <><span className="font-semibold text-foreground">100 €/an</span> (soit ~8,33 €/mois) · 10 Go, projets illimités, support prioritaire.</>
+                  <><span className="font-semibold text-foreground">100 €/an</span> (soit ~8,33 €/mois) · 2 Go stockage.</>
                 ) : (
-                  <><span className="font-semibold text-foreground">10 €/mois</span> · 10 Go, projets illimités, support prioritaire.</>
+                  <><span className="font-semibold text-foreground">10 €/mois</span> · 2 Go stockage.</>
                 )}
               </p>
+              <p className="text-xs text-[#9CA3AF]">{PLAN_PROJECTS_ESTIMATE.pro}</p>
               <button
                 type="button"
                 disabled={upgradeLoading !== null || (plan === "pro" && billingInterval === "monthly")}
@@ -288,11 +294,12 @@ export default function BillingPage() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {billingInterval === "yearly" ? (
-                  <><span className="font-semibold text-foreground">250 €/an</span> (soit ~20,83 €/mois) · 50 Go, tout du Pro, support 24/7.</>
+                  <><span className="font-semibold text-foreground">250 €/an</span> (soit ~20,83 €/mois) · 10 Go stockage.</>
                 ) : (
-                  <><span className="font-semibold text-foreground">25 €/mois</span> · 50 Go, tout du Pro, support 24/7.</>
+                  <><span className="font-semibold text-foreground">25 €/mois</span> · 10 Go stockage.</>
                 )}
               </p>
+              <p className="text-xs text-[#9CA3AF]">{PLAN_PROJECTS_ESTIMATE.studio}</p>
               <button
                 type="button"
                 disabled={upgradeLoading !== null || (plan === "studio" && billingInterval === "monthly")}

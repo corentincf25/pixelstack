@@ -28,7 +28,7 @@ export default function TermsPage() {
 
         <h2 className="text-lg font-semibold text-[#E5E7EB]">3. Politique de stockage</h2>
         <p>
-          Le stockage est limité selon le plan souscrit (Gratuit : 25 Mo, Pro : 10 Go, Studio : 50 Go).
+          Le stockage est limité selon le plan souscrit (Gratuit : 25 Mo, Pro : 2 Go, Studio : 10 Go).
           Les fichiers déposés (assets, versions, références, pièces jointes du chat) comptent dans ce quota.
           En cas de dépassement, les uploads peuvent être refusés jusqu&apos;à passage à un plan supérieur
           ou libération d&apos;espace.

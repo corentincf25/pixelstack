@@ -20,6 +20,7 @@ import { ProjectHighlightZone } from "./ProjectHighlightZone";
 import { ProjectPageNav } from "./ProjectPageNav";
 import { ProjectIntervenants } from "./ProjectIntervenants";
 import { AnonPresenceBanner } from "@/components/AnonPresenceBanner";
+import { ProjectActivityBanner } from "@/components/ProjectActivityBanner";
 
 type ProjectPageProps = {
   params: Promise<{ id: string }>;
@@ -128,6 +129,25 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
     }
   }
 
+  const [
+    { count: messagesCount },
+    { count: versionsCount },
+    { count: assetsCount },
+    { count: referencesCount },
+  ] = await Promise.all([
+    supabase.from("messages").select("id", { count: "exact", head: true }).eq("project_id", id),
+    supabase.from("versions").select("id", { count: "exact", head: true }).eq("project_id", id),
+    supabase.from("assets").select("id", { count: "exact", head: true }).eq("project_id", id),
+    supabase.from("project_references").select("id", { count: "exact", head: true }).eq("project_id", id),
+  ]);
+
+  const activityCounts = {
+    messagesCount: messagesCount ?? 0,
+    versionsCount: versionsCount ?? 0,
+    assetsCount: assetsCount ?? 0,
+    referencesCount: referencesCount ?? 0,
+  };
+
   return (
     <div className="flex w-full max-w-6xl flex-col gap-0 overflow-x-hidden pb-12 pt-4 sm:pt-6 lg:flex-row lg:gap-6">
       {/* Contenu principal : une colonne, sections empilées avec ancres */}
@@ -138,6 +158,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
           </div>
         )}
         <AnonPresenceBanner projectId={id} />
+        <ProjectActivityBanner projectId={id} initialCounts={activityCounts} />
         {/* En-tête */}
         <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">

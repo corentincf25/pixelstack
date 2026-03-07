@@ -12,13 +12,13 @@ export const dynamic = "force-dynamic";
  * - customer.subscription.deleted : repasse le profil en plan free (25 Mo)
  *
  * Variables d'environnement : STRIPE_WEBHOOK_SECRET, STRIPE_SECRET_KEY
- * Mapping plan → stockage : free = 25 Mo, pro = 10 Go, studio = 50 Go
+ * Mapping plan → stockage : free = 25 Mo, pro = 2 Go, studio = 10 Go
  */
 
 const PLAN_TO_BYTES: Record<string, number> = {
   free: 25 * 1024 * 1024,
-  pro: 10 * 1024 * 1024 * 1024,
-  studio: 50 * 1024 * 1024 * 1024,
+  pro: 2 * 1024 * 1024 * 1024,
+  studio: 10 * 1024 * 1024 * 1024,
 };
 
 function getStorageLimitForPlan(plan: string): number {

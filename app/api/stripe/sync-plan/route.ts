@@ -5,8 +5,8 @@ import Stripe from "stripe";
 
 const PLAN_TO_BYTES: Record<string, number> = {
   free: 25 * 1024 * 1024,
-  pro: 10 * 1024 * 1024 * 1024,
-  studio: 50 * 1024 * 1024 * 1024,
+  pro: 2 * 1024 * 1024 * 1024,
+  studio: 10 * 1024 * 1024 * 1024,
 };
 
 /**

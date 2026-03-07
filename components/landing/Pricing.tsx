@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LandingContainer } from "./LandingContainer";
 import { ScrollReveal } from "./ScrollReveal";
 import { cn } from "@/lib/utils";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, FolderOpen } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
@@ -18,6 +18,8 @@ const plans = [
     period: "pour toujours",
     periodMonth: "pour toujours",
     periodYear: "pour toujours",
+    storageLabel: "25 Mo stockage",
+    projectsEstimate: "≈ 3 à 5 projets actifs",
     features: [
       "Suivi de base des projets",
       "Alertes stock limité",
@@ -36,10 +38,11 @@ const plans = [
     period: "par mois",
     periodMonth: "par mois",
     periodYear: "par an",
+    storageLabel: "2 Go stockage",
+    projectsEstimate: "≈ 60 à 100 projets actifs",
     features: [
       "Tout du plan Gratuit",
-      "Projets illimités",
-      "10 Go de stockage",
+      "2 Go de stockage",
       "Support prioritaire",
     ],
     cta: "Souscrire",
@@ -53,9 +56,11 @@ const plans = [
     period: "par mois",
     periodMonth: "par mois",
     periodYear: "par an",
+    storageLabel: "10 Go stockage",
+    projectsEstimate: "≈ 250 à 400 projets actifs",
     features: [
       "Tout du plan Pro",
-      "50 Go de stockage",
+      "10 Go de stockage",
       "Support 24/7",
       "Intégrations sur mesure",
     ],
@@ -203,6 +208,18 @@ export function Pricing() {
                     </li>
                   ))}
                 </ul>
+                {"storageLabel" in plan && "projectsEstimate" in plan && (
+                  <div className="mt-4 flex flex-col gap-1 border-t border-white/[0.06] pt-4">
+                    <p className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+                      <FolderOpen className="h-3.5 w-3.5 shrink-0" />
+                      {(plan as { storageLabel: string }).storageLabel}
+                    </p>
+                    <p className="flex items-center gap-2 text-xs text-[#6B7280]">
+                      <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                      {(plan as { projectsEstimate: string }).projectsEstimate}
+                    </p>
+                  </div>
+                )}
                 {plan.id === "free" ? (
                   <Link
                     href={user ? "/dashboard" : plan.href}
