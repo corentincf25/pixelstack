@@ -174,21 +174,21 @@ export default function DashboardPage() {
         title={title}
         description={description}
         action={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
             <button
               type="button"
               onClick={() => setOpenJoinModal(true)}
-              className="btn-cta-animate inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all"
+              className="btn-cta-animate inline-flex w-full justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all sm:w-auto"
             >
-              <Link2 className={cn("h-4 w-4", role === "youtuber" ? "text-red-400" : "text-[#3B82F6]")} />
+              <Link2 className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#3B82F6]")} />
               Rejoindre un projet
             </button>
             <button
               type="button"
               onClick={() => setOpenModal(true)}
-              className="btn-cta-animate btn-primary-glow inline-flex items-center gap-2"
+              className="btn-cta-animate btn-primary-glow inline-flex w-full justify-center gap-2 sm:w-auto"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 shrink-0" />
               Créer un projet
             </button>
           </div>

@@ -47,6 +47,10 @@ Remplace `TON-DOMAINE.vercel.app` par l’URL réelle de ton app (ex. `pixelstac
 Exemple :  
 `https://pixelstack.vercel.app/api/cron/cleanup-orphan-projects`
 
+**Méthodes** : GET et POST. Les requêtes **Vercel Cron** (User-Agent `vercel-cron`) sont autorisées en GET. Les crons externes peuvent utiliser POST avec `Authorization: Bearer <CRON_SECRET>` ou `?secret=<CRON_SECRET>`.
+
+**Vercel** : le fichier `vercel.json` du projet définit un cron quotidien à 4h00 UTC. Après déploiement, le cron s’exécute automatiquement ; les logs sont dans Vercel Dashboard → Logs.
+
 ---
 
 ## Étape 4 : Configurer le service de cron (ex. cron-job.org)

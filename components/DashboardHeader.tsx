@@ -24,7 +24,7 @@ export function DashboardHeader({
         ) : null}
       </div>
       {action ? (
-        <div className="flex shrink-0 items-center gap-2">{action}</div>
+        <div className="w-full shrink-0 sm:w-auto">{action}</div>
       ) : null}
     </div>
   );
