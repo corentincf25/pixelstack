@@ -10,7 +10,7 @@ export function ContactSection() {
     <section id="contact" className="py-20 sm:py-28">
       <LandingContainer size="narrow">
         <ScrollReveal>
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 text-center sm:p-12">
+          <div className="rounded-2xl border border-white/[0.1] bg-white/[0.04] p-8 text-center shadow-[0_10px_40px_rgba(0,0,0,0.3)] backdrop-blur-[20px] sm:p-12">
             <span className="inline-flex items-center gap-2 text-sm font-medium text-[#6366F1]">
               <span className="h-2 w-2 rounded-full bg-[#6366F1]" />
               Contact

@@ -11,7 +11,7 @@ export function CTA() {
     <section className="py-20 sm:py-28">
       <LandingContainer size="narrow">
         <ScrollReveal>
-          <div className="rounded-3xl border border-white/[0.08] bg-white/[0.05] p-10 text-center backdrop-blur-xl sm:p-14">
+          <div className="rounded-3xl border border-white/[0.1] bg-white/[0.05] p-10 text-center shadow-[0_10px_40px_rgba(0,0,0,0.4)] backdrop-blur-[20px] sm:p-14">
             <h2 className="text-3xl font-bold tracking-tight text-[#E5E7EB] sm:text-4xl">
               Organisez votre workflow miniatures
             </h2>

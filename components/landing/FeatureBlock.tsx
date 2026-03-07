@@ -71,12 +71,12 @@ export function FeatureBlock({
   const imageBlock = (
     <ScrollReveal delay={120} direction={imageRight ? "left" : "right"}>
       {showImage ? (
-        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0f172a]">
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0f172a] shadow-[0_10px_40px_rgba(0,0,0,0.4)] backdrop-blur-[20px]">
           <Image
             src={imageSrc!}
             alt={imagePlaceholderLabel}
             fill
-            className="object-contain"
+            className="object-cover object-center w-full h-full"
             sizes="(max-width: 1024px) 100vw, 50vw"
             onError={() => setImageError(true)}
           />

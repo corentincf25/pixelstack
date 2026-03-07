@@ -38,7 +38,7 @@ export function BeforeAfter() {
 
         <div className="mt-14 grid gap-8 md:grid-cols-2">
           <ScrollReveal delay={160} direction="right">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 sm:p-8">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 sm:p-8 backdrop-blur-[20px]">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-red-400/90">
                 <X className="h-5 w-5" />
                 Avant
@@ -51,11 +51,14 @@ export function BeforeAfter() {
                   </li>
                 ))}
               </ul>
+              <p className="mt-6 text-sm text-red-300/70">
+                Perte de temps et charge mentale inutile.
+              </p>
             </div>
           </ScrollReveal>
 
           <ScrollReveal delay={240} direction="left">
-            <div className="rounded-2xl border border-[#6366F1]/30 bg-[#6366F1]/10 p-6 sm:p-8">
+            <div className="rounded-2xl border border-[#6366F1]/30 bg-[#6366F1]/10 p-6 sm:p-8 backdrop-blur-[20px]">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-[#A5B4FC]">
                 <Check className="h-5 w-5" />
                 Après

@@ -1,6 +1,5 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import { Hero } from "@/components/landing/Hero";
-import { ProjectPreview } from "@/components/landing/ProjectPreview";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { BeforeAfter } from "@/components/landing/BeforeAfter";
 import { WhyPixelstack } from "@/components/landing/WhyPixelstack";
@@ -9,7 +8,6 @@ import { FounderStory } from "@/components/landing/FounderStory";
 import { TrustSection } from "@/components/landing/TrustSection";
 import { Features } from "@/components/landing/Features";
 import { Pricing } from "@/components/landing/Pricing";
-import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { FAQ } from "@/components/landing/FAQ";
 import { ContactSection } from "@/components/landing/ContactSection";
 import { CTA } from "@/components/landing/CTA";
@@ -22,21 +20,20 @@ import { Footer } from "@/components/landing/Footer";
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
+      {/* Fond sombre + dot grid (aligné dashboard) */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
         aria-hidden
         style={{
-          background:
-            "linear-gradient(180deg, #0a0a0a 0%, #0f172a 40%, #1a1f36 100%)",
+          backgroundColor: "#0B0F19",
+          backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0)",
+          backgroundSize: "24px 24px",
         }}
       />
       <div className="relative z-10">
         <LandingNav />
         <main className="overflow-x-hidden">
           <Hero />
-          <section className="px-3 sm:px-4 lg:px-6 pt-4 pb-8">
-            <ProjectPreview />
-          </section>
           <HowItWorks />
           <BeforeAfter />
           <WhyPixelstack />
@@ -45,7 +42,6 @@ export default function LandingPage() {
           <Features />
           <FounderStory />
           <Pricing />
-          <TestimonialsSection />
           <FAQ />
           <ContactSection />
           <CTA />

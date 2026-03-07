@@ -6,7 +6,7 @@ import { useState } from "react";
 import { LandingContainer } from "./LandingContainer";
 import { ScrollReveal } from "./ScrollReveal";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Play, ImageIcon } from "lucide-react";
+import { ArrowRight, HelpCircle, ImageIcon } from "lucide-react";
 
 /** Screenshot principal : dépose hero.png ou hero.jpg dans public/landing/ */
 const HERO_IMAGE = "/landing/hero.png";
@@ -72,15 +72,15 @@ export function Hero() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="#demo-app"
+                href="#comment-ca-marche"
                 className={cn(
                   "btn-cta-animate inline-flex items-center gap-2 rounded-2xl border border-white/[0.12] px-6 py-3.5 text-base font-medium text-[#E5E7EB]",
-                  "bg-white/[0.05] backdrop-blur-sm",
+                  "bg-white/[0.05] backdrop-blur-xl",
                   "transition-all hover:border-white/[0.2] hover:bg-white/[0.08]"
                 )}
               >
-                <Play className="h-4 w-4" />
-                Voir la démo
+                <HelpCircle className="h-4 w-4" />
+                Comment ça marche ?
               </a>
             </div>
           </ScrollReveal>
@@ -90,7 +90,7 @@ export function Hero() {
         <ScrollReveal delay={320} direction="up">
           <div
             id="demo-app"
-            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0f172a]/95 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_24px_80px_rgba(0,0,0,0.5),0_0_60px_rgba(99,102,241,0.08)] backdrop-blur-sm transition-shadow duration-500 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_28px_96px_rgba(0,0,0,0.55),0_0_80px_rgba(99,102,241,0.12)]"
+            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0f172a]/95 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_24px_80px_rgba(0,0,0,0.5),0_0_60px_rgba(99,102,241,0.08)] backdrop-blur-[20px] transition-shadow duration-500 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_28px_96px_rgba(0,0,0,0.55),0_0_80px_rgba(99,102,241,0.12)]"
           >
             {showPlaceholder ? (
               <div className="flex aspect-video w-full items-center justify-center bg-[#0f172a] p-8 sm:p-12">
@@ -107,7 +107,7 @@ export function Hero() {
                   src={HERO_IMAGE}
                   alt="Aperçu de l’application Pixelstack"
                   fill
-                  className="object-contain"
+                  className="object-cover object-center w-full h-full"
                   sizes="(max-width: 1280px) 100vw, 1280px"
                   onError={() => setHeroImageError(true)}
                   priority

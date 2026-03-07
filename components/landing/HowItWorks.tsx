@@ -52,7 +52,7 @@ export function HowItWorks() {
           {steps.map((step, i) => (
             <ScrollReveal key={step.number} delay={200 + i * 80} direction="up">
               <div className="relative flex flex-col items-center text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#6366F1]/30 bg-[#6366F1]/10 text-[#6366F1]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#6366F1]/30 bg-[#6366F1]/10 text-[#6366F1] backdrop-blur-[20px]">
                   <step.icon className="h-7 w-7" />
                 </div>
                 <span className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-[#6366F1] text-xs font-bold text-white">

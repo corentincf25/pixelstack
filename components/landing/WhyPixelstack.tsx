@@ -40,7 +40,7 @@ export function WhyPixelstack() {
             {benefits.map((item, i) => (
               <li
                 key={item}
-                className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.03] px-5 py-4 transition-colors hover:border-white/[0.1] hover:bg-white/[0.05]"
+                className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-white/[0.04] px-5 py-4 shadow-[0_10px_40px_rgba(0,0,0,0.3)] backdrop-blur-[20px] transition-all hover:border-white/[0.12] hover:bg-white/[0.06]"
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1]">
                   <Check className="h-4 w-4" />

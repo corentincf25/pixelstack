@@ -64,8 +64,8 @@ export function FAQ() {
             <ScrollReveal key={faq.question} delay={200 + i * 50}>
               <div
                 className={cn(
-                  "overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300",
-                  openIndex === i && "border-white/[0.12] bg-white/[0.05]"
+                  "overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-[20px] transition-all duration-300",
+                  openIndex === i && "border-white/[0.12] bg-white/[0.06]"
                 )}
               >
                 <button

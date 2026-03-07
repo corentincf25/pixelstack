@@ -9,9 +9,9 @@ import type { User } from "@supabase/supabase-js";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
+  { label: "Comment ça marche", href: "#comment-ca-marche" },
   { label: "Fonctionnalités", href: "#fonctionnalites" },
   { label: "Tarifs", href: "#tarifs" },
-  { label: "Témoignages", href: "#temoignages" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ];
@@ -78,7 +78,7 @@ export function LandingNav() {
         <div
           className={cn(
             "flex h-14 items-center justify-between gap-4 rounded-2xl border border-white/[0.08] px-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
-            "bg-[#0a0a0a]/85 backdrop-blur-xl sm:h-14 sm:px-6"
+            "bg-[#0B0F19]/90 backdrop-blur-[20px] sm:h-14 sm:px-6"
           )}
         >
           <Link

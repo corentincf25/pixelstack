@@ -175,10 +175,10 @@ export function Pricing() {
             <ScrollReveal key={plan.name} delay={280 + i * 80}>
               <div
                 className={cn(
-                  "flex flex-col rounded-2xl border p-6 sm:p-8 transition-all duration-300",
+                  "flex flex-col rounded-2xl border p-6 sm:p-8 backdrop-blur-[20px] transition-all duration-300",
                   plan.highlighted
                     ? "border-[#6366F1]/40 bg-[#6366F1]/10 ring-1 ring-[#6366F1]/30 shadow-[0_0_40px_rgba(99,102,241,0.15)]"
-                    : "border-white/[0.08] bg-white/[0.03] hover:border-white/[0.12]"
+                    : "border-white/[0.08] bg-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.06]"
                 )}
               >
                 {plan.highlighted && (

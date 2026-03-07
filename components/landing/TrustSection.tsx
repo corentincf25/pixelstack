@@ -20,7 +20,7 @@ export function TrustSection() {
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className="flex h-10 w-24 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-xs text-[#6B7280]"
+                  className="flex h-10 w-24 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-xs text-[#6B7280] backdrop-blur-[20px]"
                 >
                   Logo {i}
                 </div>
