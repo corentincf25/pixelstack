@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
   if (!user?.id || !user.email) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
+  const userId = user.id;
+  const userEmail = user.email;
 
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
@@ -68,16 +70,16 @@ export async function POST(request: NextRequest) {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: {
-        user_id: user.id,
+        user_id: userId,
         plan,
-        supabase_user_id: user.id,
+        supabase_user_id: userId,
       },
-      client_reference_id: user.id,
+      client_reference_id: userId,
       success_url: `${baseUrl}/billing/success?plan=${plan}`,
       cancel_url: `${baseUrl}/dashboard/billing?canceled=1`,
       allow_promotion_codes: true,
       subscription_data: {
-        metadata: { plan, user_id: user.id },
+        metadata: { plan, user_id: userId },
       },
     });
     return session;
@@ -87,7 +89,7 @@ export async function POST(request: NextRequest) {
   const { data: profile } = await supabase
     .from("profiles")
     .select("stripe_customer_id")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   if (profile?.stripe_customer_id) {
@@ -96,9 +98,9 @@ export async function POST(request: NextRequest) {
 
   if (!customerId) {
     const customer = await stripe.customers.create({
-      email: user.email,
-      name: (await supabase.from("profiles").select("full_name").eq("id", user.id).single()).data?.full_name ?? undefined,
-      metadata: { supabase_user_id: user.id },
+      email: userEmail,
+      name: (await supabase.from("profiles").select("full_name").eq("id", userId).single()).data?.full_name ?? undefined,
+      metadata: { supabase_user_id: userId },
     });
     customerId = customer.id;
     if (admin) {
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
           stripe_customer_id: customer.id,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", user.id);
+        .eq("id", userId);
     }
   }
 
@@ -130,12 +132,12 @@ export async function POST(request: NextRequest) {
       await admin
         .from("profiles")
         .update({ stripe_customer_id: null, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
+        .eq("id", userId);
       try {
         const customer = await stripe.customers.create({
-          email: user.email,
-          name: (await supabase.from("profiles").select("full_name").eq("id", user.id).single()).data?.full_name ?? undefined,
-          metadata: { supabase_user_id: user.id },
+          email: userEmail,
+          name: (await supabase.from("profiles").select("full_name").eq("id", userId).single()).data?.full_name ?? undefined,
+          metadata: { supabase_user_id: userId },
         });
         if (admin) {
           await admin
@@ -144,7 +146,7 @@ export async function POST(request: NextRequest) {
               stripe_customer_id: customer.id,
               updated_at: new Date().toISOString(),
             })
-            .eq("id", user.id);
+            .eq("id", userId);
         }
         const session = await createSession(customer.id);
         if (session?.url) {
