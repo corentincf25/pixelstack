@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAnonSessionIdFromRequest } from "@/lib/anon-utils";
 
+const SIGNED_URL_EXPIRES = 3600;
+
+function extractStoragePath(url: string): string | null {
+  if (!url?.trim()) return null;
+  const u = url.trim().split("?")[0] ?? "";
+  const idx = u.indexOf("/assets/");
+  if (idx !== -1) return u.slice(idx + "/assets/".length) || null;
+  if (!u.startsWith("http")) return u || null;
+  return null;
+}
+
 /**
  * GET /api/anon/project?token=xxx
  * Cookie: ps_anon_sid
@@ -40,6 +51,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Session invalide pour ce projet" }, { status: 403 });
   }
 
+  try {
+    await admin.from("anonymous_sessions").update({ last_activity_at: new Date().toISOString() }).eq("id", sessionId);
+  } catch {
+    // colonne last_activity_at peut être absente si migration 027 non appliquée
+  }
+
   const [
     { data: project },
     { data: messages },
@@ -62,6 +79,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
   }
 
+  const versionIds = (versions ?? []).map((v) => v.id);
+  let versionFeedback: Record<string, { id: string; content: string; created_at: string; anonymous_session_id: string | null }[]> = {};
+  let versionSignedUrls: Record<string, string> = {};
+
+  if (versionIds.length > 0) {
+    const [fbRes, paths] = await Promise.all([
+      admin.from("version_feedback").select("id, version_id, content, created_at, anonymous_session_id").in("version_id", versionIds).order("created_at", { ascending: true }),
+      Promise.resolve((versions ?? []).map((v) => ({ id: v.id, path: extractStoragePath(v.image_url) }))),
+    ]);
+    const fbList = (fbRes.data ?? []) as { id: string; version_id: string; content: string; created_at: string; anonymous_session_id: string | null }[];
+    fbList.forEach((f) => {
+      if (!versionFeedback[f.version_id]) versionFeedback[f.version_id] = [];
+      versionFeedback[f.version_id].push({ id: f.id, content: f.content, created_at: f.created_at, anonymous_session_id: f.anonymous_session_id });
+    });
+    for (const { id, path } of paths) {
+      if (!path || !path.startsWith(projectId + "/")) continue;
+      const { data: signed } = await admin.storage.from("assets").createSignedUrl(path, SIGNED_URL_EXPIRES);
+      if (signed?.signedUrl) versionSignedUrls[id] = signed.signedUrl;
+    }
+  }
+
   return NextResponse.json({
     project,
     messages: messages ?? [],
@@ -71,5 +109,7 @@ export async function GET(request: NextRequest) {
     references: refs ?? [],
     sessionId,
     anonUploadCount: anonUploadCount ?? 0,
+    versionFeedback,
+    versionSignedUrls,
   });
 }

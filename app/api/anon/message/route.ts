@@ -63,6 +63,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  try {
+    await admin.from("anonymous_sessions").update({ last_activity_at: new Date().toISOString() }).eq("id", sessionId);
+  } catch {
+    // colonne last_activity_at peut être absente si migration 027 non appliquée
+  }
+
   const { data: inserted, error } = await admin
     .from("messages")
     .insert({

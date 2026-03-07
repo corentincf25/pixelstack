@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Send, UserPlus, MessageSquare, FileImage, ImageIcon } from "lucide-react";
+import { Send, UserPlus, MessageSquare, FileImage, ImageIcon, Link2 } from "lucide-react";
+import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 import { ANON_LIMITS } from "@/lib/anon-utils";
 import { supabase } from "@/lib/supabase";
 
@@ -18,6 +19,8 @@ type Message = {
   anonymous_session_id: string | null;
 };
 
+type VersionFeedbackItem = { id: string; content: string; created_at: string; anonymous_session_id: string | null };
+
 type ProjectData = {
   project: { id: string; title: string; status: string; created_at: string; due_date: string | null };
   messages: Message[];
@@ -27,6 +30,8 @@ type ProjectData = {
   references: { id: string; kind: string; url: string }[];
   sessionId: string;
   anonUploadCount?: number;
+  versionFeedback?: Record<string, VersionFeedbackItem[]>;
+  versionSignedUrls?: Record<string, string>;
 };
 
 export default function AnonProjectPage() {
@@ -44,6 +49,9 @@ export default function AnonProjectPage() {
   const [uploadCount, setUploadCount] = useState(0);
   const [showBanner, setShowBanner] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [lightboxVersion, setLightboxVersion] = useState<{ id: string; version_number: number } | null>(null);
+  const [versionComment, setVersionComment] = useState("");
+  const [sendingComment, setSendingComment] = useState(false);
   const listEndRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,6 +125,12 @@ export default function AnonProjectPage() {
     if (sessionReady) loadProject();
   }, [sessionReady, loadProject]);
 
+  useEffect(() => {
+    if (!data || !sessionReady || !token) return;
+    const interval = setInterval(loadProject, 4000);
+    return () => clearInterval(interval);
+  }, [data, sessionReady, token, loadProject]);
+
   const sendMessage = async () => {
     if (!token || !data || sending) return;
     const text = content.trim();
@@ -179,9 +193,36 @@ export default function AnonProjectPage() {
 
   if (!data) return null;
 
-  const { project, messages, versions, assets, brief } = data;
+  const { project, messages, versions, assets, brief, references, versionFeedback = {}, versionSignedUrls = {} } = data;
   const canSendMore = messageCount < ANON_LIMITS.maxMessages;
   const canUploadMore = uploadCount < ANON_LIMITS.maxUploads;
+
+  const hasBrief = brief && (brief.concept || brief.notes);
+  const hasVersions = versions.length > 0;
+  const hasAssets = assets.length > 0 || canUploadMore;
+  const hasReferences = references.length > 0;
+
+  const submitVersionComment = async (versionId: string) => {
+    const text = versionComment.trim();
+    if (!text || sendingComment || !token) return;
+    setSendingComment(true);
+    try {
+      const res = await fetch("/api/anon/version-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, version_id: versionId, content: text }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        setVersionComment("");
+        loadProject();
+      }
+    } finally {
+      setSendingComment(false);
+    }
+  };
+
+  const lightboxUrl = lightboxVersion ? versionSignedUrls[lightboxVersion.id] ?? null : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
@@ -219,10 +260,10 @@ export default function AnonProjectPage() {
         </Link>
       </div>
 
-      {brief && (brief.concept || brief.notes) && (
+      {hasBrief && (
         <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <h2 className="mb-2 text-sm font-medium text-[#9CA3AF]">Brief</h2>
-          <p className="whitespace-pre-wrap text-sm text-[#E5E7EB]">{brief.concept || brief.notes || "—"}</p>
+          <p className="whitespace-pre-wrap text-sm text-[#E5E7EB]">{brief!.concept || brief!.notes || "—"}</p>
         </section>
       )}
 
@@ -294,66 +335,68 @@ export default function AnonProjectPage() {
         {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
       </section>
 
-      <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-[#9CA3AF]">
-          <FileImage className="h-4 w-4" />
-          Fichiers ({assets.length})
-        </h2>
-        {canUploadMore ? (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.zip"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file || !token) return;
-                setUploading(true);
-                setError(null);
-                const fd = new FormData();
-                fd.set("token", token);
-                fd.set("file", file);
-                try {
-                  const res = await fetch("/api/anon/upload", { method: "POST", body: fd, credentials: "include" });
-                  const j = await res.json().catch(() => ({}));
-                  if (res.ok) {
-                    setUploadCount((c) => c + 1);
-                    loadProject();
-                  } else setError(j.error || "Échec upload");
-                } finally {
-                  setUploading(false);
-                  e.target.value = "";
-                }
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-[#E5E7EB] hover:bg-white/10 disabled:opacity-50"
-            >
-              {uploading ? "Envoi…" : "Ajouter un fichier (image ou zip)"}
-            </button>
-          </>
-        ) : (
-          <p className="text-sm text-amber-200">
-            Limite atteinte (3 fichiers).{" "}
-            <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} className="underline">
-              Créer un compte gratuit pour continuer.
-            </Link>
-          </p>
-        )}
-        {assets.length > 0 && (
-          <ul className="mt-2 space-y-1 text-sm text-[#E5E7EB]">
-            {assets.map((a) => (
-              <li key={a.id}>{a.file_name || a.file_url}</li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {hasAssets && (
+        <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-[#9CA3AF]">
+            <FileImage className="h-4 w-4" />
+            Fichiers ({assets.length})
+          </h2>
+          {canUploadMore ? (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.zip"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !token) return;
+                  setUploading(true);
+                  setError(null);
+                  const fd = new FormData();
+                  fd.set("token", token);
+                  fd.set("file", file);
+                  try {
+                    const res = await fetch("/api/anon/upload", { method: "POST", body: fd, credentials: "include" });
+                    const j = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                      setUploadCount((c) => c + 1);
+                      loadProject();
+                    } else setError(j.error || "Échec upload");
+                  } finally {
+                    setUploading(false);
+                    e.target.value = "";
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm text-[#E5E7EB] hover:bg-white/10 disabled:opacity-50"
+              >
+                {uploading ? "Envoi…" : "Ajouter un fichier (image ou zip)"}
+              </button>
+            </>
+          ) : (
+            <p className="text-sm text-amber-200">
+              Limite atteinte (3 fichiers).{" "}
+              <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} className="underline">
+                Créer un compte gratuit pour continuer.
+              </Link>
+            </p>
+          )}
+          {assets.length > 0 && (
+            <ul className="mt-2 space-y-1 text-sm text-[#E5E7EB]">
+              {assets.map((a) => (
+                <li key={a.id}>{a.file_name || a.file_url}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
-      {versions.length > 0 && (
+      {hasVersions && (
         <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-[#9CA3AF]">
             <ImageIcon className="h-4 w-4" />
@@ -361,12 +404,78 @@ export default function AnonProjectPage() {
           </h2>
           <div className="flex flex-wrap gap-2">
             {versions.map((v) => (
-              <div key={v.id} className="rounded-lg border border-white/10 bg-black/20 p-2 text-xs text-[#9CA3AF]">
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setLightboxVersion({ id: v.id, version_number: v.version_number })}
+                className="cursor-pointer rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-[#E5E7EB] transition hover:border-[#6366F1]/40 hover:bg-white/5"
+              >
                 V{v.version_number}
-              </div>
+              </button>
             ))}
           </div>
         </section>
+      )}
+
+      {hasReferences && (
+        <section className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-[#9CA3AF]">
+            <Link2 className="h-4 w-4" />
+            Références ({references.length})
+          </h2>
+          <ul className="space-y-1 text-sm text-[#E5E7EB]">
+            {references.map((ref) => (
+              <li key={ref.id}>
+                {ref.kind === "youtube" ? (
+                  <a href={ref.url} target="_blank" rel="noopener noreferrer" className="text-[#A5B4FC] hover:underline">
+                    {ref.url}
+                  </a>
+                ) : (
+                  ref.url
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {lightboxVersion && (
+        <ImagePreviewModal
+          open={!!lightboxVersion}
+          onClose={() => { setLightboxVersion(null); setVersionComment(""); }}
+          type="image"
+          url={lightboxUrl || ""}
+          title={`Version ${lightboxVersion.version_number}`}
+          showComments
+          children={
+            <div className="space-y-3 border-t border-white/10 pt-4">
+              <p className="text-sm font-medium text-[#9CA3AF]">Commentaires</p>
+              {(versionFeedback[lightboxVersion.id] ?? []).map((f) => (
+                <div key={f.id} className="rounded-lg bg-white/5 px-3 py-2 text-sm text-[#E5E7EB]">
+                  <p className="text-xs text-[#6B7280]">{f.anonymous_session_id ? "Invité" : "Membre"} · {format(new Date(f.created_at), "dd/MM HH:mm", { locale: fr })}</p>
+                  <p className="mt-0.5">{f.content}</p>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={versionComment}
+                  onChange={(e) => setVersionComment(e.target.value)}
+                  placeholder="Votre commentaire…"
+                  className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#E5E7EB] placeholder:text-[#6B7280]"
+                />
+                <button
+                  type="button"
+                  onClick={() => submitVersionComment(lightboxVersion.id)}
+                  disabled={sendingComment || !versionComment.trim()}
+                  className="rounded-lg bg-[#6366F1] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {sendingComment ? "…" : "Envoyer"}
+                </button>
+              </div>
+            </div>
+          }
+        />
       )}
 
       {(messageCount >= 3 || !canSendMore) && (

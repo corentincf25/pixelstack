@@ -60,7 +60,11 @@ export async function updateSession(request: NextRequest) {
       .select("role")
       .eq("id", user.id)
       .single();
-    if (profile && profile.role == null) return redirectTo("/onboarding");
+    if (profile && profile.role == null) {
+      const next = pathname.startsWith("/p/") ? pathname : "";
+      const q = next ? `?next=${encodeURIComponent(next)}` : "";
+      return redirectTo(`/onboarding${q}`);
+    }
   }
 
   return response;

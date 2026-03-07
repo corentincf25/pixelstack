@@ -68,9 +68,12 @@ function SignupContent() {
 
   const handleGoogleSignup = async () => {
     setError(null);
+    const next = nextParam || "/dashboard";
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
     if (err) setError(err.message);
   };

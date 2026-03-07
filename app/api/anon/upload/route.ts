@@ -71,6 +71,12 @@ export async function POST(request: NextRequest) {
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = `${projectId}/anon/${sessionId}/${Date.now()}-${safeName}`;
 
+  try {
+    await admin.from("anonymous_sessions").update({ last_activity_at: new Date().toISOString() }).eq("id", sessionId);
+  } catch {
+    // colonne last_activity_at peut être absente si migration 027 non appliquée
+  }
+
   const { error: uploadErr } = await admin.storage.from("assets").upload(path, file, {
     contentType: file.type,
     upsert: false,

@@ -19,6 +19,7 @@ import { BentoCard } from "@/components/BentoCard";
 import { ProjectHighlightZone } from "./ProjectHighlightZone";
 import { ProjectPageNav } from "./ProjectPageNav";
 import { ProjectIntervenants } from "./ProjectIntervenants";
+import { AnonPresenceBanner } from "@/components/AnonPresenceBanner";
 
 type ProjectPageProps = {
   params: Promise<{ id: string }>;
@@ -136,6 +137,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             Tu es déjà membre de ce projet.
           </div>
         )}
+        <AnonPresenceBanner projectId={id} />
         {/* En-tête */}
         <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
