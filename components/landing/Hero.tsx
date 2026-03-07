@@ -27,11 +27,11 @@ export function Hero() {
         {/* Bannière "Nouveau" */}
         <ScrollReveal delay={0}>
           <a
-            href="#fonctionnalites"
+            href="#comment-ca-marche"
             className="inline-flex items-center gap-2 rounded-full border border-[#6366F1]/30 bg-[#6366F1]/10 px-4 py-2 text-sm font-medium text-[#E5E7EB] transition-colors hover:border-[#6366F1]/50 hover:bg-[#6366F1]/15"
           >
             <span className="h-2 w-2 rounded-full bg-[#6366F1]" />
-            Nouveau — Découvrez les dernières fonctionnalités
+            Collaboration graphistes & YouTubers
             <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </ScrollReveal>
@@ -40,15 +40,21 @@ export function Hero() {
         <div className="flex max-w-4xl flex-col items-center text-center">
           <ScrollReveal delay={80}>
             <h1 className="text-4xl font-bold tracking-tight text-[#E5E7EB] sm:text-5xl lg:text-6xl">
-              L’espace de travail pour{" "}
+              L’espace de collaboration entre{" "}
               <span className="bg-gradient-to-r from-[#6366F1] to-[#3B82F6] bg-clip-text text-transparent">
-                les miniamakers
+                graphistes et YouTubers
               </span>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={160}>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#9CA3AF] sm:text-xl">
-              Gérez vos projets, assets et retours avec vos clients en un seul endroit. Briefs, versions et validation sans prise de tête.
+              Envoyez vos versions, recevez les retours et centralisez tous les assets de vos miniatures au même endroit.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={200}>
+            <p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-[#A5B4FC]">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1]">✓</span>
+              Invitez votre client avec un simple lien. Aucun compte requis.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={240}>
@@ -84,7 +90,7 @@ export function Hero() {
         <ScrollReveal delay={320} direction="up">
           <div
             id="demo-app"
-            className="relative w-full max-w-5xl overflow-hidden rounded-xl border border-white/[0.06] bg-[#111]/90 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+            className="relative w-full max-w-5xl overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0f172a]/95 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_24px_80px_rgba(0,0,0,0.5),0_0_60px_rgba(99,102,241,0.08)] backdrop-blur-sm transition-shadow duration-500 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_28px_96px_rgba(0,0,0,0.55),0_0_80px_rgba(99,102,241,0.12)]"
           >
             {showPlaceholder ? (
               <div className="flex aspect-video w-full items-center justify-center bg-[#0f172a] p-8 sm:p-12">

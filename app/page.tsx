@@ -1,5 +1,11 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import { Hero } from "@/components/landing/Hero";
+import { ProjectPreview } from "@/components/landing/ProjectPreview";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { BeforeAfter } from "@/components/landing/BeforeAfter";
+import { WhyPixelstack } from "@/components/landing/WhyPixelstack";
+import { ClientNoAccount } from "@/components/landing/ClientNoAccount";
+import { FounderStory } from "@/components/landing/FounderStory";
 import { TrustSection } from "@/components/landing/TrustSection";
 import { Features } from "@/components/landing/Features";
 import { Pricing } from "@/components/landing/Pricing";
@@ -26,10 +32,18 @@ export default function LandingPage() {
       />
       <div className="relative z-10">
         <LandingNav />
-        <main>
+        <main className="overflow-x-hidden">
           <Hero />
+          <section className="px-3 sm:px-4 lg:px-6 pt-4 pb-8">
+            <ProjectPreview />
+          </section>
+          <HowItWorks />
+          <BeforeAfter />
+          <WhyPixelstack />
+          <ClientNoAccount />
           <TrustSection />
           <Features />
+          <FounderStory />
           <Pricing />
           <TestimonialsSection />
           <FAQ />
