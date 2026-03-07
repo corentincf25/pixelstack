@@ -8,9 +8,9 @@ type LandingContainerProps = {
 };
 
 const sizeClasses = {
-  default: "max-w-6xl",
-  narrow: "max-w-4xl",
-  wide: "max-w-7xl",
+  default: "max-w-7xl",
+  narrow: "max-w-5xl",
+  wide: "max-w-[90rem]",
 };
 
 export function LandingContainer({
@@ -21,7 +21,7 @@ export function LandingContainer({
   return (
     <div
       className={cn(
-        "mx-auto w-full px-6 sm:px-8 lg:px-12",
+        "mx-auto w-full px-4 sm:px-6 lg:px-8",
         sizeClasses[size],
         className
       )}

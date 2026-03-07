@@ -127,7 +127,7 @@ function BillingSuccessContent() {
               href="/dashboard/billing"
               className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/10"
             >
-              Voir ma facturation
+              Voir mon abonnement
             </Link>
           </div>
         </div>

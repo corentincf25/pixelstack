@@ -51,10 +51,9 @@ const statusBadgeStyles: Record<ProjectStatus, string> = {
   approved: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
 };
 
-/** Hauteur fixe de la zone image (ratio cohérent sur toutes les cards) */
-const CARD_IMAGE_HEIGHT = 100;
-/** Hauteur totale de la card (fixe pour alignement grid) */
+/** Hauteur totale de la card (pour alignement grid) : mobile 220px, desktop 280px */
 export const PROJECT_CARD_HEIGHT = 280;
+export const PROJECT_CARD_HEIGHT_MOBILE = 220;
 
 export function ProjectCard({
   id,
@@ -134,11 +133,8 @@ export function ProjectCard({
           transitionDuration: tilt.x === 0 && tilt.y === 0 ? `${TILT_SMOOTH_MS}ms` : "0ms",
         }}
       >
-      {/* Zone image : hauteur fixe identique pour toutes les cards */}
-      <div
-        className="relative w-full shrink-0 overflow-hidden border-b border-white/[0.08] bg-black/20"
-        style={{ height: CARD_IMAGE_HEIGHT }}
-      >
+      {/* Zone image : hauteur fixe, plus basse sur mobile */}
+      <div className="relative h-[72px] w-full shrink-0 overflow-hidden border-b border-white/[0.08] bg-black/20 sm:h-[100px]">
         {thumbnailUrl ? (
           <>
             <img
@@ -189,8 +185,8 @@ export function ProjectCard({
         )}
       </div>
 
-      {/* Contenu : padding et structure fixes */}
-      <div className="relative flex min-h-0 flex-1 flex-col p-4">
+      {/* Contenu : padding et structure fixes, plus compact sur mobile */}
+      <div className="relative flex min-h-0 flex-1 flex-col p-3 sm:p-4">
         {(clientName || designerName || clientAvatarUrl || designerAvatarUrl) && (
           <div className="mb-2 flex flex-wrap items-center gap-2 text-[#9CA3AF]">
             {clientName != null && (

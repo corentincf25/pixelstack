@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { ProjectCard, type ProjectCardProps, PROJECT_CARD_HEIGHT } from "@/components/ProjectCard";
+import { ProjectCard, type ProjectCardProps } from "@/components/ProjectCard";
 import { CreateProjectModal } from "@/components/CreateProjectModal";
 import { JoinProjectModal } from "@/components/JoinProjectModal";
 import { DashboardStorageWidget } from "@/components/DashboardStorageWidget";
@@ -361,8 +361,7 @@ export default function DashboardPage() {
             />
           ) : (
             <div
-              className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 lg:grid-cols-3 lg:gap-6"
-              style={{ gridAutoRows: `${PROJECT_CARD_HEIGHT}px` }}
+              className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 lg:grid-cols-3 lg:gap-6 grid-auto-rows-[220px] sm:grid-auto-rows-[280px]"
             >
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];

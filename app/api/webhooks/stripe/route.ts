@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import Stripe from "stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -86,9 +87,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
   }
 
+  let stripe: Stripe;
   try {
     payload = await request.text();
-    const stripe = await import("stripe").then((m) => new m.default(process.env.STRIPE_SECRET_KEY ?? ""));
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret) as typeof event;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -137,6 +139,33 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "Update failed" }, { status: 500 });
         }
         console.info("[Stripe webhook] checkout.session.completed OK", { userId, plan, customerId });
+
+        const newSubId = typeof session?.subscription === "string" ? session.subscription : null;
+        if (newSubId && customerId) {
+          try {
+            const newSub = await stripe.subscriptions.retrieve(newSubId);
+            const newPriceId = newSub.items?.data?.[0]?.price?.id ?? "";
+            const proYearly = process.env.STRIPE_PRICE_PRO_YEARLY;
+            const proMonthly = process.env.STRIPE_PRICE_PRO_MONTHLY;
+            const studioYearly = process.env.STRIPE_PRICE_STUDIO_YEARLY;
+            const studioMonthly = process.env.STRIPE_PRICE_STUDIO_MONTHLY;
+            const monthlyPriceToCancel =
+              newPriceId === proYearly ? proMonthly : newPriceId === studioYearly ? studioMonthly : null;
+            if (monthlyPriceToCancel) {
+              const { data: subs } = await stripe.subscriptions.list({ customer: customerId, status: "active" });
+              for (const sub of subs ?? []) {
+                if (sub.id === newSubId) continue;
+                const priceId = sub.items?.data?.[0]?.price?.id ?? "";
+                if (priceId === monthlyPriceToCancel) {
+                  await stripe.subscriptions.cancel(sub.id);
+                  console.info("[Stripe webhook] Ancien abonnement mensuel annulé (passage à l'annuel)", { subId: sub.id });
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("[Stripe webhook] Impossible d'annuler l'ancien abo mensuel", e);
+          }
+        }
       } else {
         console.error("[Stripe webhook] checkout.session.completed: customerId ou userId manquant", {
           customerId: !!customerId,

@@ -135,7 +135,7 @@ export default function BillingPage() {
       const res = await fetch("/api/stripe/customer-portal", { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Impossible d'ouvrir le portail de facturation." });
+        setMessage({ type: "error", text: data.error || "Impossible d'ouvrir le portail d'abonnement." });
         return;
       }
       if (data.url) window.location.href = data.url;
@@ -161,7 +161,7 @@ export default function BillingPage() {
       <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-5">
         <BackLink href="/dashboard" label="Retour au dashboard" />
         <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-          Facturation et abonnement
+          Abonnement
         </h1>
       </div>
 
@@ -233,10 +233,10 @@ export default function BillingPage() {
             Deux offres disponibles : <strong className="text-foreground">Pro</strong> (10 Go) et <strong className="text-foreground">Studio</strong> (50 Go). Après souscription, votre compte sera mis à jour automatiquement (stockage, nom du plan).
           </p>
           <p className="text-sm text-muted-foreground rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-            Pour passer de Pro à Studio (ou l’inverse), utilisez le portail Stripe ci-dessous ou souscrivez à l’autre plan dans les cartes ci‑dessous.
+            Pour passer de Pro à Studio (ou l’inverse), utilisez le portail Stripe ci-dessous ou souscrivez à l'autre plan dans les cartes ci-dessous. Si vous êtes en mensuel, vous pouvez souscrire au même plan en annuel pour économiser.
           </p>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm text-muted-foreground">Facturation :</span>
+            <span className="text-sm text-muted-foreground">Période :</span>
             <div className="flex rounded-lg border border-white/10 bg-white/5 p-0.5">
               <button
                 type="button"
@@ -273,12 +273,12 @@ export default function BillingPage() {
               </p>
               <button
                 type="button"
-                disabled={upgradeLoading !== null || plan === "pro"}
+                disabled={upgradeLoading !== null || (plan === "pro" && billingInterval === "monthly")}
                 onClick={() => handleUpgrade("pro", billingInterval)}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#6366F1] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#5558e3] disabled:opacity-50"
               >
                 {upgradeLoading === "pro" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                Souscrire — Pro {billingInterval === "yearly" ? "Annuel" : "Mensuel"}
+                {plan === "pro" && billingInterval === "yearly" ? "Passer au Pro annuel" : `Souscrire — Pro ${billingInterval === "yearly" ? "Annuel" : "Mensuel"}`}
               </button>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
@@ -295,12 +295,12 @@ export default function BillingPage() {
               </p>
               <button
                 type="button"
-                disabled={upgradeLoading !== null || plan === "studio"}
+                disabled={upgradeLoading !== null || (plan === "studio" && billingInterval === "monthly")}
                 onClick={() => handleUpgrade("studio", billingInterval)}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-[#6366F1]/50 bg-[#6366F1]/15 px-4 py-2.5 text-sm font-medium text-[#A5B4FC] hover:bg-[#6366F1]/25 disabled:opacity-50"
               >
                 {upgradeLoading === "studio" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                Souscrire — Studio {billingInterval === "yearly" ? "Annuel" : "Mensuel"}
+                {plan === "studio" && billingInterval === "yearly" ? "Passer au Studio annuel" : `Souscrire — Studio ${billingInterval === "yearly" ? "Annuel" : "Mensuel"}`}
               </button>
             </div>
           </div>
