@@ -447,7 +447,7 @@ export default function DashboardPage() {
             >
               <div className="flex flex-col items-start gap-0.5">
                 <div className="flex items-center gap-3">
-                  <span className={cn("flex h-9 w-1 shrink-0 rounded-full", role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : role === "designer" ? "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" : "bg-[#4B5563]")} aria-hidden />
+                  <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
                   <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Vue d’ensemble</h2>
                 </div>
                 <p className="text-xs text-[#9CA3AF] pl-4">Projets, clients uniques, en cours, stockage, répartition par statut</p>
@@ -478,7 +478,7 @@ export default function DashboardPage() {
               aria-expanded={!collapsedCalendar}
             >
               <div className="flex items-center gap-3">
-                <span className={cn("flex h-9 w-1 shrink-0 rounded-full", role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : role === "designer" ? "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" : "bg-[#4B5563]")} aria-hidden />
+                <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
                 <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Calendrier</h2>
               </div>
               <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">

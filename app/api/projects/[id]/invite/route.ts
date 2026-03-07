@@ -64,8 +64,11 @@ export async function POST(
     );
   }
 
-  const origin = request.headers.get("origin") || request.nextUrl.origin;
-  const url = `${origin}/invite/${token}`;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+    request.headers.get("origin") ||
+    request.nextUrl.origin;
+  const url = `${baseUrl}/invite/${token}`;
 
   return NextResponse.json({ token, url });
 }
