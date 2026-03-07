@@ -8,7 +8,7 @@ import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { compressImageForChat } from "@/lib/compress-image";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Send, ArrowDown, ImagePlus, X, FileText, Download } from "lucide-react";
+import { Send, ArrowDown, ImagePlus, X, FileText, Download, Loader2 } from "lucide-react";
 import { MediaLightbox } from "@/components/MediaLightbox";
 
 const RECENT_MESSAGES_COUNT = 5; // Barre "Derniers messages" au-dessus des N derniers
@@ -56,6 +56,10 @@ function getAttachmentBasename(imageUrl: string | null): string {
   return parts[parts.length - 1] || "document.pdf";
 }
 
+function getPdfDownloadUrl(projectId: string, path: string, disposition: "attachment" | "inline"): string {
+  return `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=${disposition}`;
+}
+
 export function ProjectChat({ projectId, currentUserId, designerId, clientId }: ProjectChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
@@ -67,9 +71,38 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const [lightboxImage, setLightboxImage] = useState<{ url: string; name?: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pdfActionLoading, setPdfActionLoading] = useState<string | null>(null);
   const listEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePdfDownload = useCallback(
+    async (projectId: string, path: string, filename: string) => {
+      const key = `${path}-download`;
+      setPdfActionLoading(key);
+      try {
+        const url = getPdfDownloadUrl(projectId, path, "attachment");
+        const res = await fetch(url, { credentials: "include" });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setError(err?.error || "Impossible de télécharger le fichier.");
+          return;
+        }
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename || "document.pdf";
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+      } catch {
+        setError("Erreur lors du téléchargement.");
+      } finally {
+        setPdfActionLoading(null);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!pendingAttachment) {
@@ -340,21 +373,36 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                         const url = getImageUrl(msg);
                         if (isPdfAttachment(msg.image_url)) {
                           const path = getMessageImagePath(projectId, msg.image_url);
-                          const downloadUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=attachment` : null;
-                          const openUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=inline` : null;
+                          const openUrl = path ? getPdfDownloadUrl(projectId, path, "inline") : null;
+                          const filename = getAttachmentBasename(msg.image_url);
+                          const downloadKey = path ? `${path}-download` : "";
+                          const isDownloading = pdfActionLoading === downloadKey;
                           return (
                             <div className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                               <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-                              <span className="min-w-0 truncate text-sm text-foreground">{getAttachmentBasename(msg.image_url)}</span>
-                              {downloadUrl && openUrl ? (
+                              <span className="min-w-0 truncate text-sm text-foreground">{filename}</span>
+                              {path ? (
                                 <span className="flex shrink-0 items-center gap-1.5">
-                                  <a href={openUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
-                                    Ouvrir
-                                  </a>
-                                  <a href={downloadUrl} download={getAttachmentBasename(msg.image_url)} className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
-                                    <Download className="h-3.5 w-3.5" />
-                                    Télécharger
-                                  </a>
+                                  {openUrl && (
+                                    <a href={openUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
+                                      Ouvrir
+                                    </a>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePdfDownload(projectId, path, filename)}
+                                    disabled={isDownloading}
+                                    className="inline-flex cursor-pointer items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30 disabled:opacity-60"
+                                  >
+                                    {isDownloading ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <>
+                                        <Download className="h-3.5 w-3.5" />
+                                        Télécharger
+                                      </>
+                                    )}
+                                  </button>
                                 </span>
                               ) : (
                                 <span className="text-xs text-muted-foreground">—</span>
@@ -427,21 +475,36 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                       const url = getImageUrl(msg);
                       if (isPdfAttachment(msg.image_url)) {
                         const path = getMessageImagePath(projectId, msg.image_url);
-                        const downloadUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=attachment` : null;
-                        const openUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=inline` : null;
+                        const openUrl = path ? getPdfDownloadUrl(projectId, path, "inline") : null;
+                        const filename = getAttachmentBasename(msg.image_url);
+                        const downloadKey = path ? `${path}-download` : "";
+                        const isDownloading = pdfActionLoading === downloadKey;
                         return (
                           <div className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                             <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-                            <span className="min-w-0 truncate text-sm text-foreground">{getAttachmentBasename(msg.image_url)}</span>
-                            {downloadUrl && openUrl ? (
+                            <span className="min-w-0 truncate text-sm text-foreground">{filename}</span>
+                            {path ? (
                               <span className="flex shrink-0 items-center gap-1.5">
-                                <a href={openUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
-                                  Ouvrir
-                                </a>
-                                <a href={downloadUrl} download={getAttachmentBasename(msg.image_url)} className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
-                                  <Download className="h-3.5 w-3.5" />
-                                  Télécharger
-                                </a>
+                                {openUrl && (
+                                  <a href={openUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
+                                    Ouvrir
+                                  </a>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handlePdfDownload(projectId, path, filename)}
+                                  disabled={isDownloading}
+                                  className="inline-flex cursor-pointer items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30 disabled:opacity-60"
+                                >
+                                  {isDownloading ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Download className="h-3.5 w-3.5" />
+                                      Télécharger
+                                    </>
+                                  )}
+                                </button>
                               </span>
                             ) : (
                               <span className="text-xs text-muted-foreground">—</span>

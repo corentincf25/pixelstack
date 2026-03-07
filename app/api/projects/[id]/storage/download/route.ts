@@ -28,9 +28,14 @@ export async function GET(
   }
 
   const { searchParams } = new URL(req.url);
-  const path = searchParams.get("path");
+  let path = searchParams.get("path");
   if (!path || typeof path !== "string" || path.includes("..") || path.startsWith("/")) {
     return NextResponse.json({ error: "Chemin invalide" }, { status: 400 });
+  }
+  // Normaliser : si c’est une URL Supabase, extraire le chemin après /assets/
+  if (path.includes("/assets/")) {
+    const idx = path.indexOf("/assets/");
+    path = path.slice(idx + "/assets/".length).split("?")[0] ?? path;
   }
   if (!path.startsWith(projectId + "/")) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });

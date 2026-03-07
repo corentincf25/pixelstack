@@ -42,6 +42,8 @@ export async function POST() {
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
   const returnUrl = `${baseUrl}/dashboard/billing`;
 
+  const admin = (await import("@/lib/supabase/admin")).createAdminClient();
+
   try {
     const stripe = new Stripe(secretKey);
     const portalSession = await stripe.billingPortal.sessions.create({
@@ -55,7 +57,23 @@ export async function POST() {
 
     return NextResponse.json({ url: portalSession.url });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Stripe error";
+    const message = err instanceof Error ? err.message : String(err);
+    const isNoSuchCustomer =
+      message.includes("No such customer") || (err as { code?: string }).code === "resource_missing";
+    if (isNoSuchCustomer && admin) {
+      await admin
+        .from("profiles")
+        .update({ stripe_customer_id: null, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      console.warn("[Stripe customer-portal] Invalid customer ID cleared (test/live mismatch)");
+      return NextResponse.json(
+        {
+          error:
+            "L’ancien client de facturation n’existe plus (changement test/production). Cliquez sur « Souscrire » ou « Passer au Pro/Studio » ci-dessous pour recréer votre abonnement.",
+        },
+        { status: 400 }
+      );
+    }
     console.error("[Stripe customer-portal]", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
