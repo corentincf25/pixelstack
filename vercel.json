@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/cleanup-orphan-projects",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-archived-projects",
+      "schedule": "0 4 * * *"
     }
   ]
 }

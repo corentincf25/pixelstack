@@ -20,7 +20,7 @@ export function RoleThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <div data-role={role ?? undefined} className="relative">
-      {/* Boules en blur selon le rôle (comme sur l'onboarding) */}
+      {/* Boules en blur selon le rôle ; rien si role null pour éviter flash violet côté youtuber */}
       {role === "designer" && (
         <div
           className="pointer-events-none fixed right-0 top-1/4 z-0 h-[400px] w-[400px] -translate-y-1/2 rounded-full bg-[#6366F1]/10 blur-[100px]"

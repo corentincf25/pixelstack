@@ -372,18 +372,30 @@ html {
     100% { background-position: 120% 0; }
   }
 
+  /* Neutre par défaut (pas de violet au chargement côté youtuber) */
   .btn-primary-glow {
-    @apply rounded-2xl px-6 py-2.5 font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 focus:ring-offset-[#0a0a0a];
-    background: linear-gradient(135deg, #6366F1 0%, #3B82F6 100%);
-    box-shadow: 0 0 24px rgba(99, 102, 241, 0.4);
+    @apply rounded-2xl px-6 py-2.5 font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#6B7280] focus:ring-offset-2 focus:ring-offset-[#0a0a0a];
+    background: linear-gradient(135deg, #4B5563 0%, #374151 100%);
+    box-shadow: 0 0 24px rgba(75, 85, 99, 0.35);
     transition: transform 0.2s ease, box-shadow 0.25s ease, opacity 0.2s ease;
   }
   .btn-primary-glow:hover {
-    box-shadow: 0 0 32px rgba(99, 102, 241, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 32px rgba(75, 85, 99, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
     transform: translateY(-1px);
   }
   .btn-primary-glow:active {
     transform: translateY(0) scale(0.98);
+    box-shadow: 0 0 20px rgba(75, 85, 99, 0.3);
+  }
+  [data-role="designer"] .btn-primary-glow {
+    @apply focus:ring-[#6366F1];
+    background: linear-gradient(135deg, #6366F1 0%, #3B82F6 100%);
+    box-shadow: 0 0 24px rgba(99, 102, 241, 0.4);
+  }
+  [data-role="designer"] .btn-primary-glow:hover {
+    box-shadow: 0 0 32px rgba(99, 102, 241, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  [data-role="designer"] .btn-primary-glow:active {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
   }
 

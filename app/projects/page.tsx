@@ -11,14 +11,14 @@ async function getProjects() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
-    .select("id, title, status, created_at, due_date")
+    .select("id, title, status, created_at, due_date, archived_at")
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error(error);
     return [];
   }
-  return (data ?? []) as { id: string; title: string; status: string; created_at: string | null; due_date: string | null }[];
+  return (data ?? []) as { id: string; title: string; status: string; created_at: string | null; due_date: string | null; archived_at: string | null }[];
 }
 
 export default async function ProjectsIndexPage() {

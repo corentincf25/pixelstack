@@ -75,10 +75,19 @@ export function SidebarContent({
             onError={onLogoError}
           />
           {logoError && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#6366F1] to-[#3B82F6] shadow-[0_0_12px_rgba(99,102,241,0.4)]">
+            <div
+              className={cn(
+                "absolute inset-0 flex items-center justify-center rounded-xl shadow-[0_0_12px_rgba(99,102,241,0.4)]",
+                role === "youtuber"
+                  ? "bg-gradient-to-br from-red-500 to-red-600 shadow-[0_0_12px_rgba(220,38,38,0.4)]"
+                  : role === "designer"
+                    ? "bg-gradient-to-br from-[#6366F1] to-[#3B82F6]"
+                    : "bg-gradient-to-br from-[#4B5563] to-[#374151]"
+              )}
+            >
               <span className="absolute left-0.5 top-1 h-2 w-4 rounded bg-white/30" style={{ transform: "translateY(1px)" }} />
               <span className="absolute left-1 top-0.5 h-3 w-3 rounded bg-white/50" />
-              <span className="absolute right-0.5 bottom-0.5 h-2.5 w-2.5 rounded bg-[#3B82F6]" />
+              <span className="absolute right-0.5 bottom-0.5 h-2.5 w-2.5 rounded bg-white/40" />
             </div>
           )}
         </div>
@@ -120,6 +129,20 @@ export function SidebarContent({
               : pathname === item.href || pathname?.startsWith(item.href + "/");
           const showBadge = item.href === "/projects" && unreadBadge > 0;
           const isYoutuber = role === "youtuber";
+          const isDesigner = role === "designer";
+          const activeLinkClass = active
+            ? isYoutuber
+              ? "bg-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+              : isDesigner
+                ? "bg-[#6366F1] text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+                : "bg-[#4B5563] text-white"
+            : "text-[#9CA3AF] hover:bg-white/[0.06] hover:text-[#E5E7EB]";
+          const badgeClass =
+            isYoutuber
+              ? "bg-red-500 shadow-[0_0_12px_rgba(220,38,38,0.5)]"
+              : isDesigner
+                ? "bg-[#6366F1] shadow-[0_0_12px_rgba(99,102,241,0.5)]"
+                : "bg-[#4B5563]";
           return (
             <Link
               key={item.href}
@@ -127,11 +150,7 @@ export function SidebarContent({
               className={cn(
                 "btn-interactive flex items-center gap-2.5 rounded-lg px-3 text-sm font-medium transition-colors",
                 compact ? "min-h-[44px] py-3" : "py-2.5",
-                active
-                  ? isYoutuber
-                    ? "bg-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-                    : "bg-[#6366F1] text-white shadow-[0_0_20px_rgba(99,102,241,0.4)]"
-                  : "text-[#9CA3AF] hover:bg-white/[0.06] hover:text-[#E5E7EB]"
+                activeLinkClass
               )}
             >
               {item.icon}
@@ -140,9 +159,7 @@ export function SidebarContent({
                 <span
                   className={cn(
                     "ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold text-white",
-                    isYoutuber
-                      ? "bg-red-500 shadow-[0_0_12px_rgba(220,38,38,0.5)]"
-                      : "bg-[#6366F1] shadow-[0_0_12px_rgba(99,102,241,0.5)]"
+                    badgeClass
                   )}
                 >
                   {unreadBadge > 99 ? "99+" : unreadBadge}
@@ -165,8 +182,8 @@ export function SidebarContent({
             <span
               className={cn(
                 "rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                plan === "pro" && "bg-[#6366F1]/20 text-[#A5B4FC] border border-[#6366F1]/40",
-                plan === "studio" && "bg-[#6366F1]/25 text-[#C7D2FE] border border-[#6366F1]/50",
+                plan === "pro" && (role === "youtuber" ? "bg-red-500/20 text-red-200 border border-red-500/40" : "bg-[#6366F1]/20 text-[#A5B4FC] border border-[#6366F1]/40"),
+                plan === "studio" && (role === "youtuber" ? "bg-red-500/25 text-red-200 border border-red-500/50" : "bg-[#6366F1]/25 text-[#C7D2FE] border border-[#6366F1]/50"),
                 (plan === "free" || !plan) && "bg-white/10 text-[#9CA3AF] border border-white/20"
               )}
             >

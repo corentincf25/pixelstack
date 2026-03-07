@@ -26,6 +26,7 @@ type RawProject = {
   due_date: string | null;
   client_id: string | null;
   designer_id: string | null;
+  archived_at: string | null;
 };
 
 const statusOrder = ["draft", "in_progress", "review", "approved"];
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState<SortKey>("due_date");
   const [sortDesc, setSortDesc] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showArchivedOnly, setShowArchivedOnly] = useState(false);
   const [latestVersionByProject, setLatestVersionByProject] = useState<Record<string, string>>({});
   const [profileNames, setProfileNames] = useState<Record<string, { full_name: string | null; avatar_url: string | null }>>({});
   const [collapsedProjects, setCollapsedProjects] = useState(false);
@@ -88,7 +90,7 @@ export default function DashboardPage() {
 
       const { data, error } = await supabase
         .from("projects")
-        .select("id, title, status, created_at, due_date, client_id, designer_id")
+        .select("id, title, status, created_at, due_date, client_id, designer_id, archived_at")
         .order("created_at", { ascending: false });
 
       if (!error && data) setProjects(data as RawProject[]);
@@ -174,6 +176,7 @@ export default function DashboardPage() {
 
   const sortedAndFiltered = useMemo(() => {
     let list = [...projects];
+    list = list.filter((p) => (showArchivedOnly ? !!p.archived_at : !p.archived_at));
     if (statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
     list.sort((a, b) => {
       const aVal = sortBy === "due_date" ? (a.due_date ? new Date(a.due_date).getTime() : 0) : (a.created_at ? new Date(a.created_at).getTime() : 0);
@@ -181,7 +184,7 @@ export default function DashboardPage() {
       return sortDesc ? bVal - aVal : aVal - bVal;
     });
     return list;
-  }, [projects, sortBy, sortDesc, statusFilter]);
+  }, [projects, sortBy, sortDesc, statusFilter, showArchivedOnly]);
 
   return (
     <div className="space-y-8">
@@ -196,7 +199,7 @@ export default function DashboardPage() {
               onClick={() => setOpenJoinModal(true)}
               className="btn-cta-animate inline-flex w-full justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all sm:w-auto"
             >
-              <Link2 className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#3B82F6]")} />
+              <Link2 className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : role === "designer" ? "text-[#3B82F6]" : "text-[#9CA3AF]")} />
               Rejoindre un projet
             </button>
             <button
@@ -218,7 +221,7 @@ export default function DashboardPage() {
             <span
               className={cn(
                 "flex h-2 w-2 rounded-full animate-pulse",
-                role === "youtuber" ? "bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.6)]" : "bg-[#6366F1] shadow-[0_0_10px_rgba(99,102,241,0.6)]"
+                role === "youtuber" ? "bg-red-500 shadow-[0_0_10px_rgba(220,38,38,0.6)]" : role === "designer" ? "bg-[#6366F1] shadow-[0_0_10px_rgba(99,102,241,0.6)]" : "bg-[#6B7280]"
               )}
               aria-hidden
             />
@@ -234,12 +237,17 @@ export default function DashboardPage() {
               const feedback = Number((r as { new_feedback_count?: number }).new_feedback_count) || 0;
               if (messages === 0 && versions === 0 && feedback === 0) return null;
               const isYoutuber = role === "youtuber";
+              const isDesigner = role === "designer";
               const notifVersionsCls = isYoutuber
                 ? "border-red-500/40 bg-red-500/15 hover:bg-red-500/25 hover:shadow-[0_0_20px_rgba(220,38,38,0.2)]"
-                : "border-[#6366F1]/40 bg-[#6366F1]/15 hover:bg-[#6366F1]/25 hover:shadow-[0_0_20px_rgba(99,102,241,0.2)]";
+                : isDesigner
+                  ? "border-[#6366F1]/40 bg-[#6366F1]/15 hover:bg-[#6366F1]/25 hover:shadow-[0_0_20px_rgba(99,102,241,0.2)]"
+                  : "border-white/20 bg-white/5 hover:bg-white/10";
               const notifMessagesCls = isYoutuber
                 ? "border-red-500/40 bg-red-500/10 hover:bg-red-500/20 hover:shadow-[0_0_16px_rgba(220,38,38,0.2)]"
-                : "border-[#3B82F6]/40 bg-[#3B82F6]/10 hover:bg-[#3B82F6]/20 hover:shadow-[0_0_16px_rgba(59,130,246,0.2)]";
+                : isDesigner
+                  ? "border-[#3B82F6]/40 bg-[#3B82F6]/10 hover:bg-[#3B82F6]/20 hover:shadow-[0_0_16px_rgba(59,130,246,0.2)]"
+                  : "border-white/20 bg-white/5 hover:bg-white/10";
               return (
                 <li key={r.project_id} className="animate-notif-item-in flex flex-wrap items-center gap-2 text-sm">
                   {versions > 0 && (
@@ -247,7 +255,7 @@ export default function DashboardPage() {
                       href={`/projects/${r.project_id}?highlight=versions`}
                       className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 font-medium text-[#E5E7EB] transition-all ${notifVersionsCls}`}
                     >
-                      <Layers className={cn("h-4 w-4", isYoutuber ? "text-red-400" : "text-[#6366F1]")} />
+                      <Layers className={cn("h-4 w-4", isYoutuber ? "text-red-400" : isDesigner ? "text-[#6366F1]" : "text-[#9CA3AF]")} />
                       <span className="font-semibold">Votre mini est prête</span> — {versions} version(s) sur « {r.project_title} »
                     </Link>
                   )}
@@ -256,7 +264,7 @@ export default function DashboardPage() {
                       href={`/projects/${r.project_id}?highlight=messages`}
                       className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 font-medium text-[#E5E7EB] transition-all ${notifMessagesCls}`}
                     >
-                      <MessageSquare className={cn("h-4 w-4", isYoutuber ? "text-red-400" : "text-[#3B82F6]")} />
+                      <MessageSquare className={cn("h-4 w-4", isYoutuber ? "text-red-400" : isDesigner ? "text-[#3B82F6]" : "text-[#9CA3AF]")} />
                       {messages} {messages > 1 ? "nouveaux messages" : "nouveau message"} sur « {r.project_title} »
                     </Link>
                   )}
@@ -291,7 +299,7 @@ export default function DashboardPage() {
             <span
               className={cn(
                 "flex h-9 w-1 shrink-0 rounded-full",
-                role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]"
+                role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : role === "designer" ? "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" : "bg-[#4B5563]"
               )}
               aria-hidden
             />
@@ -299,7 +307,7 @@ export default function DashboardPage() {
             <span
               className={cn(
                 "rounded-full border px-2.5 py-0.5 text-xs font-medium tabular-nums text-[#E5E7EB]",
-                role === "youtuber" ? "border-red-500/40 bg-red-500/15" : "border-[#6366F1]/40 bg-[#6366F1]/15"
+                role === "youtuber" ? "border-red-500/40 bg-red-500/15" : role === "designer" ? "border-[#6366F1]/40 bg-[#6366F1]/15" : "border-white/20 bg-white/5"
               )}
             >
               {projects.length}
@@ -316,7 +324,7 @@ export default function DashboardPage() {
             {role && projects.length > 0 && (
               <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 sm:gap-4 sm:px-5 backdrop-blur-[20px]">
                 <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
-                  <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
+                  <ArrowUpDown className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : role === "designer" ? "text-[#6366F1]" : "text-[#9CA3AF]")} />
                   <span className="hidden sm:inline">Trier par</span>
                 </span>
                 <select
@@ -334,14 +342,16 @@ export default function DashboardPage() {
                     "h-9 rounded-xl px-4 py-1.5 text-sm font-medium text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0a]",
                     role === "youtuber"
                       ? "bg-gradient-to-r from-red-500 to-red-600 shadow-[0_0_16px_rgba(220,38,38,0.3)] hover:shadow-[0_0_24px_rgba(220,38,38,0.4)] focus:ring-red-500"
-                      : "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] shadow-[0_0_16px_rgba(99,102,241,0.3)] hover:shadow-[0_0_24px_rgba(99,102,241,0.4)] focus:ring-[#6366F1]"
+                      : role === "designer"
+                        ? "bg-gradient-to-r from-[#6366F1] to-[#3B82F6] shadow-[0_0_16px_rgba(99,102,241,0.3)] hover:shadow-[0_0_24px_rgba(99,102,241,0.4)] focus:ring-[#6366F1]"
+                        : "bg-[#4B5563] focus:ring-[#6B7280]"
                   )}
                 >
                   {sortDesc ? "Plus récent" : "Plus ancien"}
                 </button>
                 <span className="text-[#6B7280] hidden sm:inline">·</span>
                 <span className="flex items-center gap-1.5 text-sm font-medium text-[#9CA3AF]">
-                  <Filter className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : "text-[#6366F1]")} />
+                  <Filter className={cn("h-4 w-4 shrink-0", role === "youtuber" ? "text-red-400" : role === "designer" ? "text-[#6366F1]" : "text-[#9CA3AF]")} />
                   <span className="hidden sm:inline">État</span>
                 </span>
                 <select
@@ -356,6 +366,16 @@ export default function DashboardPage() {
                     </option>
                   ))}
                 </select>
+                <span className="text-[#6B7280] hidden sm:inline">·</span>
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-[#9CA3AF]">
+                  <input
+                    type="checkbox"
+                    checked={showArchivedOnly}
+                    onChange={(e) => setShowArchivedOnly(e.target.checked)}
+                    className="h-4 w-4 rounded border-white/20 bg-white/5 text-primary focus:ring-primary"
+                  />
+                  <span>Projets archivés</span>
+                </label>
               </div>
             )}
         <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
@@ -364,16 +384,18 @@ export default function DashboardPage() {
               title="Chargement…"
               description="Récupération de tes projets."
             />
-          ) : projects.length === 0 ? (
+          ) : sortedAndFiltered.length === 0 ? (
             <EmptyState
-              title="Aucun projet"
+              title={showArchivedOnly ? "Aucun projet archivé" : "Aucun projet"}
               description={
-                isDesigner
-                  ? "Crée un projet et partage le lien d'invitation à ton client (YouTuber)."
-                  : "Crée un projet et partage le lien d'invitation à ton graphiste."
+                showArchivedOnly
+                  ? "Coche « Projets archivés » pour voir les projets que tu as archivés."
+                  : isDesigner
+                    ? "Crée un projet et partage le lien d'invitation à ton client (YouTuber)."
+                    : "Crée un projet et partage le lien d'invitation à ton graphiste."
               }
-              actionLabel="Créer un projet"
-              onAction={() => setOpenModal(true)}
+              actionLabel={showArchivedOnly ? undefined : "Créer un projet"}
+              onAction={showArchivedOnly ? undefined : () => setOpenModal(true)}
             />
           ) : (
             <div
@@ -425,7 +447,7 @@ export default function DashboardPage() {
             >
               <div className="flex flex-col items-start gap-0.5">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                  <span className={cn("flex h-9 w-1 shrink-0 rounded-full", role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : role === "designer" ? "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" : "bg-[#4B5563]")} aria-hidden />
                   <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Vue d’ensemble</h2>
                 </div>
                 <p className="text-xs text-[#9CA3AF] pl-4">Projets, clients uniques, en cours, stockage, répartition par statut</p>
@@ -456,7 +478,7 @@ export default function DashboardPage() {
               aria-expanded={!collapsedCalendar}
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-9 w-1 shrink-0 rounded-full bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" aria-hidden />
+                <span className={cn("flex h-9 w-1 shrink-0 rounded-full", role === "youtuber" ? "bg-gradient-to-b from-red-500 to-red-600" : role === "designer" ? "bg-gradient-to-b from-[#6366F1] to-[#3B82F6]" : "bg-[#4B5563]")} aria-hidden />
                 <h2 className="text-lg font-semibold text-[#E5E7EB] sm:text-[20px]">Calendrier</h2>
               </div>
               <span className="flex items-center gap-2 text-sm text-[#9CA3AF]">

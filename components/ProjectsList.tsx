@@ -11,6 +11,7 @@ export type ProjectRow = {
   status: string;
   created_at: string | null;
   due_date: string | null;
+  archived_at?: string | null;
 };
 
 const statusLabels: Record<string, string> = {
@@ -32,10 +33,12 @@ export function ProjectsList({ projects, showSortAndFilter = false }: ProjectsLi
   const [sortBy, setSortBy] = useState<SortKey>("created_at");
   const [sortDesc, setSortDesc] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showArchivedOnly, setShowArchivedOnly] = useState(false);
   const { byProject } = useUnreadCounts();
 
   const sortedAndFiltered = useMemo(() => {
     let list = [...projects];
+    list = list.filter((p) => (showArchivedOnly ? !!p.archived_at : !p.archived_at));
     if (statusFilter !== "all") {
       list = list.filter((p) => p.status === statusFilter);
     }
@@ -46,7 +49,7 @@ export function ProjectsList({ projects, showSortAndFilter = false }: ProjectsLi
       return aVal - bVal;
     });
     return list;
-  }, [projects, sortBy, sortDesc, statusFilter]);
+  }, [projects, sortBy, sortDesc, statusFilter, showArchivedOnly]);
 
   return (
     <div className="p-5 sm:p-6">
@@ -88,6 +91,16 @@ export function ProjectsList({ projects, showSortAndFilter = false }: ProjectsLi
               </option>
             ))}
           </select>
+          <span className="text-muted-foreground">·</span>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={showArchivedOnly}
+              onChange={(e) => setShowArchivedOnly(e.target.checked)}
+              className="h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary"
+            />
+            Projets archivés
+          </label>
         </div>
       )}
 
