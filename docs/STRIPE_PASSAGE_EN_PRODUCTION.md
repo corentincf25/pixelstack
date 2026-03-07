@@ -110,3 +110,23 @@ Après avoir enregistré les variables :
 4. Sur **Vercel**, mettre les 6 variables Stripe + `NEXT_PUBLIC_APP_URL`, puis redéployer.
 
 Après ça, Stripe ne tourne plus en environnement de test et les abonnements sont réels.
+
+---
+
+## Dépannage : « Environment test » s’affiche encore
+
+Le bandeau **« Environment test »** (ou « Mode test ») apparaît **sur la page Stripe Checkout** (après avoir cliqué sur « Souscrire »). Ce n’est pas un texte de Pixelstack : c’est Stripe qui l’affiche quand la session a été créée avec une **clé test** (`sk_test_...`).
+
+**À faire :**
+
+1. **Vérifier quelle clé utilise ton déploiement**  
+   Ouvre en production :  
+   `https://pixelstack.fr/api/stripe/check-mode`  
+   (ou ton domaine). Si la réponse contient `"mode": "test"`, le serveur utilise encore la clé test.
+
+2. **Sur Vercel** → **Settings** → **Environment Variables** :
+   - Pour l’environnement **Production**, la variable `STRIPE_SECRET_KEY` doit être **exactement** la clé Live (`sk_live_...`), pas `sk_test_...`.
+   - Vérifie qu’il n’y a pas d’espace avant/après en collant la valeur.
+   - Si tu viens de la modifier : **sauvegarde**, puis va dans **Deployments** → **Redeploy** du dernier déploiement (les variables sont lues au build/démarrage, un simple push ne suffit pas si le redeploy n’a pas été refait).
+
+3. **En local** : si tu testes sur `localhost`, c’est ton `.env.local` qui est utilisé. Pour voir le comportement « production », il faut tester sur l’URL déployée (Vercel) après avoir configuré les variables Production.
