@@ -113,8 +113,11 @@ export function SidebarContent({
           ...(role === "designer" ? [storageNavItem, billingNavItem] : []),
           baseNavItems[2],
         ].map((item) => {
+          // Dashboard: actif uniquement sur /dashboard exact (pas sur /dashboard/storage, etc.)
           const active =
-            pathname === item.href || pathname?.startsWith(item.href + "/");
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname === item.href || pathname?.startsWith(item.href + "/");
           const showBadge = item.href === "/projects" && unreadBadge > 0;
           const isYoutuber = role === "youtuber";
           return (

@@ -14,10 +14,11 @@ type SidebarDrawerProps = {
 export function SidebarDrawer({ open, onOpenChange }: SidebarDrawerProps) {
   const state = useSidebarState();
 
-  // Close drawer when route changes (e.g. user taps a nav link)
+  // Close drawer when route changes (e.g. user taps a nav link). Do NOT depend on `open`
+  // or the effect would run when opening and immediately close the drawer.
   useEffect(() => {
-    if (open) onOpenChange(false);
-  }, [state.pathname, open, onOpenChange]);
+    onOpenChange(false);
+  }, [state.pathname, onOpenChange]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

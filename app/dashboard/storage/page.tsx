@@ -11,7 +11,6 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend,
   Tooltip,
 } from "recharts";
 
@@ -281,27 +280,25 @@ export default function StoragePage() {
               Par type de contenu
             </h2>
           </div>
-          <div className="mt-4 h-[280px]">
-            {typeData.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                Aucune donnée pour l’instant
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={typeData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, value }) =>
-                      value > 0 ? `${name}: ${formatBytes(value)}` : ""
-                    }
-                  >
+          {typeData.length === 0 ? (
+            <div className="mt-4 flex h-48 items-center justify-center rounded-lg border border-white/5 bg-white/[0.02] text-sm text-muted-foreground">
+              Aucune donnée pour l'instant
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={typeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      nameKey="name"
+                    >
                     {typeData.map((entry, index) => (
                       <Cell key={index} fill={entry.color} stroke="rgba(0,0,0,0.2)" strokeWidth={1} />
                     ))}
@@ -317,17 +314,27 @@ export default function StoragePage() {
                     labelStyle={{ color: "#f1f5f9" }}
                     itemStyle={{ color: "#e2e8f0" }}
                   />
-                  <Legend
-                    formatter={(value, entry: { payload?: { value?: number } }) => (
-                      <span className="text-sm text-foreground">
-                        {value} {entry?.payload?.value != null ? `(${formatBytes(entry.payload.value)})` : ""}
-                      </span>
-                    )}
-                  />
                 </PieChart>
               </ResponsiveContainer>
-            )}
-          </div>
+              </div>
+              <ul className="mt-4 space-y-2 border-t border-white/10 pt-4">
+                {typeData.map((entry, index) => (
+                  <li key={index} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="h-3 w-3 shrink-0 rounded-full"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <span className="truncate text-foreground">{entry.name}</span>
+                    </span>
+                    <span className="shrink-0 tabular-nums text-muted-foreground">
+                      {formatBytes(entry.value)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
 
         <div className="glass-card rounded-xl border border-white/10 p-6">
@@ -337,53 +344,65 @@ export default function StoragePage() {
               Par projet
             </h2>
           </div>
-          <div className="mt-4 h-[280px]">
-            {projectData.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                Aucun projet avec du stockage
+          {projectData.length === 0 ? (
+            <div className="mt-4 flex h-48 items-center justify-center rounded-lg border border-white/5 bg-white/[0.02] text-sm text-muted-foreground">
+              Aucun projet avec du stockage
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={projectData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      nameKey="name"
+                    >
+                      {projectData.map((entry, index) => (
+                        <Cell key={index} fill={entry.color} stroke="rgba(0,0,0,0.2)" strokeWidth={1} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => formatBytes(value)}
+                      contentStyle={{
+                        backgroundColor: "#1e293b",
+                        border: "1px solid #334155",
+                        borderRadius: "8px",
+                        color: "#f1f5f9",
+                      }}
+                      labelStyle={{ color: "#f1f5f9" }}
+                      itemStyle={{ color: "#e2e8f0" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={projectData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, value }) =>
-                      value > 0 ? `${name}: ${formatBytes(value)}` : ""
-                    }
-                  >
-                    {projectData.map((entry, index) => (
-                      <Cell key={index} fill={entry.color} stroke="rgba(0,0,0,0.2)" strokeWidth={1} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value: number) => formatBytes(value)}
-                    contentStyle={{
-                      backgroundColor: "#1e293b",
-                      border: "1px solid #334155",
-                      borderRadius: "8px",
-                      color: "#f1f5f9",
-                    }}
-                    labelStyle={{ color: "#f1f5f9" }}
-                    itemStyle={{ color: "#e2e8f0" }}
-                  />
-                  <Legend
-                    formatter={(value, entry: { payload?: { value?: number } }) => (
-                      <span className="text-sm text-foreground">
-                        {value} {entry?.payload?.value != null ? `(${formatBytes(entry.payload.value)})` : ""}
+              <div className="mt-4 max-h-48 overflow-y-auto border-t border-white/10 pt-4">
+                <ul className="space-y-2 pr-1">
+                  {projectData.map((entry, index) => (
+                    <li key={index} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="h-3 w-3 shrink-0 rounded-full"
+                          style={{ backgroundColor: entry.color }}
+                        />
+                        <span className="truncate text-foreground" title={entry.name}>
+                          {entry.name}
+                        </span>
                       </span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
+                        {formatBytes(entry.value)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
