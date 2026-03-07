@@ -339,17 +339,25 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                       {msg.image_url && (() => {
                         const url = getImageUrl(msg);
                         if (isPdfAttachment(msg.image_url)) {
+                          const path = getMessageImagePath(projectId, msg.image_url);
+                          const downloadUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=attachment` : null;
+                          const openUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=inline` : null;
                           return (
-                            <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                            <div className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                               <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                               <span className="min-w-0 truncate text-sm text-foreground">{getAttachmentBasename(msg.image_url)}</span>
-                              {url ? (
-                                <a href={url} download={getAttachmentBasename(msg.image_url)} className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30" target="_blank" rel="noopener noreferrer">
-                                  <Download className="h-3.5 w-3.5" />
-                                  Télécharger
-                                </a>
+                              {downloadUrl && openUrl ? (
+                                <span className="flex shrink-0 items-center gap-1.5">
+                                  <a href={openUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
+                                    Ouvrir
+                                  </a>
+                                  <a href={downloadUrl} download={getAttachmentBasename(msg.image_url)} className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
+                                    <Download className="h-3.5 w-3.5" />
+                                    Télécharger
+                                  </a>
+                                </span>
                               ) : (
-                                <span className="text-xs text-muted-foreground">Chargement…</span>
+                                <span className="text-xs text-muted-foreground">—</span>
                               )}
                             </div>
                           );
@@ -418,17 +426,25 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                     {msg.image_url && (() => {
                       const url = getImageUrl(msg);
                       if (isPdfAttachment(msg.image_url)) {
+                        const path = getMessageImagePath(projectId, msg.image_url);
+                        const downloadUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=attachment` : null;
+                        const openUrl = path ? `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=inline` : null;
                         return (
-                          <div className="mt-1 flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+                          <div className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                             <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                             <span className="min-w-0 truncate text-sm text-foreground">{getAttachmentBasename(msg.image_url)}</span>
-                            {url ? (
-                              <a href={url} download={getAttachmentBasename(msg.image_url)} className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30" target="_blank" rel="noopener noreferrer">
-                                <Download className="h-3.5 w-3.5" />
-                                Télécharger
-                              </a>
+                            {downloadUrl && openUrl ? (
+                              <span className="flex shrink-0 items-center gap-1.5">
+                                <a href={openUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
+                                  Ouvrir
+                                </a>
+                                <a href={downloadUrl} download={getAttachmentBasename(msg.image_url)} className="inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/30">
+                                  <Download className="h-3.5 w-3.5" />
+                                  Télécharger
+                                </a>
+                              </span>
                             ) : (
-                              <span className="text-xs text-muted-foreground">Chargement…</span>
+                              <span className="text-xs text-muted-foreground">—</span>
                             )}
                           </div>
                         );
