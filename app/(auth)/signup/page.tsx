@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,6 +19,20 @@ function SignupContent() {
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [role, setRole] = useState<"designer" | "youtuber" | null>(null);
+
+  useEffect(() => {
+    const next = nextParam ?? "";
+    if (next.startsWith("/p/")) {
+      const token = next.replace(/^\/p\//, "").split("?")[0]?.trim() || "";
+      if (token) {
+        try {
+          sessionStorage.setItem("pendingAnonConvert", token);
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, [nextParam]);
 
   const requireAgreement = () => {
     if (!agreedToTerms) {
@@ -52,9 +66,21 @@ function SignupContent() {
         setError(
           "Trop de tentatives d'inscription par email. Réessaie dans 1 heure ou utilise « Continuer avec Google » pour créer ton compte tout de suite."
         );
+      } else if (
+        err.message.toLowerCase().includes("already registered") ||
+        err.message.toLowerCase().includes("user already exists") ||
+        err.message.toLowerCase().includes("already exists")
+      ) {
+        setError("Un compte existe déjà avec cette adresse. Veuillez vous connecter.");
       } else {
         setError(err.message);
       }
+      return;
+    }
+    const alreadyHasAccount =
+      data.user && (!data.user.identities || data.user.identities.length === 0);
+    if (alreadyHasAccount) {
+      setError("Un compte existe déjà avec cette adresse. Veuillez vous connecter.");
       return;
     }
     router.refresh();
@@ -96,7 +122,15 @@ function SignupContent() {
 
         {error && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            {error}
+            <p>{error}</p>
+            {error === "Un compte existe déjà avec cette adresse. Veuillez vous connecter." && (
+              <Link
+                href={nextParam ? `/login?next=${encodeURIComponent(nextParam)}` : "/login"}
+                className="mt-2 inline-block font-medium text-red-100 underline hover:text-white"
+              >
+                Se connecter
+              </Link>
+            )}
           </div>
         )}
 

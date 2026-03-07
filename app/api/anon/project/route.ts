@@ -4,12 +4,13 @@ import { getAnonSessionIdFromRequest } from "@/lib/anon-utils";
 
 const SIGNED_URL_EXPIRES = 3600;
 
-function extractStoragePath(url: string): string | null {
+function extractStoragePath(url: string, projectId: string): string | null {
   if (!url?.trim()) return null;
   const u = url.trim().split("?")[0] ?? "";
   const idx = u.indexOf("/assets/");
   if (idx !== -1) return u.slice(idx + "/assets/".length) || null;
-  if (!u.startsWith("http")) return u || null;
+  if (!u.startsWith("http") && u.includes("/")) return u || null;
+  if (!u.startsWith("http") && u.length > 0) return `${projectId}/versions/${u}`;
   return null;
 }
 
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
   if (versionIds.length > 0) {
     const [fbRes, paths] = await Promise.all([
       admin.from("version_feedback").select("id, version_id, content, created_at, anonymous_session_id").in("version_id", versionIds).order("created_at", { ascending: true }),
-      Promise.resolve((versions ?? []).map((v) => ({ id: v.id, path: extractStoragePath(v.image_url) }))),
+      Promise.resolve((versions ?? []).map((v) => ({ id: v.id, path: extractStoragePath(v.image_url, projectId) }))),
     ]);
     const fbList = (fbRes.data ?? []) as { id: string; version_id: string; content: string; created_at: string; anonymous_session_id: string | null }[];
     fbList.forEach((f) => {
@@ -94,9 +95,15 @@ export async function GET(request: NextRequest) {
       versionFeedback[f.version_id].push({ id: f.id, content: f.content, created_at: f.created_at, anonymous_session_id: f.anonymous_session_id });
     });
     for (const { id, path } of paths) {
-      if (!path || !path.startsWith(projectId + "/")) continue;
-      const { data: signed } = await admin.storage.from("assets").createSignedUrl(path, SIGNED_URL_EXPIRES);
-      if (signed?.signedUrl) versionSignedUrls[id] = signed.signedUrl;
+      const safePath = path?.trim();
+      if (!safePath) continue;
+      const pathForProject = safePath.startsWith(projectId + "/") ? safePath : `${projectId}/${safePath.replace(/^\/+/, "")}`;
+      try {
+        const { data: signed } = await admin.storage.from("assets").createSignedUrl(pathForProject, SIGNED_URL_EXPIRES);
+        if (signed?.signedUrl) versionSignedUrls[id] = signed.signedUrl;
+      } catch {
+        // ignore single version URL failure
+      }
     }
   }
 

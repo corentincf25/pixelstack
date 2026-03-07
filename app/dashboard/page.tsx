@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ProjectCard, type ProjectCardProps } from "@/components/ProjectCard";
 import { CreateProjectModal } from "@/components/CreateProjectModal";
@@ -36,7 +37,10 @@ const statusLabels: Record<string, string> = {
 };
 type SortKey = "created_at" | "due_date";
 
+const PENDING_ANON_KEY = "pendingAnonConvert";
+
 export default function DashboardPage() {
+  const router = useRouter();
   const [projects, setProjects] = useState<RawProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
@@ -59,7 +63,19 @@ export default function DashboardPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      if (user) {
+        setUserId(user.id);
+        try {
+          const pending = sessionStorage.getItem(PENDING_ANON_KEY);
+          if (pending && typeof pending === "string" && pending.length > 0) {
+            sessionStorage.removeItem(PENDING_ANON_KEY);
+            router.replace(`/p/${pending}`);
+            return;
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       const { data: profile } = await supabase
         .from("profiles")

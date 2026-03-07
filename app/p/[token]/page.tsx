@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Send, UserPlus, MessageSquare, FileImage, ImageIcon, Link2 } from "lucide-react";
+import { Send, UserPlus, MessageSquare, FileImage, ImageIcon, Link2, Download, RefreshCw } from "lucide-react";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 import { ANON_LIMITS } from "@/lib/anon-utils";
 import { supabase } from "@/lib/supabase";
@@ -52,6 +52,8 @@ export default function AnonProjectPage() {
   const [lightboxVersion, setLightboxVersion] = useState<{ id: string; version_number: number } | null>(null);
   const [versionComment, setVersionComment] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
+  const [newActivityBanner, setNewActivityBanner] = useState(false);
+  const prevSnapshotRef = useRef<string>("");
   const listEndRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +102,7 @@ export default function AnonProjectPage() {
     })();
   }, [token, router]);
 
-  const loadProject = useCallback(async () => {
+  const loadProject = useCallback(async (silent = false) => {
     if (!token || !sessionReady) return;
     try {
       const res = await fetch(`/api/anon/project?token=${encodeURIComponent(token)}`, { credentials: "include" });
@@ -111,9 +113,13 @@ export default function AnonProjectPage() {
         return;
       }
       const d = await res.json();
+      const snapshot = `${(d.messages?.length ?? 0)}-${(d.versions?.length ?? 0)}-${(d.assets?.length ?? 0)}-${(d.references?.length ?? 0)}`;
+      if (prevSnapshotRef.current && prevSnapshotRef.current !== snapshot) setNewActivityBanner(true);
+      prevSnapshotRef.current = snapshot;
       setData(d);
       setMessageCount(d.messages?.length ?? 0);
       setUploadCount(d.anonUploadCount ?? d.assets?.length ?? 0);
+      if (!silent) setNewActivityBanner(false);
     } catch {
       setError("Erreur chargement");
     } finally {
@@ -127,7 +133,7 @@ export default function AnonProjectPage() {
 
   useEffect(() => {
     if (!data || !sessionReady || !token) return;
-    const interval = setInterval(loadProject, 4000);
+    const interval = setInterval(() => loadProject(true), 4000);
     return () => clearInterval(interval);
   }, [data, sessionReady, token, loadProject]);
 
@@ -226,6 +232,20 @@ export default function AnonProjectPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
+      {newActivityBanner && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+          <p className="text-sm text-amber-200">Nouvelle activité sur le projet.</p>
+          <button
+            type="button"
+            onClick={() => loadProject()}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/20 px-3 py-2 text-sm font-medium text-amber-200 hover:bg-amber-500/30"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Mettre à jour
+          </button>
+        </div>
+      )}
+
       {showBanner && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#6366F1]/30 bg-[#6366F1]/10 px-4 py-3">
           <p className="text-sm text-[#E5E7EB]">
@@ -234,6 +254,7 @@ export default function AnonProjectPage() {
           <div className="flex shrink-0 items-center gap-2">
             <Link
               href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`}
+              onClick={() => { try { sessionStorage.setItem("pendingAnonConvert", token); } catch {} }}
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#6366F1] px-3 py-2 text-sm font-medium text-white"
             >
               <UserPlus className="h-4 w-4" />
@@ -327,7 +348,7 @@ export default function AnonProjectPage() {
         ) : (
           <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
             Limite de messages atteinte.{" "}
-            <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} className="underline">
+            <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} onClick={() => { try { sessionStorage.setItem("pendingAnonConvert", token); } catch {} }} className="underline">
               Créer un compte gratuit pour continuer.
             </Link>
           </p>
@@ -381,12 +402,12 @@ export default function AnonProjectPage() {
           ) : (
             <p className="text-sm text-amber-200">
               Limite atteinte (3 fichiers).{" "}
-              <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} className="underline">
-                Créer un compte gratuit pour continuer.
-              </Link>
-            </p>
-          )}
-          {assets.length > 0 && (
+            <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} onClick={() => { try { sessionStorage.setItem("pendingAnonConvert", token); } catch {} }} className="underline">
+              Créer un compte gratuit pour continuer.
+            </Link>
+          </p>
+        )}
+        {assets.length > 0 && (
             <ul className="mt-2 space-y-1 text-sm text-[#E5E7EB]">
               {assets.map((a) => (
                 <li key={a.id}>{a.file_name || a.file_url}</li>
@@ -402,17 +423,46 @@ export default function AnonProjectPage() {
             <ImageIcon className="h-4 w-4" />
             Versions ({versions.length})
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {versions.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => setLightboxVersion({ id: v.id, version_number: v.version_number })}
-                className="cursor-pointer rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-[#E5E7EB] transition hover:border-[#6366F1]/40 hover:bg-white/5"
-              >
-                V{v.version_number}
-              </button>
-            ))}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {versions.map((v) => {
+              const thumbUrl = versionSignedUrls[v.id];
+              return (
+                <div key={v.id} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black/20">
+                  <div className="relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden bg-black/40">
+                    <button
+                      type="button"
+                      onClick={() => setLightboxVersion({ id: v.id, version_number: v.version_number })}
+                      className="absolute inset-0 h-full w-full text-left focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-inset"
+                    >
+                      {thumbUrl ? (
+                        <img
+                          src={thumbUrl}
+                          alt={`Version ${v.version_number}`}
+                          className="h-full w-full object-cover transition hover:opacity-90"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[#6B7280]">V{v.version_number}</div>
+                      )}
+                    </button>
+                    {thumbUrl && (
+                      <a
+                        href={thumbUrl}
+                        download={`version-${v.version_number}.png`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-lg bg-black/60 px-2 py-1.5 text-xs font-medium text-white hover:bg-black/80"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Télécharger
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <span className="text-sm font-medium text-[#E5E7EB]">V{v.version_number}</span>
+                    <span className="text-xs text-[#6B7280]">{format(new Date(v.created_at), "d MMM HH:mm", { locale: fr })}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -449,7 +499,19 @@ export default function AnonProjectPage() {
           showComments
           children={
             <div className="space-y-3 border-t border-white/10 pt-4">
-              <p className="text-sm font-medium text-[#9CA3AF]">Commentaires</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-[#9CA3AF]">Commentaires</p>
+                {lightboxUrl && (
+                  <a
+                    href={lightboxUrl}
+                    download={`version-${lightboxVersion.version_number}.png`}
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#6366F1]/20 px-2 py-1.5 text-xs font-medium text-[#A5B4FC] hover:bg-[#6366F1]/30"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Télécharger
+                  </a>
+                )}
+              </div>
               {(versionFeedback[lightboxVersion.id] ?? []).map((f) => (
                 <div key={f.id} className="rounded-lg bg-white/5 px-3 py-2 text-sm text-[#E5E7EB]">
                   <p className="text-xs text-[#6B7280]">{f.anonymous_session_id ? "Invité" : "Membre"} · {format(new Date(f.created_at), "dd/MM HH:mm", { locale: fr })}</p>
@@ -482,7 +544,7 @@ export default function AnonProjectPage() {
         <div className="mt-6 rounded-xl border border-[#6366F1]/20 bg-[#6366F1]/5 p-4 text-center text-sm text-[#9CA3AF]">
           Les comptes YouTubeurs sont gratuits. Créer un compte permet de garder l&apos;historique et de retrouver les graphistes avec qui vous travaillez.
           <br />
-          <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} className="mt-2 inline-block font-medium text-[#A5B4FC] underline">
+          <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} onClick={() => { try { sessionStorage.setItem("pendingAnonConvert", token); } catch {} }} className="mt-2 inline-block font-medium text-[#A5B4FC] underline">
             Créer un compte
           </Link>
         </div>
