@@ -133,16 +133,16 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111]/90 p-8 shadow-xl backdrop-blur-sm sm:p-10">
-        <div className="relative space-y-8">
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111]/90 shadow-xl backdrop-blur-sm px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+        <div className="relative space-y-10 sm:space-y-12">
           {step === "role" && (
             <>
-              <div className="space-y-2 text-center">
-                <h1 className="text-3xl font-bold tracking-tight text-[#E5E7EB] sm:text-4xl">
+              <div className="space-y-3 text-center">
+                <h1 className="text-2xl font-bold tracking-tight text-[#E5E7EB] sm:text-3xl lg:text-4xl">
                   Bienvenue sur Pixelstack
                 </h1>
-                <p className="text-base text-[#9CA3AF]">
+                <p className="text-sm text-[#9CA3AF] sm:text-base max-w-xl mx-auto leading-relaxed">
                   Tu crées des miniatures ou tu en commandes ? Choisis ton profil pour commencer.
                 </p>
               </div>
@@ -160,26 +160,26 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              <form onSubmit={handleRoleSubmit} className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2 sm:gap-8">
+              <form onSubmit={handleRoleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:gap-8">
                   <button
                     type="button"
                     onClick={() => setRole("designer")}
-                    className={`group relative flex flex-col items-center gap-4 rounded-2xl border-2 p-8 text-left transition-all duration-200 ${
+                    className={`group relative flex min-h-[200px] flex-col items-center gap-5 rounded-2xl border-2 p-6 text-center transition-all duration-200 sm:min-h-[220px] sm:p-7 lg:gap-6 lg:p-8 ${
                       role === "designer"
                         ? "border-[#6366F1] bg-[#6366F1]/15 shadow-lg shadow-[#6366F1]/10"
                         : "border-white/[0.08] bg-white/[0.03] hover:border-[#6366F1]/50 hover:bg-[#6366F1]/5"
                     }`}
                   >
                     <div
-                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl transition-colors ${
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-colors sm:h-16 sm:w-16 ${
                         role === "designer" ? "bg-[#6366F1]/20 text-[#A5B4FC]" : "bg-white/5 text-[#9CA3AF] group-hover:bg-[#6366F1]/10 group-hover:text-[#A5B4FC]"
                       }`}
                     >
-                      <Palette className="h-8 w-8" />
+                      <Palette className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
                     <span className="text-lg font-semibold text-[#E5E7EB]">Graphiste</span>
-                    <p className="text-sm leading-relaxed text-[#9CA3AF]">
+                    <p className="text-sm leading-relaxed text-[#9CA3AF] max-w-[260px]">
                       Je crée des miniatures pour mes clients. Briefs, versions et retours au même endroit.
                     </p>
                     {role === "designer" && (
@@ -192,22 +192,22 @@ export default function OnboardingPage() {
                   <button
                     type="button"
                     onClick={() => setRole("youtuber")}
-                    className={`group relative flex flex-col items-center gap-4 rounded-2xl border-2 p-8 text-left transition-all duration-200 ${
+                    className={`group relative flex min-h-[200px] flex-col items-center gap-5 rounded-2xl border-2 p-6 text-center transition-all duration-200 sm:min-h-[220px] sm:p-7 lg:gap-6 lg:p-8 ${
                       role === "youtuber"
                         ? "border-red-500/80 bg-red-500/15 shadow-lg shadow-red-500/10"
                         : "border-white/[0.08] bg-white/[0.03] hover:border-red-500/50 hover:bg-red-500/5"
                     }`}
                   >
                     <div
-                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl transition-colors ${
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-colors sm:h-16 sm:w-16 ${
                         role === "youtuber" ? "bg-red-500/20 text-red-400" : "bg-white/5 text-[#9CA3AF] group-hover:bg-red-500/10 group-hover:text-red-400"
                       }`}
                     >
-                      <Video className="h-8 w-8" />
+                      <Video className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
                     <span className="text-lg font-semibold text-[#E5E7EB]">YouTuber & équipe</span>
-                    <p className="text-sm leading-relaxed text-[#9CA3AF]">
-                      Créateurs, agents, managers, assistants, équipes éditoriales, relecteurs — toute personne qui travaille avec un créateur et commande ou suit des miniatures.
+                    <p className="text-sm leading-relaxed text-[#9CA3AF] max-w-[260px]">
+                      Créateurs, agents, managers… Toute personne qui commande ou suit des miniatures avec un graphiste.
                     </p>
                     <p className="text-xs font-medium text-emerald-400/90">100% gratuit pour votre rôle.</p>
                     {role === "youtuber" && (
@@ -218,28 +218,30 @@ export default function OnboardingPage() {
                   </button>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={!role || loading}
-                  className={`w-full rounded-xl py-3.5 text-base font-semibold text-white shadow-lg transition disabled:opacity-50 disabled:shadow-none ${
-                    role === "youtuber"
-                      ? "bg-red-500 shadow-red-500/25 hover:bg-red-600"
-                      : "bg-[#6366F1] shadow-[#6366F1]/25 hover:bg-[#5558e3]"
-                  }`}
-                >
-                  {loading ? "Enregistrement…" : "Continuer"}
-                </button>
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={!role || loading}
+                    className={`w-full rounded-xl py-4 text-base font-semibold text-white shadow-lg transition disabled:opacity-50 disabled:shadow-none ${
+                      role === "youtuber"
+                        ? "bg-red-500 shadow-red-500/25 hover:bg-red-600"
+                        : "bg-[#6366F1] shadow-[#6366F1]/25 hover:bg-[#5558e3]"
+                    }`}
+                  >
+                    {loading ? "Enregistrement…" : "Continuer"}
+                  </button>
+                </div>
               </form>
             </>
           )}
 
           {step === "profile" && (
             <>
-              <div className="space-y-2 text-center">
-                <h1 className="text-3xl font-bold tracking-tight text-[#E5E7EB] sm:text-4xl">
+              <div className="space-y-3 text-center">
+                <h1 className="text-2xl font-bold tracking-tight text-[#E5E7EB] sm:text-3xl lg:text-4xl">
                   Complète ton profil
                 </h1>
-                <p className="text-base text-[#9CA3AF]">
+                <p className="text-sm text-[#9CA3AF] sm:text-base leading-relaxed">
                   Un nom et une photo pour que ton équipe te reconnaisse.
                 </p>
               </div>
@@ -250,29 +252,29 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              <form onSubmit={handleProfileSubmit} className="space-y-6">
-                <div className="space-y-2">
+              <form onSubmit={handleProfileSubmit} className="space-y-8">
+                <div className="space-y-3">
                   <label className="text-sm font-medium text-[#E5E7EB]">Nom ou pseudo</label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Comment on t’appelle ?"
-                    className="w-full rounded-xl border border-white/10 bg-[#0a0a0a]/80 px-4 py-3 text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
+                    className="w-full rounded-xl border border-white/10 bg-[#0a0a0a]/80 px-4 py-3.5 text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <label className="text-sm font-medium text-[#E5E7EB]">Photo de profil</label>
-                  <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/10 bg-white/5">
+                  <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
+                    <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/10 bg-white/5">
                       {avatarPreview ? (
                         <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <span className="text-2xl font-semibold text-[#6B7280]">?</span>
                       )}
                     </div>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-2">
                       <input
                         ref={inputRef}
                         type="file"
@@ -283,31 +285,31 @@ export default function OnboardingPage() {
                       <button
                         type="button"
                         onClick={() => inputRef.current?.click()}
-                        className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-[#E5E7EB] transition-colors hover:bg-white/10"
+                        className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-[#E5E7EB] transition-colors hover:bg-white/10"
                       >
                         <Camera className="h-4 w-4" />
                         {avatarPreview ? "Changer la photo" : "Ajouter une photo"}
                       </button>
-                      <p className="text-xs text-[#6B7280]">Optionnel. Max 500 Ko, compressé automatiquement.</p>
+                      <p className="text-xs text-[#6B7280] leading-relaxed">Optionnel. Max 500 Ko, compressé automatiquement.</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:gap-4">
                   <button
                     type="button"
                     onClick={() => setStep("role")}
-                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-[#E5E7EB] hover:bg-white/10"
+                    className="rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-[#E5E7EB] hover:bg-white/10"
                   >
                     Retour
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 rounded-xl bg-[#6366F1] py-3.5 text-base font-semibold text-white shadow-lg shadow-[#6366F1]/25 transition hover:bg-[#5558e3] disabled:opacity-50"
+                    className="flex-1 rounded-xl bg-[#6366F1] py-4 text-base font-semibold text-white shadow-lg shadow-[#6366F1]/25 transition hover:bg-[#5558e3] disabled:opacity-50"
                   >
                     {loading ? (
-                      <span className="inline-flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Enregistrement…
                       </span>
