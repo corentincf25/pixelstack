@@ -9,6 +9,8 @@ const ONESIGNAL_SDK_URL = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.p
 declare global {
   interface Window {
     OneSignalDeferred?: Array<(OneSignal: unknown) => void | Promise<void>>;
+    /** Instance OneSignal exposée pour que le clic "Activer" déclenche la demande de permission dans le même geste utilisateur (requis par le navigateur). */
+    __OneSignalInstance?: unknown;
   }
 }
 
@@ -22,8 +24,13 @@ export function OneSignalProvider({ children }: { children: React.ReactNode }) {
 
     function runOneSignal(OneSignal: unknown) {
       if (initRef.current) return;
+      window.__OneSignalInstance = OneSignal;
       const OS = OneSignal as {
-        init: (opts: { appId: string; allowLocalhostAsSecureOrigin?: boolean }) => Promise<void>;
+        init: (opts: {
+          appId: string;
+          allowLocalhostAsSecureOrigin?: boolean;
+          promptOptions?: { slidedown?: { prompts?: Array<{ type?: string; autoPrompt?: boolean }> } };
+        }) => Promise<void>;
         login: (externalId: string) => Promise<void>;
         logout: () => Promise<void>;
       };
@@ -33,6 +40,12 @@ export function OneSignalProvider({ children }: { children: React.ReactNode }) {
       OS.init({
         appId: appIdStr,
         allowLocalhostAsSecureOrigin: process.env.NODE_ENV === "development",
+        // Désactive le pop-up automatique OneSignal ; seul notre bandeau dashboard invite à activer les notifs
+        promptOptions: {
+          slidedown: {
+            prompts: [{ type: "push", autoPrompt: false }],
+          },
+        },
       }).catch(() => {
         initRef.current = false;
       });

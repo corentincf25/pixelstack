@@ -256,7 +256,7 @@ export default function DashboardPage() {
                       className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 font-medium text-[#E5E7EB] transition-all ${notifVersionsCls}`}
                     >
                       <Layers className={cn("h-4 w-4", isYoutuber ? "text-red-400" : isDesigner ? "text-[#6366F1]" : "text-[#9CA3AF]")} />
-                      <span className="font-semibold">Votre mini est prête</span> — {versions} version(s) sur « {r.project_title} »
+                      <span className="font-semibold">Votre rendu est déposé</span> — {versions} version(s) sur « {r.project_title} »
                     </Link>
                   )}
                   {messages > 0 && (

@@ -29,14 +29,20 @@ export function NotificationPrompt() {
   };
 
   const enable = () => {
+    // Le navigateur n’affiche la demande de permission que si elle est déclenchée directement par le clic (même stack). On appelle optIn() tout de suite si l’instance est dispo.
+    const OS = typeof window !== "undefined" ? (window as Window & { __OneSignalInstance?: { User?: { PushSubscription?: { optIn?: () => Promise<void> } } } }).__OneSignalInstance : undefined;
+    if (OS?.User?.PushSubscription?.optIn) {
+      OS.User.PushSubscription.optIn();
+    } else {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function (OneSignal: unknown) {
+        const O = OneSignal as { User?: { PushSubscription?: { optIn?: () => Promise<void> } } };
+        try {
+          await O?.User?.PushSubscription?.optIn?.();
+        } catch (_) {}
+      });
+    }
     dismiss();
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async function (OneSignal: unknown) {
-      const OS = OneSignal as { User?: { PushSubscription?: { optIn?: () => Promise<void> } } };
-      try {
-        await OS?.User?.PushSubscription?.optIn?.();
-      } catch (_) {}
-    });
   };
 
   if (!visible) return null;

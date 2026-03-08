@@ -32,6 +32,7 @@ type ProjectVersionsProps = {
   projectId: string;
   isDesigner: boolean;
   isClient: boolean;
+  isReviewer?: boolean;
   currentUserId: string;
   designerId?: string;
   clientId?: string;
@@ -48,7 +49,10 @@ function buildTree(items: (Feedback & { version_id: string })[]) {
   return { roots, byId };
 }
 
-export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId, designerId, clientId }: ProjectVersionsProps) {
+const canComment = (isD: boolean, isC: boolean, isR: boolean) => isD || isC || isR;
+
+export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = false, currentUserId, designerId, clientId }: ProjectVersionsProps) {
+  const canSendFeedback = canComment(isDesigner, isClient, isReviewer);
   const { recordOwnAction } = useProjectActivity() ?? {};
   const [versions, setVersions] = useState<Version[]>([]);
   const [feedbackByVersion, setFeedbackByVersion] = useState<Record<string, { roots: (Feedback & { version_id: string })[]; byId: Map<string, (Feedback & { version_id: string })[]> }>>({});
@@ -317,6 +321,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
                       byId={byId}
                       isClient={isClient}
                       isDesigner={isDesigner}
+                      canReply={canSendFeedback}
                       replyToId={replyToId}
                       setReplyToId={setReplyToId}
                       replyContent={replyContent}
@@ -328,7 +333,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
                       clientId={clientId}
                     />
                   ))}
-                  {(isClient || isDesigner) && (
+                  {canSendFeedback && (
                     <div className="mt-2 flex gap-2">
                       <input
                         type="text"
@@ -390,6 +395,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
                       byId={byId}
                       isClient={isClient}
                       isDesigner={isDesigner}
+                      canReply={canSendFeedback}
                       replyToId={replyToId}
                       setReplyToId={setReplyToId}
                       replyContent={replyContent}
@@ -403,7 +409,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
                   ))
                 )}
               </div>
-              {(isClient || isDesigner) && (
+                  {canSendFeedback && (
                 <div className="flex gap-2 pt-2">
                   <input
                     type="text"
@@ -437,6 +443,7 @@ function CommentBlock({
   byId,
   isClient,
   isDesigner,
+  canReply = false,
   replyToId,
   setReplyToId,
   replyContent,
@@ -452,6 +459,7 @@ function CommentBlock({
   byId: Map<string, (Feedback & { version_id: string })[]>;
   isClient: boolean;
   isDesigner: boolean;
+  canReply?: boolean;
   replyToId: string | null;
   setReplyToId: (id: string | null) => void;
   replyContent: Record<string, string>;
@@ -481,7 +489,7 @@ function CommentBlock({
       <div className={`rounded-lg ${padCls} ${textCls} text-foreground ${bubbleColorCls}`}>
         {feedback.content}
       </div>
-      {(isClient || isDesigner) && (
+      {canReply && (
         <button
           type="button"
           onClick={() => setReplyToId(replyToId === feedback.id ? null : feedback.id)}
@@ -521,6 +529,7 @@ function CommentBlock({
               byId={byId}
               isClient={isClient}
               isDesigner={isDesigner}
+              canReply={canReply}
               replyToId={replyToId}
               setReplyToId={setReplyToId}
               replyContent={replyContent}

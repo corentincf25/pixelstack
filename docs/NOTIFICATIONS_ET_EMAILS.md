@@ -23,7 +23,7 @@ Pour que les emails partent bien vers **tous** les comptes (YouTuber et graphist
 
 Sur le **dashboard**, en haut :
 - Si tu as des **nouvelles versions**, **nouveaux messages** ou **retours** non lus, un bandeau **« Vous avez des mises à jour »** s’affiche.
-- Texte explicite : **« Votre mini est prête »** pour les nouvelles versions, **« X nouveau(x) message(s) »**, **« X retour(s) à consulter »**.
+- Texte explicite : **« Votre rendu est déposé »** pour les nouvelles versions, **« X nouveau(x) message(s) »**, **« X retour(s) à consulter »**.
 - Un clic ouvre directement le projet concerné.
 
 Même sans email, les clients et graphistes voient donc les mises à jour dès qu’ils ouvrent l’app.

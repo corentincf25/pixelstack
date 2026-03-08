@@ -282,6 +282,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   projectId={id}
                   isDesigner={isDesigner}
                   isClient={isClient}
+                  isReviewer={isReviewer}
                   currentUserId={user.id}
                   designerId={project.designer_id ?? undefined}
                   clientId={project.client_id ?? undefined}
