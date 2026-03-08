@@ -77,6 +77,10 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const listEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const userWasNearBottomRef = useRef(true);
+  const justSentByMeRef = useRef(false);
+  const initialScrollDoneRef = useRef(false);
+  const SCROLL_THRESHOLD = 100;
 
   const handlePdfDownload = useCallback(
     async (projectId: string, path: string, filename: string) => {
@@ -134,43 +138,50 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
     [projectId, signedUrls]
   );
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+  // Utilitaire scroll en bas (partagé par l'effet et le bouton)
+  const doScrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
     const el = scrollContainerRef.current;
     if (el) {
       el.scrollTo({ top: el.scrollHeight, behavior });
       setShowScrollToBottom(false);
+      userWasNearBottomRef.current = true;
     } else {
       listEndRef.current?.scrollIntoView({ behavior, block: "end" });
     }
   }, []);
 
-  // Rester en bas après rendu (double rAF pour attendre le DOM à l'envoi d'un message)
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    doScrollToBottom(behavior);
+  }, [doScrollToBottom]);
+
+  // Rester en bas : au chargement initial, après envoi par nous, ou si on était déjà en bas quand un nouveau message arrive
+
   useEffect(() => {
     if (messages.length === 0) return;
     const el = scrollContainerRef.current;
-    const scrollToEnd = () => {
-      if (el) {
-        el.scrollTop = el.scrollHeight;
-        setShowScrollToBottom(false);
-        const threshold = 120;
-        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
-        if (!isNearBottom) setTimeout(() => setShowScrollToBottom(true), 100);
-      } else {
-        listEndRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-      }
-    };
-    requestAnimationFrame(() => {
-      requestAnimationFrame(scrollToEnd);
-    });
-  }, [messages]);
+    const shouldAutoScroll =
+      justSentByMeRef.current ||
+      !initialScrollDoneRef.current ||
+      userWasNearBottomRef.current;
+    if (shouldAutoScroll) {
+      justSentByMeRef.current = false;
+      initialScrollDoneRef.current = true;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => doScrollToBottom("auto"));
+      });
+      // Une seconde fois après layout (images, etc.) pour rester vraiment en bas
+      const t = setTimeout(() => doScrollToBottom("smooth"), 150);
+      return () => clearTimeout(t);
+    }
+  }, [messages, doScrollToBottom]);
 
   // Détecter si l'utilisateur a remonté pour afficher le bouton "Revenir en bas"
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el || messages.length === 0) return;
     const check = () => {
-      const threshold = 120;
-      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_THRESHOLD;
+      userWasNearBottomRef.current = isNearBottom;
       setShowScrollToBottom(!isNearBottom);
     };
     check();
@@ -315,6 +326,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
     });
     setSending(false);
     if (!error) {
+      justSentByMeRef.current = true;
       setContent("");
       setPendingAttachment(null);
       setError(null);
@@ -551,11 +563,11 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
         <button
           type="button"
           onClick={() => scrollToBottom("smooth")}
-          className="btn-interactive absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full border border-white/10 bg-card/95 px-3 py-2 text-xs font-medium text-foreground shadow-lg backdrop-blur-sm hover:bg-card"
-          aria-label="Revenir aux derniers messages"
+          className="btn-interactive absolute bottom-20 left-1/2 z-20 -translate-x-1/2 flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-card/95 px-3 py-2 text-xs font-medium text-foreground shadow-lg backdrop-blur-sm hover:bg-card"
+          aria-label="Revenir en bas de la conversation"
         >
           <ArrowDown className="h-3.5 w-3.5" />
-          Conversation récente
+          Revenir en bas
         </button>
       )}
 

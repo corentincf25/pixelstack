@@ -1,0 +1,52 @@
+{
+  "common": {
+    "back": "Retour",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "loading": "Chargement…",
+    "error": "Erreur",
+    "close": "Fermer",
+    "download": "Télécharger",
+    "open": "Ouvrir"
+  },
+  "nav": {
+    "home": "Accueil",
+    "howItWorks": "Comment ça marche",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "projects": "Projets",
+    "settings": "Paramètres",
+    "storage": "Mon stockage",
+    "billing": "Abonnement",
+    "login": "Connexion",
+    "signup": "Créer un compte",
+    "startFree": "Commencer gratuitement",
+    "logout": "Déconnexion",
+    "backToHome": "Retour à l'accueil"
+  },
+  "hero": {
+    "badge": "Collaboration graphistes & clients",
+    "title": "L'espace de collaboration entre",
+    "titleHighlight": "graphistes et leurs clients",
+    "subtitle": "Gérez versions, assets et retours clients au même endroit.",
+    "origin": "Créé à l'origine pour les miniamakers YouTube.",
+    "ctaCreate": "Créer un projet",
+    "ctaJoin": "Rejoindre un projet",
+    "ctaStart": "Commencer gratuitement",
+    "howItWorks": "Comment ça marche ?",
+    "inviteHint": "Invitez votre client avec un simple lien. Aucun compte requis."
+  },
+  "sidebar": {
+    "planFree": "Gratuit",
+    "planPro": "Pro",
+    "planStudio": "Studio",
+    "loggedIn": "Connecté"
+  },
+  "locale": {
+    "fr": "Français",
+    "en": "English"
+  }
+}

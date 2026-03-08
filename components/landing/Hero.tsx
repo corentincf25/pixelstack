@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { LandingContainer } from "./LandingContainer";
 import { ScrollReveal } from "./ScrollReveal";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { ArrowRight, HelpCircle, ImageIcon } from "lucide-react";
 const HERO_IMAGE = "/landing/hero.png";
 
 export function Hero() {
+  const t = useTranslations("hero");
   const [heroImageError, setHeroImageError] = useState(false);
   const showPlaceholder = heroImageError;
 
@@ -31,7 +33,7 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-[#6366F1]/30 bg-[#6366F1]/10 px-4 py-2 text-sm font-medium text-[#E5E7EB] transition-colors hover:border-[#6366F1]/50 hover:bg-[#6366F1]/15"
           >
             <span className="h-2 w-2 rounded-full bg-[#6366F1]" />
-            Collaboration graphistes & clients
+            {t("badge")}
             <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </ScrollReveal>
@@ -40,26 +42,26 @@ export function Hero() {
         <div className="flex max-w-4xl flex-col items-center text-center">
           <ScrollReveal delay={80}>
             <h1 className="text-4xl font-bold tracking-tight text-[#E5E7EB] sm:text-5xl lg:text-6xl">
-              L’espace de collaboration entre{" "}
+              {t("title")}{" "}
               <span className="bg-gradient-to-r from-[#6366F1] to-[#3B82F6] bg-clip-text text-transparent">
-                graphistes et leurs clients
+                {t("titleHighlight")}
               </span>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={160}>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#9CA3AF] sm:text-xl">
-              Gérez versions, assets et retours clients au même endroit.
+              {t("subtitle")}
             </p>
           </ScrollReveal>
           <ScrollReveal delay={200}>
             <p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-[#A5B4FC]">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1]">✓</span>
-              Invitez votre client avec un simple lien. Aucun compte requis.
+              {t("inviteHint")}
             </p>
           </ScrollReveal>
           <ScrollReveal delay={220}>
             <p className="mt-2 text-sm text-[#9CA3AF]">
-              Créé à l’origine pour les miniamakers YouTube.
+              {t("origin")}
             </p>
           </ScrollReveal>
           <ScrollReveal delay={240}>
@@ -73,7 +75,7 @@ export function Hero() {
                   "hover:shadow-[0_0_32px_rgba(99,102,241,0.5)]"
                 )}
               >
-                Commencer gratuitement
+                {t("ctaStart")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
@@ -85,7 +87,7 @@ export function Hero() {
                 )}
               >
                 <HelpCircle className="h-4 w-4" />
-                Comment ça marche ?
+                {t("howItWorks")}
               </a>
             </div>
           </ScrollReveal>

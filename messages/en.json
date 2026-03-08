@@ -1,0 +1,52 @@
+{
+  "common": {
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "error": "Error",
+    "close": "Close",
+    "download": "Download",
+    "open": "Open"
+  },
+  "nav": {
+    "home": "Home",
+    "howItWorks": "How it works",
+    "features": "Features",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "settings": "Settings",
+    "storage": "My storage",
+    "billing": "Subscription",
+    "login": "Log in",
+    "signup": "Sign up",
+    "startFree": "Start for free",
+    "logout": "Log out",
+    "backToHome": "Back to home"
+  },
+  "hero": {
+    "badge": "Designer & client collaboration",
+    "title": "The workspace for",
+    "titleHighlight": "designers and their clients",
+    "subtitle": "Manage versions, assets and client feedback in one place.",
+    "origin": "Originally built for YouTube thumbnail makers.",
+    "ctaCreate": "Create a project",
+    "ctaJoin": "Join a project",
+    "ctaStart": "Start for free",
+    "howItWorks": "How it works",
+    "inviteHint": "Invite your client with a simple link. No account required."
+  },
+  "sidebar": {
+    "planFree": "Free",
+    "planPro": "Pro",
+    "planStudio": "Studio",
+    "loggedIn": "Logged in"
+  },
+  "locale": {
+    "fr": "Français",
+    "en": "English"
+  }
+}
