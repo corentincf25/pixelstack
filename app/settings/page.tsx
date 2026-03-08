@@ -18,7 +18,7 @@ export default async function SettingsPage() {
     .eq("id", user.id)
     .single();
 
-  const roleLabel = profile?.role === "designer" ? "Graphiste" : "YouTuber";
+  const roleLabel = profile?.role === "designer" ? "Graphiste" : "Client";
 
   return (
     <div className="space-y-8">

@@ -14,6 +14,10 @@ type Counts = {
 type Props = {
   projectId: string;
   initialCounts: Counts;
+  /** Timestamp du dernier envoi/action par l'utilisateur courant : on n'affiche pas le bandeau si la variation a eu lieu juste après. */
+  lastOwnActionAt?: number;
+  /** Pendant cette durée (ms) après lastOwnActionAt, on considère que la nouvelle activité vient de nous et on n'affiche pas le bandeau. */
+  suppressIfOwnActionWithinMs?: number;
 };
 
 function sameCounts(a: Counts, b: Counts) {
@@ -25,7 +29,12 @@ function sameCounts(a: Counts, b: Counts) {
   );
 }
 
-export function ProjectActivityBanner({ projectId, initialCounts }: Props) {
+export function ProjectActivityBanner({
+  projectId,
+  initialCounts,
+  lastOwnActionAt = 0,
+  suppressIfOwnActionWithinMs = 18_000,
+}: Props) {
   const router = useRouter();
   const [showBanner, setShowBanner] = useState(false);
   const [baseline, setBaseline] = useState<Counts>(initialCounts);
@@ -59,10 +68,17 @@ export function ProjectActivityBanner({ projectId, initialCounts }: Props) {
     if (!projectId) return;
     const interval = setInterval(async () => {
       const counts = await fetchCounts();
-      if (counts && !sameCounts(counts, baseline)) setShowBanner(true);
+      if (!counts || sameCounts(counts, baseline)) return;
+      const now = Date.now();
+      const isLikelyOwnAction = lastOwnActionAt > 0 && now - lastOwnActionAt < suppressIfOwnActionWithinMs;
+      if (isLikelyOwnAction) {
+        setBaseline(counts);
+        return;
+      }
+      setShowBanner(true);
     }, 4000);
     return () => clearInterval(interval);
-  }, [projectId, baseline, fetchCounts]);
+  }, [projectId, baseline, fetchCounts, lastOwnActionAt, suppressIfOwnActionWithinMs]);
 
   const handleRefresh = async () => {
     const counts = await fetchCounts();

@@ -14,8 +14,8 @@ export default function TermsPage() {
       <section className="mt-8 space-y-4 text-[#D1D5DB]">
         <h2 className="text-lg font-semibold text-[#E5E7EB]">1. Description du service</h2>
         <p>
-          Pixelstack est une plateforme SaaS permettant aux graphistes et aux créateurs YouTube de collaborer
-          sur des projets de miniatures (thumbnails). Le service inclut la gestion de projets, le dépôt
+          Pixelstack est une plateforme SaaS permettant aux graphistes et à leurs clients de collaborer
+          sur des projets créatifs (visuels, miniatures, illustrations). Le service inclut la gestion de projets, le dépôt
           d&apos;assets et de versions, les commentaires et le suivi du stockage selon l&apos;abonnement choisi.
         </p>
 

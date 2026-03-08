@@ -44,7 +44,7 @@ export default async function ProjectsIndexPage() {
           description={
             isDesigner
               ? "Tous tes projets en cours. Trie par date de rendu ou par état."
-              : "Tous tes projets de miniatures. Crée un projet depuis le dashboard et envoie le lien d'invitation à ton graphiste."
+              : "Tous tes projets. Crée un projet depuis le dashboard et envoie le lien d'invitation à ton graphiste."
           }
         />
       </div>

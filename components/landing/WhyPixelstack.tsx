@@ -25,12 +25,12 @@ export function WhyPixelstack() {
           </ScrollReveal>
           <ScrollReveal delay={80}>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#E5E7EB] sm:text-4xl">
-              Pourquoi les graphistes YouTube utilisent Pixelstack
+              Pourquoi les graphistes utilisent Pixelstack
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={160}>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[#9CA3AF]">
-              Un seul outil pour gérer la collaboration de bout en bout.
+              Pixelstack a été initialement créé pour les miniamakers YouTube qui avaient besoin de centraliser les retours et les versions de leurs miniatures. Aujourd’hui, l’outil fonctionne pour tous les graphistes qui collaborent avec des clients.
             </p>
           </ScrollReveal>
         </div>

@@ -13,10 +13,10 @@ export function CTA() {
         <ScrollReveal>
           <div className="rounded-3xl border border-white/[0.1] bg-white/[0.05] p-10 text-center shadow-[0_10px_40px_rgba(0,0,0,0.4)] backdrop-blur-[20px] sm:p-14">
             <h2 className="text-3xl font-bold tracking-tight text-[#E5E7EB] sm:text-4xl">
-              Organisez votre workflow miniatures
+              Organisez votre workflow de projets design
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-lg text-[#9CA3AF]">
-              Rejoignez les graphistes et créateurs qui livrent leurs miniatures plus vite.
+              Rejoignez les graphistes et créateurs qui livrent leurs visuels et contenus créatifs plus vite.
             </p>
             <Link
               href="/signup"

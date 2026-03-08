@@ -8,7 +8,7 @@ const clientBenefits = [
   { icon: MessageSquare, text: "Commenter les versions" },
   { icon: ImagePlus, text: "Envoyer des assets" },
   { icon: MessageSquare, text: "Discuter avec le graphiste" },
-  { icon: CheckCircle, text: "Valider la miniature" },
+  { icon: CheckCircle, text: "Valider le design" },
 ];
 
 export function ClientNoAccount() {
@@ -21,13 +21,13 @@ export function ClientNoAccount() {
               <div className="flex-1">
                 <span className="inline-flex items-center gap-2 text-sm font-medium text-[#6366F1]">
                   <Link2 className="h-4 w-4" />
-                  Pour le client (YouTuber)
+                  Pour le client
                 </span>
                 <h2 className="mt-3 text-2xl font-bold tracking-tight text-[#E5E7EB] sm:text-3xl">
                   Le client n’a pas besoin de créer de compte
                 </h2>
                 <p className="mt-4 max-w-xl text-[#9CA3AF] leading-relaxed">
-                  Le YouTuber rejoint le projet via le lien d’invitation. Il peut immédiatement commenter les versions, envoyer des assets, discuter avec le graphiste et valider la miniature. Tout cela sans inscription.
+                  Le client rejoint le projet via le lien d’invitation. Il peut immédiatement commenter les versions, envoyer des assets, discuter avec le graphiste et valider le design. Tout cela sans inscription.
                 </p>
                 <p className="mt-5 text-sm font-medium text-[#A5B4FC]">
                   Un simple lien. Aucun compte requis. Le client participe en un clic.

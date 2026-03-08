@@ -31,7 +31,7 @@ export function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-[#6366F1]/30 bg-[#6366F1]/10 px-4 py-2 text-sm font-medium text-[#E5E7EB] transition-colors hover:border-[#6366F1]/50 hover:bg-[#6366F1]/15"
           >
             <span className="h-2 w-2 rounded-full bg-[#6366F1]" />
-            Collaboration graphistes & YouTubers
+            Collaboration graphistes & clients
             <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </ScrollReveal>
@@ -42,19 +42,24 @@ export function Hero() {
             <h1 className="text-4xl font-bold tracking-tight text-[#E5E7EB] sm:text-5xl lg:text-6xl">
               L’espace de collaboration entre{" "}
               <span className="bg-gradient-to-r from-[#6366F1] to-[#3B82F6] bg-clip-text text-transparent">
-                graphistes et YouTubers
+                graphistes et leurs clients
               </span>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={160}>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#9CA3AF] sm:text-xl">
-              Envoyez vos versions, recevez les retours et centralisez tous les assets de vos miniatures au même endroit.
+              Gérez versions, assets et retours clients au même endroit.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={200}>
             <p className="mt-4 flex items-center justify-center gap-2 text-sm font-medium text-[#A5B4FC]">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1]/20 text-[#6366F1]">✓</span>
               Invitez votre client avec un simple lien. Aucun compte requis.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={220}>
+            <p className="mt-2 text-sm text-[#9CA3AF]">
+              Créé à l’origine pour les miniamakers YouTube.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={240}>

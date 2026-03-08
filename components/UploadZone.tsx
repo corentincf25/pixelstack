@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { notifyProjectUpdate } from "@/lib/notify";
+import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { Upload } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
 
@@ -22,6 +23,7 @@ type UploadZoneProps = {
 };
 
 export function UploadZone({ projectId, onUploaded }: UploadZoneProps) {
+  const { recordOwnAction } = useProjectActivity() ?? {};
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +95,10 @@ export function UploadZone({ projectId, onUploaded }: UploadZoneProps) {
           }
         }
         onUploaded?.();
-        if (projectId) notifyProjectUpdate(projectId, "assets");
+        if (projectId) {
+          recordOwnAction?.();
+          notifyProjectUpdate(projectId, "assets");
+        }
       } catch {
         setError("Échec de l'envoi. Réessaie.");
       } finally {

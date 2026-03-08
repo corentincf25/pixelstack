@@ -272,7 +272,7 @@ export function Pricing() {
         </div>
         <ScrollReveal delay={400}>
           <p className="mt-8 text-center text-sm text-[#9CA3AF]">
-            Les clients (YouTubers) rejoignent les projets gratuitement. Seuls les graphistes paient l’abonnement.
+            Les clients rejoignent les projets gratuitement. Seuls les graphistes paient l’abonnement.
           </p>
         </ScrollReveal>
       </LandingContainer>

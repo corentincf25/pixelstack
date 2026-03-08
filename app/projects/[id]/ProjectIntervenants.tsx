@@ -71,7 +71,7 @@ export function ProjectIntervenants({ projectId, collaborators, canInvite, accen
       {canInvite && (
         <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-3">
           <p className="text-sm text-muted-foreground">
-            Tu peux inviter d&apos;autres personnes (équipe post-prod, relecteurs) à consulter les miniatures et demander des modifs.
+            Tu peux inviter d’autres personnes (équipe post-prod, relecteurs) à consulter les versions et le projet et demander des modifs.
           </p>
           {!reviewerLink ? (
             <button

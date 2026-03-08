@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { notifyProjectUpdate } from "@/lib/notify";
+import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { ImagePlus, Link as LinkIcon, Trash2, ExternalLink } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
@@ -20,6 +21,7 @@ function getYoutubeEmbedUrl(url: string) {
 type ProjectReferencesProps = { projectId: string };
 
 export function ProjectReferences({ projectId }: ProjectReferencesProps) {
+  const { recordOwnAction } = useProjectActivity() ?? {};
   const [refs, setRefs] = useState<Ref[]>([]);
   const [loading, setLoading] = useState(true);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -70,6 +72,7 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
     await supabase.from("project_references").insert({ project_id: projectId, kind: "youtube", url: u });
     setYoutubeUrl("");
     load();
+    recordOwnAction?.();
     notifyProjectUpdate(projectId, "reference");
   };
 
@@ -102,6 +105,7 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
     });
     setUploading(false);
     load();
+    recordOwnAction?.();
     notifyProjectUpdate(projectId, "reference");
   };
 

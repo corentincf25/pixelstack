@@ -36,7 +36,7 @@ export function TestimonialsSection() {
           </ScrollReveal>
           <ScrollReveal delay={160}>
             <p className="mx-auto mt-4 max-w-xl text-lg text-[#9CA3AF]">
-              Retrouvez les retours de graphistes et créateurs qui gèrent leurs miniatures avec nous.
+              Retrouvez les retours de graphistes et créateurs qui gèrent leurs projets avec nous.
             </p>
           </ScrollReveal>
         </div>

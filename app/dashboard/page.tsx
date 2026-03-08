@@ -146,7 +146,7 @@ export default function DashboardPage() {
 
   const isDesigner = role === "designer";
   const title = "Bienvenue sur Pixelstack";
-  const description = "Gérez vos miniatures en un seul endroit.";
+  const description = "Gérez vos projets en un seul endroit.";
 
   const hasActivity = rows.some(
     (r) =>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
             Vous avez des mises à jour
           </h2>
           <p className="mb-3 text-sm text-[#9CA3AF]">
-            Nouveaux messages, miniatures prêtes ou retours à consulter — clique pour ouvrir le projet.
+            Nouveaux messages, versions prêtes ou retours à consulter — clique pour ouvrir le projet.
           </p>
           <ul className="space-y-2">
             {rows.map((r) => {
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                 showArchivedOnly
                   ? "Coche « Projets archivés » pour voir les projets que tu as archivés."
                   : isDesigner
-                    ? "Crée un projet et partage le lien d'invitation à ton client (YouTuber)."
+                    ? "Crée un projet et partage le lien d'invitation à ton client."
                     : "Crée un projet et partage le lien d'invitation à ton graphiste."
               }
               actionLabel={showArchivedOnly ? undefined : "Créer un projet"}
@@ -399,7 +399,7 @@ export default function DashboardPage() {
             />
           ) : (
             <div
-              className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 lg:grid-cols-3 lg:gap-6 grid-auto-rows-[220px] sm:grid-auto-rows-[280px]"
+              className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 lg:grid-cols-3 lg:gap-6 grid-auto-rows-[280px]"
             >
               {sortedAndFiltered.map((project) => {
                 const unread = byProject[project.id];

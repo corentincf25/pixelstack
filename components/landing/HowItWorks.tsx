@@ -8,14 +8,14 @@ const steps = [
   {
     number: "1",
     icon: Link2,
-    title: "Créer un projet et envoyer un lien au YouTuber",
+    title: "Créer un projet et envoyer un lien au client",
     description: "Le graphiste crée le projet sur Pixelstack et génère un lien d’invitation. Un simple copier-coller à envoyer au client.",
   },
   {
     number: "2",
     icon: FolderOpen,
     title: "Le client importe ses assets, tout est centralisé",
-    description: "Le YouTuber dépose ses visuels, références et inspirations dans le projet. Plus de fichiers éparpillés sur Drive ou par email.",
+    description: "Le client dépose ses visuels, références et inspirations dans le projet. Plus de fichiers éparpillés sur Drive ou par email.",
   },
   {
     number: "3",
@@ -43,7 +43,7 @@ export function HowItWorks() {
           </ScrollReveal>
           <ScrollReveal delay={160}>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[#9CA3AF]">
-              Trois étapes pour passer du brief à la miniature validée, sans prise de tête.
+              Trois étapes pour passer du brief au projet validé, sans prise de tête.
             </p>
           </ScrollReveal>
         </div>

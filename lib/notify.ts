@@ -7,12 +7,24 @@ export async function notifyProjectUpdate(
   type: "version" | "assets" | "message" | "reference"
 ): Promise<void> {
   try {
-    await fetch("/api/notify-project-update", {
+    const res = await fetch("/api/notify-project-update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ projectId, type }),
+      credentials: "include",
     });
-  } catch {
+    const data = await res.json().catch(() => ({}));
+    if (process.env.NODE_ENV === "development" && typeof console !== "undefined" && console.info) {
+      if (data.sent === 0 && data.skipped) {
+        console.info("[notify] Aucun email envoyé:", data.skipped, data.details ?? "");
+      } else if (data.sent) {
+        console.info("[notify] Email(s) envoyé(s):", data.sent);
+      }
+    }
+  } catch (e) {
+    if (typeof console !== "undefined" && console.warn) {
+      console.warn("notifyProjectUpdate failed", e);
+    }
     // Ne pas bloquer l’UX si la notification échoue
   }
 }

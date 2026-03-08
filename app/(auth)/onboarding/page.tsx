@@ -143,7 +143,7 @@ export default function OnboardingPage() {
                   Bienvenue sur Pixelstack
                 </h1>
                 <p className="text-sm text-[#9CA3AF] sm:text-base max-w-2xl mx-auto leading-relaxed">
-                  Tu crées des miniatures ou tu en commandes ? Choisis ton profil pour commencer.
+                  Tu es graphiste ou client ? Choisis ton profil pour commencer.
                 </p>
               </div>
 
@@ -180,7 +180,7 @@ export default function OnboardingPage() {
                     </div>
                     <span className="text-lg font-semibold text-[#E5E7EB]">Graphiste</span>
                     <p className="text-sm leading-relaxed text-[#9CA3AF] w-full max-w-md">
-                      Je crée des miniatures pour mes clients. Briefs, versions et retours au même endroit.
+                      Je crée des visuels pour mes clients. Briefs, versions et retours au même endroit.
                     </p>
                     {role === "designer" && (
                       <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-[#6366F1] text-xs font-bold text-white">
@@ -205,9 +205,9 @@ export default function OnboardingPage() {
                     >
                       <Video className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
-                    <span className="text-lg font-semibold text-[#E5E7EB]">YouTuber & équipe</span>
+                    <span className="text-lg font-semibold text-[#E5E7EB]">Client & équipe</span>
                     <p className="text-sm leading-relaxed text-[#9CA3AF] w-full max-w-md">
-                      Créateurs, agents, managers… Toute personne qui commande ou suit des miniatures avec un graphiste.
+                      Créateurs, agents, managers… Toute personne qui commande ou suit des projets avec un graphiste. (Profil initialement pensé pour les miniamakers YouTube.)
                     </p>
                     <p className="text-xs font-medium text-emerald-400/90">100% gratuit pour votre rôle.</p>
                     {role === "youtuber" && (

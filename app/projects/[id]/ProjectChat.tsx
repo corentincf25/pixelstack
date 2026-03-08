@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { notifyProjectUpdate } from "@/lib/notify";
+import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { markProjectMessagesRead } from "@/lib/project-read";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { compressImageForChat } from "@/lib/compress-image";
@@ -61,6 +62,7 @@ function getPdfDownloadUrl(projectId: string, path: string, disposition: "attach
 }
 
 export function ProjectChat({ projectId, currentUserId, designerId, clientId }: ProjectChatProps) {
+  const { recordOwnAction } = useProjectActivity() ?? {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
   const [content, setContent] = useState("");
@@ -316,6 +318,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
       setContent("");
       setPendingAttachment(null);
       setError(null);
+      recordOwnAction?.();
       notifyProjectUpdate(projectId, "message");
     }
   };

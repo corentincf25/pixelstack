@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Pixelstack",
-  description: "Gérez vos miniatures YouTube en un seul endroit — graphistes et YouTubers",
+  description: "Espace de collaboration entre graphistes et leurs clients — versions, assets et retours au même endroit.",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { notifyProjectUpdate } from "@/lib/notify";
+import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { markProjectVersionsRead, markProjectFeedbackRead } from "@/lib/project-read";
 import { Download, Upload, MessageSquare, Send, Reply } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
@@ -48,6 +49,7 @@ function buildTree(items: (Feedback & { version_id: string })[]) {
 }
 
 export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId, designerId, clientId }: ProjectVersionsProps) {
+  const { recordOwnAction } = useProjectActivity() ?? {};
   const [versions, setVersions] = useState<Version[]>([]);
   const [feedbackByVersion, setFeedbackByVersion] = useState<Record<string, { roots: (Feedback & { version_id: string })[]; byId: Map<string, (Feedback & { version_id: string })[]> }>>({});
   const [loading, setLoading] = useState(true);
@@ -160,6 +162,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
     else {
       setVersionName("");
       setRefresh((r) => r + 1);
+      recordOwnAction?.();
       notifyProjectUpdate(projectId, "version");
     }
     setUploading(false);

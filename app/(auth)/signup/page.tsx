@@ -47,7 +47,7 @@ function SignupContent() {
     setError(null);
     if (!requireAgreement()) return;
     if (!role) {
-      setError("Choisis ton rôle : Graphiste ou YouTuber.");
+      setError("Choisis ton rôle : Graphiste ou Client.");
       return;
     }
     setLoading(true);
@@ -200,7 +200,7 @@ function SignupContent() {
                   onChange={() => setRole("youtuber")}
                   className="h-4 w-4 border-white/20 text-red-500 focus:ring-red-500"
                 />
-                <span className="text-sm font-medium text-[#E5E7EB]">YouTuber</span>
+                <span className="text-sm font-medium text-[#E5E7EB]">Client</span>
               </label>
             </div>
           </div>

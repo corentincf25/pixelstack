@@ -13,7 +13,7 @@ export function TrustSection() {
               Utilisé par des créateurs et graphistes du monde entier
             </p>
             <p className="text-xs text-[#6B7280]">
-              Rejoignez les équipes qui gèrent leurs miniatures sur Pixelstack.
+              Rejoignez les équipes qui gèrent leurs projets design sur Pixelstack.
             </p>
             {/* Placeholder logos : à remplacer par de vrais logos */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-8 sm:gap-12">

@@ -61,7 +61,7 @@ function LoginForm() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-[#E5E7EB]">Connexion</h1>
-            <p className="mt-1 text-sm text-[#9CA3AF]">L’espace de travail pour les miniamakers</p>
+            <p className="mt-1 text-sm text-[#9CA3AF]">L’espace de collaboration entre graphistes et leurs clients</p>
           </div>
         </div>
 

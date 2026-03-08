@@ -109,7 +109,7 @@ export function SidebarContent({
             ) : (
               <Video className="h-3.5 w-3.5 shrink-0" />
             )}
-            {role === "designer" ? "Espace Graphiste" : "Espace YouTuber"}
+            {role === "designer" ? "Espace Graphiste" : "Espace Client"}
           </div>
           {role === "designer" && <StorageBar />}
         </div>

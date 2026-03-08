@@ -191,7 +191,7 @@ export default function StoragePage() {
     return (
       <div className="rounded-xl glass-card border border-white/10 p-8 text-center">
         <p className="text-muted-foreground">
-          Cette page est réservée aux graphistes. Le YouTuber ne dispose pas de stockage : c’est toujours le graphiste qui héberge les fichiers (assets, versions, références) sur son quota, y compris quand c’est le YouTuber qui a créé le projet et t’a invité.
+          Cette page est réservée aux graphistes. Le client ne dispose pas de stockage : c’est toujours le graphiste qui héberge les fichiers (assets, versions, références) sur son quota, y compris quand c’est le client qui a créé le projet et t’a invité.
         </p>
         <Link
           href="/dashboard"
@@ -211,7 +211,7 @@ export default function StoragePage() {
 
   const typeData = [
     { name: "Assets (fichiers déposés)", value: data?.assets_bytes ?? 0, color: CHART_COLORS[0] },
-    { name: "Versions (miniatures)", value: data?.versions_bytes ?? 0, color: CHART_COLORS[1] },
+    { name: "Versions", value: data?.versions_bytes ?? 0, color: CHART_COLORS[1] },
     { name: "Références (inspirations)", value: data?.refs_bytes ?? 0, color: CHART_COLORS[2] },
   ].filter((d) => d.value > 0);
 
@@ -235,7 +235,7 @@ export default function StoragePage() {
             Mon stockage
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            C’est toujours toi qui héberges les fichiers : même sur les projets où c’est le YouTuber qui t’a invité, tout le stockage (assets, versions, références) est compté sur ton quota. Le client ne stocke rien. Répartition par type et par projet ci-dessous.
+            C’est toujours toi qui héberges les fichiers : même sur les projets où c’est le client qui t’a invité, tout le stockage (assets, versions, références) est compté sur ton quota. Le client ne stocke rien. Répartition par type et par projet ci-dessous.
           </p>
         </div>
         <Link
@@ -249,7 +249,7 @@ export default function StoragePage() {
 
       {hasNoStorage && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200/90">
-          Aucun stockage pour l’instant. Les chiffres ci-dessous concernent uniquement les projets où tu es le <strong>graphiste</strong> (designer). Si tu as créé un projet en tant que YouTuber (client), ajoute un graphiste via le lien d’invitation ou consulte un projet où tu es designer.
+          Aucun stockage pour l’instant. Les chiffres ci-dessous concernent uniquement les projets où tu es le <strong>graphiste</strong> (designer). Si tu as créé un projet en tant que client, ajoute un graphiste via le lien d’invitation ou consulte un projet où tu es designer.
           <div className="mt-3">
             <button
               type="button"

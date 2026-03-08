@@ -18,7 +18,7 @@ export function FounderStory() {
             </h2>
             <div className="mt-6 space-y-4 text-[#9CA3AF] leading-relaxed">
               <p>
-                Je suis graphiste et je travaille régulièrement avec des YouTubers sur leurs miniatures.
+                Je suis graphiste et je travaille régulièrement avec des clients sur leurs visuels (miniatures, illustrations, projets design).
               </p>
               <p>
                 Avec le temps, je me suis rendu compte que tout était dispersé : les retours dans Discord, les fichiers dans Google Drive, les messages sur WhatsApp…

@@ -51,9 +51,9 @@ const statusBadgeStyles: Record<ProjectStatus, string> = {
   approved: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
 };
 
-/** Hauteur totale de la card (pour alignement grid) : mobile 220px, desktop 280px */
+/** Hauteur totale de la card (pour alignement grid) : mobile 280px, desktop 280px */
 export const PROJECT_CARD_HEIGHT = 280;
-export const PROJECT_CARD_HEIGHT_MOBILE = 220;
+export const PROJECT_CARD_HEIGHT_MOBILE = 280;
 
 export function ProjectCard({
   id,
@@ -185,43 +185,46 @@ export function ProjectCard({
         )}
       </div>
 
-      {/* Contenu : padding et structure fixes, plus compact sur mobile */}
-      <div className="relative flex min-h-0 flex-1 flex-col p-3 sm:p-4">
+      {/* Contenu : sur mobile titre en premier, padding renforcé, noms sur une ligne distincte sans chevauchement */}
+      <div className="relative flex min-h-0 flex-1 flex-col p-4 sm:p-4 min-h-[140px] md:min-h-0">
+        {/* Titre : visible en premier sur mobile (order-1), après les noms sur desktop (md:order-2) */}
+        <h3 className="order-1 md:order-2 truncate text-sm font-semibold tracking-tight text-[#E5E7EB] mb-1 md:mb-0 md:mt-0">
+          {title}
+        </h3>
+        {/* Client / graphiste : ligne dédiée, pas de chevauchement (empilé sur mobile si besoin) */}
         {(clientName || designerName || clientAvatarUrl || designerAvatarUrl) && (
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-[#9CA3AF]">
+          <div className="order-2 md:order-1 flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2 text-[#9CA3AF] mb-2 md:mb-2">
             {clientName != null && (
-              <span className="flex items-center gap-1.5 text-xs">
+              <span className="flex items-center gap-1.5 text-xs min-w-0">
                 {clientAvatarUrl ? (
-                  <img src={clientAvatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+                  <img src={clientAvatarUrl} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover" />
                 ) : (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-[#E5E7EB]">Y</span>
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-[#E5E7EB]">Y</span>
                 )}
-                <span className="truncate max-w-[120px]">{clientName}</span>
+                <span className="truncate">{clientName}</span>
               </span>
             )}
-            {designerName != null && clientName != null && <span className="text-white/30">·</span>}
+            {designerName != null && clientName != null && <span className="hidden sm:inline text-white/30">·</span>}
             {designerName != null && (
-              <span className="flex items-center gap-1.5 text-xs">
+              <span className="flex items-center gap-1.5 text-xs min-w-0">
                 {designerAvatarUrl ? (
-                  <img src={designerAvatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+                  <img src={designerAvatarUrl} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover" />
                 ) : (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-[#E5E7EB]">G</span>
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-medium text-[#E5E7EB]">G</span>
                 )}
-                <span className="truncate max-w-[120px]">{designerName}</span>
+                <span className="truncate">{designerName}</span>
               </span>
             )}
           </div>
         )}
-        <h3 className="truncate text-sm font-semibold tracking-tight text-[#E5E7EB]">
-          {title}
-        </h3>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <span className={cn("rounded-lg border px-2 py-0.5 text-xs font-medium", badgeStyle)}>
+        {/* Statut et infos secondaires */}
+        <div className="order-3 mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
+          <span className={cn("rounded-lg border px-2 py-0.5 text-xs font-medium shrink-0", badgeStyle)}>
             {statusLabels[status]}
           </span>
-          <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
-            {dueLabel && <span>Rendu: {dueLabel}</span>}
-            <span>{createdLabel}</span>
+          <div className="flex items-center gap-2 text-xs text-[#9CA3AF] min-w-0">
+            {dueLabel && <span className="truncate">Rendu: {dueLabel}</span>}
+            <span className="truncate">{createdLabel}</span>
           </div>
         </div>
       </div>

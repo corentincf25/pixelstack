@@ -21,7 +21,7 @@ import { ProjectHighlightZone } from "./ProjectHighlightZone";
 import { ProjectPageNav } from "./ProjectPageNav";
 import { ProjectIntervenants } from "./ProjectIntervenants";
 import { AnonPresenceBanner } from "@/components/AnonPresenceBanner";
-import { ProjectActivityBanner } from "@/components/ProjectActivityBanner";
+import { ProjectActivityProvider } from "@/components/ProjectActivityProvider";
 
 type ProjectPageProps = {
   params: Promise<{ id: string }>;
@@ -102,7 +102,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   }
 
   const role = isDesigner ? "designer" : "youtuber";
-  const otherLabel = role === "youtuber" ? "le graphiste" : "le client (YouTuber)";
+  const otherLabel = role === "youtuber" ? "le graphiste" : "le client";
   const otherId = isDesigner ? project.client_id : project.designer_id;
 
   const { data: collaboratorsRows } = await supabase
@@ -150,17 +150,17 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   };
 
   return (
-    <div className="flex w-full max-w-6xl flex-col gap-0 overflow-x-hidden pb-12 pt-4 sm:pt-6 lg:flex-row lg:gap-6">
-      {/* Contenu principal : une colonne, sections empilées avec ancres */}
-      <main className="min-w-0 flex-1 space-y-6 pr-0 lg:pr-52">
-        {alreadyMember && (
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            Tu es déjà membre de ce projet.
-          </div>
-        )}
-        <AnonPresenceBanner projectId={id} />
-        <ProjectActivityBanner projectId={id} initialCounts={activityCounts} />
-        {/* En-tête */}
+    <ProjectActivityProvider projectId={id} initialCounts={activityCounts}>
+      <div className="flex w-full max-w-6xl flex-col gap-0 overflow-x-hidden pb-12 pt-4 sm:pt-6 lg:flex-row lg:gap-6">
+        {/* Contenu principal : une colonne, sections empilées avec ancres */}
+        <main className="min-w-0 flex-1 space-y-6 pr-0 lg:pr-52">
+          {alreadyMember && (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+              Tu es déjà membre de ce projet.
+            </div>
+          )}
+          <AnonPresenceBanner projectId={id} />
+          {/* En-tête */}
         <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card/40 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <BackLink href="/projects" label="Retour aux projets" />
@@ -313,6 +313,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
       </main>
 
       <ProjectPageNav accentRed={role === "youtuber"} />
-    </div>
+      </div>
+    </ProjectActivityProvider>
   );
 }

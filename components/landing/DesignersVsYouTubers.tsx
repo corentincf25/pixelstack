@@ -22,7 +22,7 @@ export function DesignersVsYouTubers() {
       <LandingContainer>
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-[#E5E7EB] sm:text-4xl">
-            For designers and YouTubers
+            For designers and their clients
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-[#9CA3AF]">
             One tool, two perspectives — built for how you actually work.
@@ -51,7 +51,7 @@ export function DesignersVsYouTubers() {
           <GlassCard className="relative overflow-hidden p-6 sm:p-8">
             <div className="absolute right-4 top-4">
               <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-400">
-                YouTubers use Pixelstack for free
+                Clients use Pixelstack for free
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -59,7 +59,7 @@ export function DesignersVsYouTubers() {
                 <Video className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-semibold text-[#E5E7EB]">
-                YouTubers
+                Clients
               </h3>
             </div>
             <ul className="mt-6 space-y-3">

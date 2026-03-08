@@ -4,10 +4,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 
 const MOTIFS: Record<string, string> = {
-  version: "Une nouvelle version de miniature a été déposée.",
+  version: "Une nouvelle version a été déposée.",
   assets: "Des assets ont été ajoutés au projet.",
-  message: "Tu as reçu un nouveau message dans le projet.",
+  message: "Un nouveau message a été envoyé dans le projet.",
   reference: "Une nouvelle référence ou inspiration a été ajoutée.",
+};
+
+const SUBJECTS: Record<string, (title: string) => string> = {
+  message: (title) => `Nouveau message sur votre projet Pixelstack — ${title}`,
+  version: (title) => `Nouvelle version déposée — ${title}`,
+  assets: (title) => `Nouveaux assets sur le projet — ${title}`,
+  reference: (title) => `Nouvelle référence sur le projet — ${title}`,
 };
 
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
@@ -66,6 +73,8 @@ export async function POST(req: Request) {
       );
     }
 
+    console.info("[notify-project-update] Appel reçu", { projectId, type });
+
     const supabase = await createClient();
     const {
       data: { user: actor },
@@ -91,8 +100,8 @@ export async function POST(req: Request) {
 
     const admin = createAdminClient();
     if (!admin) {
-      console.warn("SUPABASE_SERVICE_ROLE_KEY manquant : notification email non envoyée.");
-      return NextResponse.json({ ok: true, skipped: "no_service_role" });
+      console.warn("[notify-project-update] SUPABASE_SERVICE_ROLE_KEY manquant.");
+      return NextResponse.json({ ok: true, sent: 0, skipped: "no_service_role" });
     }
 
     // Tous les membres à notifier = client + designer + relecteurs, SAUF l'acteur
@@ -111,13 +120,14 @@ export async function POST(req: Request) {
     }
 
     if (recipientIds.size === 0) {
-      return NextResponse.json({ ok: true, skipped: "no_recipients" });
+      console.warn("[notify-project-update] Aucun destinataire (acteur seul ou projet sans autre membre).");
+      return NextResponse.json({ ok: true, sent: 0, skipped: "no_recipients" });
     }
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      console.warn("RESEND_API_KEY manquant : notification email non envoyée.");
-      return NextResponse.json({ ok: true, skipped: "no_resend_key" });
+      console.warn("[notify-project-update] RESEND_API_KEY manquant. Vérifiez Vercel → Settings → Environment Variables (Production).");
+      return NextResponse.json({ ok: true, sent: 0, skipped: "no_resend_key" });
     }
 
     const resend = new Resend(apiKey);
@@ -125,34 +135,55 @@ export async function POST(req: Request) {
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ??
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://pixelstack.app");
-    const appUrl = `${baseUrl}/dashboard`;
+    const projectUrl = `${baseUrl}/projects/${projectId}`;
     const motif = MOTIFS[type];
+    const subjectFn = SUBJECTS[type] ?? ((t: string) => `[Pixelstack] À consulter : ${t}`);
+    const subject = subjectFn(project.title);
 
     const emailsSent = new Set<string>();
+    let noEmailCount = 0;
+    let resendError: string | null = null;
+
     for (const recipientId of recipientIds) {
       const email = await getEmailForUserId(admin, recipientId);
-      if (!email || emailsSent.has(email.toLowerCase())) continue;
-      emailsSent.add(email.toLowerCase());
+      if (!email) {
+        noEmailCount++;
+        console.warn("[notify-project-update] Email introuvable pour l'utilisateur", recipientId);
+        continue;
+      }
+      if (emailsSent.has(email.toLowerCase())) continue;
 
-      const { error: sendError } = await resend.emails.send({
+      const { data: sendData, error: sendError } = await resend.emails.send({
         from,
         to: [email],
-        subject: `[Pixelstack] À consulter : ${project.title}`,
+        subject,
         html: `
           <p>Bonjour,</p>
           <p><strong>${motif}</strong></p>
-          <p>Projet concerné : « ${project.title } ». Connecte-toi à l'application pour voir les mises à jour.</p>
-          <p><a href="${appUrl}" style="color: #3b82f6; text-decoration: underline;">Ouvrir Pixelstack</a></p>
-          <p>— L'équipe Pixelstack</p>
+          <p>Projet : « ${project.title } ».</p>
+          <p><a href="${projectUrl}" style="display: inline-block; background: #6366f1; color: white; padding: 10px 18px; text-decoration: none; border-radius: 8px; font-weight: 500;">Voir la conversation</a></p>
+          <p style="color: #6b7280; font-size: 14px;">— L'équipe Pixelstack</p>
         `,
       });
 
       if (sendError) {
-        console.error("Resend error:", sendError, "to:", email);
+        resendError = String(sendError.message ?? sendError);
+        console.error("[notify-project-update] Resend error:", sendError, "to:", email, "type:", type);
+      } else {
+        emailsSent.add(email.toLowerCase());
+        console.info("[notify-project-update] Email envoyé à", email, "id:", sendData?.id ?? "ok");
       }
     }
 
-    return NextResponse.json({ ok: true, sent: emailsSent.size });
+    const payload: { ok: true; sent: number; skipped?: string; details?: string } = {
+      ok: true,
+      sent: emailsSent.size,
+    };
+    if (emailsSent.size === 0 && (noEmailCount > 0 || resendError)) {
+      payload.skipped = noEmailCount > 0 ? "no_email_for_recipient" : "resend_error";
+      payload.details = resendError ?? `${noEmailCount} destinataire(s) sans email trouvé (Auth/profiles).`;
+    }
+    return NextResponse.json(payload);
   } catch (e) {
     console.error("notify-project-update:", e);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

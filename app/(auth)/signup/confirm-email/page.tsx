@@ -21,7 +21,7 @@ export default function ConfirmEmailPage() {
         <p className="text-sm text-[#9CA3AF]">
           Un email de confirmation t'a été envoyé. Clique sur le lien dans le
           message pour activer ton compte, puis reviens ici pour te connecter et
-          choisir ton rôle (Graphiste ou YouTuber).
+          choisir ton rôle (Graphiste ou Client).
         </p>
         <Link
           href="/login"

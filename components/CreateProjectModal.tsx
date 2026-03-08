@@ -57,7 +57,7 @@ export function CreateProjectModal({
       return;
     }
     if (!role || !userId) {
-      setError("Ton profil n'a pas de rôle. Va dans Paramètres ou déconnecte-toi puis réinscris-toi en choisissant Graphiste ou YouTuber.");
+      setError("Ton profil n'a pas de rôle. Va dans Paramètres ou déconnecte-toi puis réinscris-toi en choisissant Graphiste ou Client.");
       return;
     }
 
@@ -142,7 +142,7 @@ export function CreateProjectModal({
             <p className="mt-1 text-sm text-muted-foreground">
               {role === "youtuber"
                 ? "Crée un projet et envoie le lien d'invitation à ton graphiste."
-                : "Crée un projet et envoie le lien d'invitation à ton client (YouTuber)."}
+                : "Crée un projet et envoie le lien d'invitation à ton client."}
             </p>
           </div>
           <button
@@ -157,7 +157,7 @@ export function CreateProjectModal({
         {inviteLink ? (
           <div className="space-y-4">
             <p className="text-sm text-foreground">
-              Projet créé. Envoie ce lien à ton {role === "youtuber" ? "graphiste" : "client (YouTuber)"} :
+              Projet créé. Envoie ce lien à ton {role === "youtuber" ? "graphiste" : "client"} :
             </p>
             <div className="flex gap-2">
               <input

@@ -32,7 +32,7 @@ export default async function UploadPage() {
         title="Upload"
         description={
           isDesigner
-            ? "Dépose des visuels (refs, assets) ou des versions de miniatures pour tes projets."
+            ? "Dépose des visuels (refs, assets) ou des versions pour tes projets."
             : "Dépose tes refs et assets (images, zip) pour que ton graphiste puisse travailler sur le projet."
         }
         />

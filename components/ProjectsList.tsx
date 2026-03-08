@@ -105,7 +105,7 @@ export function ProjectsList({ projects, showSortAndFilter = false }: ProjectsLi
       )}
 
       <div
-        className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 grid-auto-rows-[220px] sm:grid-auto-rows-[280px]"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6 grid-auto-rows-[280px]"
       >
         {sortedAndFiltered.map((project) => {
           const unread = byProject[project.id];
