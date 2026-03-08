@@ -14,9 +14,9 @@ export async function notifyProjectUpdate(
       credentials: "include",
     });
     const data = await res.json().catch(() => ({}));
-    if (process.env.NODE_ENV === "development" && typeof console !== "undefined" && console.info) {
+    if (typeof console !== "undefined") {
       if (data.sent === 0 && data.skipped) {
-        console.info("[notify] Aucun email envoyé:", data.skipped, data.details ?? "");
+        console.warn("[notify] Aucun email envoyé:", data.skipped, data.details ?? "");
       } else if (data.sent) {
         console.info("[notify] Email(s) envoyé(s):", data.sent);
       }

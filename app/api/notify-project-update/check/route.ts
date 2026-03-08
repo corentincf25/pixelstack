@@ -16,7 +16,8 @@ export async function GET() {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
-    const hasKey = Boolean(process.env.RESEND_API_KEY);
+    const key = process.env.RESEND_API_KEY ?? process.env.RESEND_API_KEY_SECRET;
+    const hasKey = Boolean(key && typeof key === "string" && key.trim());
     const from = process.env.RESEND_FROM ?? "Pixelstack <onboarding@resend.dev>";
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.VERCEL_URL;
 
@@ -26,7 +27,7 @@ export async function GET() {
       appUrl: appUrl ? (appUrl.startsWith("http") ? appUrl : `https://${appUrl}`) : null,
       message: hasKey
         ? "Clé Resend présente. Si les emails ne partent pas, vérifier les logs Vercel (notify-project-update) et le domaine d’envoi dans Resend."
-        : "RESEND_API_KEY absente. Ajoute-la dans Vercel → Settings → Environment Variables (Production) puis redéploie.",
+        : "RESEND_API_KEY absente. Vercel → Environment Variables (Production) ou intégration Resend, puis redéploie.",
     });
   } catch (e) {
     console.error("notify-project-update/check:", e);

@@ -59,7 +59,7 @@ L’API **POST /api/notify-project-update** renvoie toujours un JSON avec `ok: t
   - `resend_error` : Resend a refusé l’envoi (voir `details` et les logs Vercel).
 - **`sent: 1`** (ou plus) : au moins un email envoyé. S’il n’arrive pas, vérifier spam et domaine d’envoi (section 2).
 
-En local, la console navigateur affiche aussi un résumé après chaque notification.
+En production, la console navigateur (F12) affiche un avertissement si aucun email n’a été envoyé : `[notify] Aucun email envoyé: <skipped> <details>`.
 
 ## 6. Récapitulatif
 

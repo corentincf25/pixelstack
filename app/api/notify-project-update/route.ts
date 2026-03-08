@@ -20,18 +20,27 @@ const SUBJECTS: Record<string, (title: string) => string> = {
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
 
 /**
- * Récupère l'email d'un utilisateur avec priorité à l'API Auth (fiable pour OAuth/Google).
- * Puis fallback RPC get_user_email, puis profiles.email.
+ * Récupère l'email d'un utilisateur : RPC (auth.users) en priorité, puis Auth API, puis profiles.email.
  */
 async function getEmailForUserId(admin: AdminClient, userId: string): Promise<string | null> {
-  // 1) Auth API — le plus fiable pour Google/OAuth (email + identities)
+  // 1) RPC get_user_email — lecture directe auth.users, fiable pour tous les providers
+  try {
+    const { data: rpcData, error: rpcErr } = await admin.rpc("get_user_email", { target_id: userId });
+    if (!rpcErr && rpcData != null) {
+      const raw = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+      const str = typeof raw === "string" ? raw : (raw && typeof raw === "object" && "get_user_email" in raw ? String((raw as { get_user_email: unknown }).get_user_email) : null);
+      if (str && typeof str === "string" && str.trim()) return str.trim();
+    }
+  } catch (_) {}
+
+  // 2) Auth API — fallback (email + user_metadata + identities)
   const {
     data: { user: authUser },
   } = await admin.auth.admin.getUserById(userId);
   if (authUser) {
     const u = authUser as unknown as Record<string, unknown>;
     const top = u.email;
-    if (top && typeof top === "string" && top.length > 0) return top.trim();
+    if (top && typeof top === "string" && top.length > 0) return (top as string).trim();
     const meta = u.user_metadata as Record<string, unknown> | undefined;
     if (meta?.email && typeof meta.email === "string") return String(meta.email).trim();
     const identities = u.identities as Array<{ identity_data?: Record<string, unknown> }> | undefined;
@@ -43,16 +52,6 @@ async function getEmailForUserId(admin: AdminClient, userId: string): Promise<st
       }
     }
   }
-
-  // 2) RPC get_user_email (auth.users en SQL)
-  try {
-    const { data: rpcData, error: rpcErr } = await admin.rpc("get_user_email", { target_id: userId });
-    if (!rpcErr && rpcData != null) {
-      const raw = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-      const str = typeof raw === "string" ? raw : (raw && typeof raw === "object" && "get_user_email" in raw ? String((raw as { get_user_email: unknown }).get_user_email) : null);
-      if (str && str.trim()) return str.trim();
-    }
-  } catch (_) {}
 
   // 3) profiles.email
   const { data: row } = await admin.from("profiles").select("email").eq("id", userId).single();
@@ -120,14 +119,17 @@ export async function POST(req: Request) {
     }
 
     if (recipientIds.size === 0) {
-      console.warn("[notify-project-update] Aucun destinataire (acteur seul ou projet sans autre membre).");
-      return NextResponse.json({ ok: true, sent: 0, skipped: "no_recipients" });
+      console.warn("[notify-project-update] Aucun destinataire. Projet:", projectId, "client_id:", project.client_id, "designer_id:", project.designer_id, "actor:", actor.id);
+      return NextResponse.json({ ok: true, sent: 0, skipped: "no_recipients", details: "Aucun autre membre sur le projet (client ou graphiste non assigné)." });
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.warn("[notify-project-update] RESEND_API_KEY manquant. Vérifiez Vercel → Settings → Environment Variables (Production).");
-      return NextResponse.json({ ok: true, sent: 0, skipped: "no_resend_key" });
+    // Clé Resend : intégration Vercel ou variable manuelle (même nom attendu)
+    const apiKey =
+      process.env.RESEND_API_KEY ??
+      process.env.RESEND_API_KEY_SECRET;
+    if (!apiKey || typeof apiKey !== "string" || !apiKey.trim()) {
+      console.warn("[notify-project-update] RESEND_API_KEY manquante. Vercel → Settings → Environment Variables → Production, ou lien Resend dans Vercel.");
+      return NextResponse.json({ ok: true, sent: 0, skipped: "no_resend_key", details: "RESEND_API_KEY non définie (vérifier Variables d'environnement Vercel pour Production)." });
     }
 
     const resend = new Resend(apiKey);
@@ -148,7 +150,7 @@ export async function POST(req: Request) {
       const email = await getEmailForUserId(admin, recipientId);
       if (!email) {
         noEmailCount++;
-        console.warn("[notify-project-update] Email introuvable pour l'utilisateur", recipientId);
+        console.warn("[notify-project-update] Email introuvable pour userId", recipientId, "(Auth + RPC get_user_email + profiles.email).");
         continue;
       }
       if (emailsSent.has(email.toLowerCase())) continue;
@@ -167,8 +169,12 @@ export async function POST(req: Request) {
       });
 
       if (sendError) {
-        resendError = String(sendError.message ?? sendError);
-        console.error("[notify-project-update] Resend error:", sendError, "to:", email, "type:", type);
+        const errMsg = String((sendError as { message?: string })?.message ?? sendError);
+        resendError = errMsg;
+        if (errMsg.includes("only send testing emails to your own") || (sendError as { statusCode?: number }).statusCode === 403) {
+          resendError = "Resend en mode test : tu ne peux envoyer qu'à ton propre email. Pour envoyer à tes clients, vérifie un domaine sur resend.com/domains et définis RESEND_FROM avec ce domaine (ex. noreply@pixelstack.fr).";
+        }
+        console.error("[notify-project-update] Resend error:", JSON.stringify(sendError), "to:", email, "from:", from);
       } else {
         emailsSent.add(email.toLowerCase());
         console.info("[notify-project-update] Email envoyé à", email, "id:", sendData?.id ?? "ok");
