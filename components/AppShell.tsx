@@ -6,6 +6,7 @@ import { SidebarProvider } from "@/components/SidebarProvider";
 import { SidebarDrawer } from "@/components/SidebarDrawer";
 import { RoleThemeProvider } from "@/components/RoleThemeProvider";
 import { SyncProfileEmail } from "@/components/SyncProfileEmail";
+import { NotificationPrompt } from "@/components/NotificationPrompt";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 xl:p-8">
               <div className="mx-auto w-full max-w-6xl">{children}</div>
             </main>
+            <NotificationPrompt />
           </div>
         </div>
       </SidebarProvider>

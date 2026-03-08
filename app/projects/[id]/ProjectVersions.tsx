@@ -203,6 +203,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, currentUserId
         setCommentByVersion((prev) => ({ ...prev, [versionId]: "" }));
       }
       setRefresh((r) => r + 1);
+      notifyProjectUpdate(projectId, "feedback");
     }
   };
 

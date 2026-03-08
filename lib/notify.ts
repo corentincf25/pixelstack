@@ -4,7 +4,7 @@
  */
 export async function notifyProjectUpdate(
   projectId: string,
-  type: "version" | "assets" | "message" | "reference"
+  type: "version" | "assets" | "message" | "reference" | "feedback"
 ): Promise<void> {
   try {
     const res = await fetch("/api/notify-project-update", {

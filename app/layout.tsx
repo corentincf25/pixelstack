@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
+import { OneSignalProvider } from "@/components/OneSignalProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,7 +43,9 @@ export default function RootLayout({
             backgroundSize: "200px 200px, 180px 180px, 160px 160px",
           }}
         />
-        <div className="relative z-10">{children}</div>
+        <OneSignalProvider>
+          <div className="relative z-10">{children}</div>
+        </OneSignalProvider>
         <Analytics />
       </body>
     </html>

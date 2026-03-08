@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Resend } from "resend";
+import { sendPushToUser } from "@/lib/onesignal-push";
 
 /** Au plus 1 email de notification par (projet, destinataire) sur cette durée (évite spam + préserve quota Resend). Configurable via NOTIFY_EMAIL_THROTTLE_MINUTES. */
 const DEFAULT_THROTTLE_MINUTES = 15;
@@ -17,6 +18,23 @@ const MOTIFS: Record<string, string> = {
   assets: "Des assets ont été ajoutés au projet.",
   message: "Un nouveau message a été envoyé dans le projet.",
   reference: "Une nouvelle référence ou inspiration a été ajoutée.",
+  feedback: "Un commentaire ou retour a été laissé sur le projet.",
+};
+
+/** Titres / messages pour les notifications push (OneSignal). */
+const PUSH_TITLES: Record<string, (title: string) => string> = {
+  message: (title) => `Nouveau message — ${title}`,
+  version: (title) => `Nouvelle version — ${title}`,
+  assets: (title) => `Nouveaux assets — ${title}`,
+  reference: (title) => `Nouvelle référence — ${title}`,
+  feedback: (title) => `Nouveau commentaire — ${title}`,
+};
+const PUSH_MESSAGES: Record<string, string> = {
+  message: "Un utilisateur a envoyé un message sur le projet.",
+  version: "Une nouvelle version est disponible.",
+  assets: "Des assets ont été ajoutés au projet.",
+  reference: "Une nouvelle référence a été ajoutée.",
+  feedback: "Votre client a laissé un commentaire.",
 };
 
 const SUBJECTS: Record<string, (title: string) => string> = {
@@ -24,6 +42,7 @@ const SUBJECTS: Record<string, (title: string) => string> = {
   version: (title) => `Nouvelle version déposée — ${title}`,
   assets: (title) => `Nouveaux assets sur le projet — ${title}`,
   reference: (title) => `Nouvelle référence sur le projet — ${title}`,
+  feedback: (title) => `Nouveau commentaire sur le projet — ${title}`,
 };
 
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
@@ -76,7 +95,7 @@ export async function POST(req: Request) {
 
     if (!projectId || !type || !MOTIFS[type]) {
       return NextResponse.json(
-        { error: "projectId et type requis (version, assets, message, reference)" },
+        { error: "projectId et type requis (version, assets, message, reference, feedback)" },
         { status: 400 }
       );
     }
@@ -132,6 +151,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, sent: 0, skipped: "no_recipients", details: "Aucun autre membre sur le projet (client ou graphiste non assigné)." });
     }
 
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://pixelstack.app");
+    const projectUrl = `${baseUrl}/projects/${projectId}`;
+
+    // Notifications push OneSignal (indépendant de Resend)
+    const pushTitleFn = PUSH_TITLES[type];
+    const pushBody = PUSH_MESSAGES[type];
+    if (pushTitleFn && pushBody) {
+      for (const recipientId of recipientIds) {
+        sendPushToUser({
+          userId: recipientId,
+          title: pushTitleFn(project.title),
+          message: pushBody,
+          url: projectUrl,
+        }).catch(() => {});
+      }
+    }
+
     // Clé Resend : intégration Vercel ou variable manuelle (même nom attendu)
     const apiKey =
       process.env.RESEND_API_KEY ??
@@ -143,10 +181,6 @@ export async function POST(req: Request) {
 
     const resend = new Resend(apiKey);
     const from = process.env.RESEND_FROM ?? "Pixelstack <onboarding@resend.dev>";
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ??
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://pixelstack.app");
-    const projectUrl = `${baseUrl}/projects/${projectId}`;
     const motif = MOTIFS[type];
     const subjectFn = SUBJECTS[type] ?? ((t: string) => `[Pixelstack] À consulter : ${t}`);
     const subject = subjectFn(project.title);

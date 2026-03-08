@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import { notifyProjectUpdate } from "@/lib/notify";
 
 type Asset = {
   id: string;
@@ -102,6 +103,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
     if (!error) {
       setCommentByAsset((prev) => ({ ...prev, [assetId]: "" }));
       setRefresh((r) => r + 1);
+      notifyProjectUpdate(projectId, "feedback");
     }
   };
 
