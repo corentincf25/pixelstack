@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "@/lib/i18n";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,16 +13,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages(locale);
-
   return (
-    <html lang={locale} className="dark">
+    <html lang="fr" className="dark">
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased relative min-h-screen`}
       >
@@ -47,11 +42,7 @@ export default async function RootLayout({
             backgroundSize: "200px 200px, 180px 180px, 160px 160px",
           }}
         />
-        <div className="relative z-10">
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            {children}
-          </NextIntlClientProvider>
-        </div>
+        <div className="relative z-10">{children}</div>
         <Analytics />
       </body>
     </html>

@@ -4,29 +4,33 @@ import Link from "next/link";
 import { LayoutDashboard, FolderKanban, Settings, LogOut, Palette, Video, HardDrive, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StorageBar } from "@/components/StorageBar";
-import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { useTranslations } from "next-intl";
 
 type NavItem = {
   href: string;
-  labelKey: "dashboard" | "projects" | "settings" | "storage" | "billing";
+  label: string;
   icon: React.ReactNode;
 };
 
 const baseNavItems: NavItem[] = [
-  { href: "/dashboard", labelKey: "dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { href: "/projects", labelKey: "projects", icon: <FolderKanban className="h-4 w-4" /> },
-  { href: "/settings", labelKey: "settings", icon: <Settings className="h-4 w-4" /> },
+  { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { href: "/projects", label: "Projets", icon: <FolderKanban className="h-4 w-4" /> },
+  { href: "/settings", label: "Paramètres", icon: <Settings className="h-4 w-4" /> },
 ];
 const storageNavItem: NavItem = {
   href: "/dashboard/storage",
-  labelKey: "storage",
+  label: "Mon stockage",
   icon: <HardDrive className="h-4 w-4" />,
 };
 const billingNavItem: NavItem = {
   href: "/dashboard/billing",
-  labelKey: "billing",
+  label: "Abonnement",
   icon: <CreditCard className="h-4 w-4" />,
+};
+
+const PLAN_BADGE: Record<string, string> = {
+  free: "Gratuit",
+  pro: "Pro",
+  studio: "Studio",
 };
 
 export type Role = "designer" | "youtuber" | null;
@@ -55,13 +59,6 @@ export function SidebarContent({
   onLogoError,
   compact,
 }: SidebarContentProps) {
-  const tNav = useTranslations("nav");
-  const tSidebar = useTranslations("sidebar");
-  const PLAN_BADGE: Record<string, string> = {
-    free: tSidebar("planFree"),
-    pro: tSidebar("planPro"),
-    studio: tSidebar("planStudio"),
-  };
   return (
     <>
       <Link
@@ -157,7 +154,7 @@ export function SidebarContent({
               )}
             >
               {item.icon}
-              <span className="truncate">{tNav(item.labelKey)}</span>
+              <span className="truncate">{item.label}</span>
               {showBadge && (
                 <span
                   className={cn(
@@ -173,10 +170,6 @@ export function SidebarContent({
         })}
       </nav>
 
-      <div className="mt-auto flex justify-center border-t border-border px-3 py-2">
-        <LocaleSwitcher variant="compact" />
-      </div>
-
       <div className="space-y-0.5 border-t border-border px-3 py-4">
         <div className="flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-muted-foreground">
           {avatarUrl ? (
@@ -184,7 +177,7 @@ export function SidebarContent({
           ) : (
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden />
           )}
-          <span>{tSidebar("loggedIn")}</span>
+          <span>Connecté</span>
           {role && (
             <span
               className={cn(
@@ -194,7 +187,7 @@ export function SidebarContent({
                 (plan === "free" || !plan) && "bg-white/10 text-[#9CA3AF] border border-white/20"
               )}
             >
-              {PLAN_BADGE[plan] ?? tSidebar("planFree")}
+              {PLAN_BADGE[plan] ?? "Gratuit"}
             </span>
           )}
         </div>
@@ -207,7 +200,7 @@ export function SidebarContent({
           )}
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          {tNav("logout")}
+          Se déconnecter
         </button>
       </div>
     </>

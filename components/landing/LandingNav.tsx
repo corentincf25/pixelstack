@@ -7,19 +7,16 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { Menu, X } from "lucide-react";
-import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { useTranslations } from "next-intl";
 
-const navLinksKeys = [
-  { key: "howItWorks" as const, href: "#comment-ca-marche" },
-  { key: "features" as const, href: "#fonctionnalites" },
-  { key: "pricing" as const, href: "#tarifs" },
-  { key: "faq" as const, href: "#faq" },
-  { key: "contact" as const, href: "#contact" },
+const navLinks = [
+  { label: "Comment ça marche", href: "#comment-ca-marche" },
+  { label: "Fonctionnalités", href: "#fonctionnalites" },
+  { label: "Tarifs", href: "#tarifs" },
+  { label: "FAQ", href: "#faq" },
+  { label: "Contact", href: "#contact" },
 ];
 
 export function LandingNav() {
-  const t = useTranslations("nav");
   const [user, setUser] = useState<User | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -101,19 +98,18 @@ export function LandingNav() {
           </Link>
 
           <div className="hidden items-center gap-1 md:flex">
-            {navLinksKeys.map(({ key, href }) => (
+            {navLinks.map(({ label, href }) => (
               <a
-                key={key}
+                key={label}
                 href={href}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-[#9CA3AF] transition-colors hover:bg-white/[0.06] hover:text-[#E5E7EB]"
               >
-                {t(key)}
+                {label}
               </a>
             ))}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <LocaleSwitcher className="hidden sm:block" />
+          <div className="flex shrink-0 items-center gap-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen((o) => !o)}
@@ -147,7 +143,7 @@ export function LandingNav() {
                     {user.email?.[0]?.toUpperCase() ?? "?"}
                   </span>
                 )}
-                <span className="max-md:sr-only">{t("dashboard")}</span>
+                <span className="max-md:sr-only">Mon espace</span>
               </Link>
             ) : (
               <>
@@ -155,7 +151,7 @@ export function LandingNav() {
                   href="/login"
                   className="hidden items-center pr-2 text-xs font-medium text-[#9CA3AF] transition-colors hover:text-[#E5E7EB] sm:inline-flex"
                 >
-                  {t("login")}
+                  Connexion
                 </Link>
                 <Link
                   href="/signup"
@@ -167,7 +163,7 @@ export function LandingNav() {
                     "hidden sm:inline-flex"
                   )}
                 >
-                  {t("startFree")}
+                  Commencer gratuitement
                 </Link>
               </>
             )}
@@ -192,18 +188,14 @@ export function LandingNav() {
         aria-label="Menu de navigation"
       >
         <div className="flex flex-col py-2">
-          <div className="flex items-center justify-between px-5 py-2 md:hidden">
-            <span className="text-xs text-[#9CA3AF]">Langue</span>
-            <LocaleSwitcher />
-          </div>
-          {navLinksKeys.map(({ key, href }) => (
+          {navLinks.map(({ label, href }) => (
             <a
-              key={key}
+              key={label}
               href={href}
               onClick={() => setMobileMenuOpen(false)}
               className="rounded-lg px-5 py-3.5 text-base font-medium text-[#E5E7EB] transition-colors hover:bg-white/[0.08]"
             >
-              {t(key)}
+              {label}
             </a>
           ))}
           {!user && (
@@ -214,14 +206,14 @@ export function LandingNav() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="rounded-lg px-5 py-3.5 text-base font-medium text-[#9CA3AF] transition-colors hover:bg-white/[0.08] hover:text-[#E5E7EB]"
               >
-                {t("login")}
+                Connexion
               </Link>
               <Link
                 href="/signup"
                 onClick={() => setMobileMenuOpen(false)}
                 className="mx-3 mt-2 inline-flex justify-center rounded-xl bg-gradient-to-r from-[#6366F1] to-[#3B82F6] px-4 py-3 text-sm font-medium text-white"
               >
-                {t("startFree")}
+                Commencer gratuitement
               </Link>
             </>
           )}
