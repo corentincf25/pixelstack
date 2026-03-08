@@ -82,6 +82,26 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const initialScrollDoneRef = useRef(false);
   const SCROLL_THRESHOLD = 100;
 
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (!file) continue;
+        const name = file.name && /\.(png|jpe?g|webp|gif)$/i.test(file.name)
+          ? file.name
+          : `capture-${Date.now()}.png`;
+        const imageFile = file.name !== name ? new File([file], name, { type: file.type }) : file;
+        setError(null);
+        setPendingAttachment(imageFile);
+        e.preventDefault();
+        return;
+      }
+    }
+  }, []);
+
   const handlePdfDownload = useCallback(
     async (projectId: string, path: string, filename: string) => {
       const key = `${path}-download`;
@@ -571,7 +591,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
         </button>
       )}
 
-      <form onSubmit={sendMessage} className="sticky bottom-0 z-10 mt-4 flex shrink-0 flex-col gap-2 rounded-lg bg-background/95 py-1 backdrop-blur sm:static sm:bg-transparent sm:py-0">
+      <form onSubmit={sendMessage} onPaste={handlePaste} className="sticky bottom-0 z-10 mt-4 flex shrink-0 flex-col gap-2 rounded-lg bg-background/95 py-1 backdrop-blur sm:static sm:bg-transparent sm:py-0">
         {error && <p className="text-sm text-red-400">{error}</p>}
         {pendingAttachment && (
           <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2">
