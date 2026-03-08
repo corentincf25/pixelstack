@@ -3,6 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 
+/** Au plus 1 email de notification par (projet, destinataire) sur cette durée (évite spam + préserve quota Resend). Configurable via NOTIFY_EMAIL_THROTTLE_MINUTES. */
+const DEFAULT_THROTTLE_MINUTES = 15;
+function getThrottleMinutes(): number {
+  const v = process.env.NOTIFY_EMAIL_THROTTLE_MINUTES;
+  if (v == null || v === "") return DEFAULT_THROTTLE_MINUTES;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) && n >= 1 ? Math.min(n, 1440) : DEFAULT_THROTTLE_MINUTES;
+}
+
 const MOTIFS: Record<string, string> = {
   version: "Une nouvelle version a été déposée.",
   assets: "Des assets ont été ajoutés au projet.",
@@ -145,6 +154,9 @@ export async function POST(req: Request) {
     const emailsSent = new Set<string>();
     let noEmailCount = 0;
     let resendError: string | null = null;
+    let throttledCount = 0;
+    const throttleMinutes = getThrottleMinutes();
+    const throttleCutoff = new Date(Date.now() - throttleMinutes * 60 * 1000).toISOString();
 
     for (const recipientId of recipientIds) {
       const email = await getEmailForUserId(admin, recipientId);
@@ -154,6 +166,23 @@ export async function POST(req: Request) {
         continue;
       }
       if (emailsSent.has(email.toLowerCase())) continue;
+
+      let skipByThrottle = false;
+      try {
+        const { data: throttleRow } = await admin
+          .from("notification_email_throttle")
+          .select("last_sent_at")
+          .eq("project_id", projectId)
+          .eq("recipient_id", recipientId)
+          .maybeSingle();
+        if (throttleRow?.last_sent_at && throttleRow.last_sent_at > throttleCutoff) {
+          throttledCount++;
+          skipByThrottle = true;
+        }
+      } catch (_) {
+        // Table absente (migration 030 non exécutée) : on envoie sans throttle
+      }
+      if (skipByThrottle) continue;
 
       const { data: sendData, error: sendError } = await resend.emails.send({
         from,
@@ -177,6 +206,16 @@ export async function POST(req: Request) {
         console.error("[notify-project-update] Resend error:", JSON.stringify(sendError), "to:", email, "from:", from);
       } else {
         emailsSent.add(email.toLowerCase());
+        try {
+          await admin
+            .from("notification_email_throttle")
+            .upsert(
+              { project_id: projectId, recipient_id: recipientId, last_sent_at: new Date().toISOString() },
+              { onConflict: "project_id,recipient_id" }
+            );
+        } catch (_) {
+          // Table absente : ignorer
+        }
         console.info("[notify-project-update] Email envoyé à", email, "id:", sendData?.id ?? "ok");
       }
     }
@@ -185,9 +224,14 @@ export async function POST(req: Request) {
       ok: true,
       sent: emailsSent.size,
     };
-    if (emailsSent.size === 0 && (noEmailCount > 0 || resendError)) {
-      payload.skipped = noEmailCount > 0 ? "no_email_for_recipient" : "resend_error";
-      payload.details = resendError ?? `${noEmailCount} destinataire(s) sans email trouvé (Auth/profiles).`;
+    if (emailsSent.size === 0 && (noEmailCount > 0 || resendError || throttledCount > 0)) {
+      if (throttledCount > 0 && noEmailCount === 0 && !resendError) {
+        payload.skipped = "rate_limited";
+        payload.details = `Au plus 1 email par ${throttleMinutes} min par destinataire (${throttledCount} ignoré(s)).`;
+      } else {
+        payload.skipped = noEmailCount > 0 ? "no_email_for_recipient" : "resend_error";
+        payload.details = resendError ?? `${noEmailCount} destinataire(s) sans email trouvé (Auth/profiles).`;
+      }
     }
     return NextResponse.json(payload);
   } catch (e) {
