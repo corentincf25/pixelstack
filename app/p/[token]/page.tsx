@@ -400,13 +400,13 @@ export default function AnonProjectPage() {
               </button>
             </>
           ) : (
-            <p className="text-sm text-amber-200">
-              Limite atteinte (3 fichiers).{" "}
-            <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} onClick={() => { try { sessionStorage.setItem("pendingAnonConvert", token); } catch {} }} className="underline">
-              Créer un compte gratuit pour continuer.
-            </Link>
-          </p>
-        )}
+            <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+              Vous avez atteint la limite d&apos;envoi pour les invités.{" "}
+              <Link href={`/signup?convert=1&next=${encodeURIComponent(`/p/${token}`)}`} onClick={() => { try { sessionStorage.setItem("pendingAnonConvert", token); } catch {} }} className="font-medium underline">
+                Créez un compte gratuit pour continuer.
+              </Link>
+            </p>
+          )}
         {assets.length > 0 && (
             <ul className="mt-2 space-y-1 text-sm text-[#E5E7EB]">
               {assets.map((a) => (
@@ -427,23 +427,26 @@ export default function AnonProjectPage() {
             {versions.map((v) => {
               const thumbUrl = versionSignedUrls[v.id];
               return (
-                <div key={v.id} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black/20">
+                <div key={v.id} className="group/v flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black/20">
                   <div className="relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden bg-black/40">
                     <button
                       type="button"
                       onClick={() => setLightboxVersion({ id: v.id, version_number: v.version_number })}
-                      className="absolute inset-0 h-full w-full text-left focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-inset"
+                      className="absolute inset-0 z-[1] h-full w-full text-left focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-inset"
                     >
                       {thumbUrl ? (
                         <img
                           src={thumbUrl}
                           alt={`Version ${v.version_number}`}
-                          className="h-full w-full object-cover transition hover:opacity-90"
+                          className="h-full w-full object-cover transition group-hover/v:opacity-90"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-[#6B7280]">V{v.version_number}</div>
                       )}
                     </button>
+                    <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/0 opacity-0 transition group-hover/v:bg-black/50 group-hover/v:opacity-100" aria-hidden>
+                      <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
+                    </div>
                     {thumbUrl && (
                       <a
                         href={thumbUrl}

@@ -52,6 +52,7 @@ function buildTree(items: (Feedback & { version_id: string })[]) {
 const canComment = (isD: boolean, isC: boolean, isR: boolean) => isD || isC || isR;
 
 export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = false, currentUserId, designerId, clientId }: ProjectVersionsProps) {
+  const { refreshTrigger } = useProjectActivity() ?? {};
   const canSendFeedback = canComment(isDesigner, isClient, isReviewer);
   const { recordOwnAction } = useProjectActivity() ?? {};
   const [versions, setVersions] = useState<Version[]>([]);
@@ -101,7 +102,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
       markProjectFeedbackRead(projectId);
     };
     load();
-  }, [projectId, refresh]);
+  }, [projectId, refresh, refreshTrigger]);
 
   useEffect(() => {
     if (versions.length === 0) return;
@@ -277,18 +278,21 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
                 className="glass-card flex max-h-[380px] flex-col overflow-hidden rounded-xl"
               >
                 {/* Miniature 16:9 + bouton Télécharger sur l'image */}
-                <div className="relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden bg-black/20">
+                <div className="group/img relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden bg-black/20">
                   <button
                     type="button"
                     onClick={() => setLightboxVersion(v)}
-                    className="absolute inset-0 h-full w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+                    className="absolute inset-0 z-[1] h-full w-full text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
                   >
                     <img
                       src={getVersionUrl(v)}
                       alt={v.version_name || `Version ${v.version_number}`}
-                      className="h-full w-full object-cover transition hover:opacity-90"
+                      className="h-full w-full object-cover transition group-hover/img:opacity-90"
                     />
                   </button>
+                  <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/0 opacity-0 transition group-hover/img:bg-black/50 group-hover/img:opacity-100" aria-hidden>
+                    <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
+                  </div>
                   <a
                     href={getVersionDownloadUrl(v) ?? getVersionUrl(v)}
                     download={getVersionDownloadFilename(v)}

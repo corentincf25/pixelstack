@@ -62,7 +62,7 @@ function getPdfDownloadUrl(projectId: string, path: string, disposition: "attach
 }
 
 export function ProjectChat({ projectId, currentUserId, designerId, clientId }: ProjectChatProps) {
-  const { recordOwnAction } = useProjectActivity() ?? {};
+  const { recordOwnAction, refreshTrigger } = useProjectActivity() ?? {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
   const [content, setContent] = useState("");
@@ -240,7 +240,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
       markProjectMessagesRead(projectId);
     };
     load();
-  }, [projectId]);
+  }, [projectId, refreshTrigger]);
 
   // Abonnement Realtime : nouveaux messages
   useEffect(() => {

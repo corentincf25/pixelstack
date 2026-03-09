@@ -8,6 +8,8 @@ export function getAnonSessionIdFromRequest(request: Request): string | null {
 }
 
 export const ANON_LIMITS = {
-  maxMessages: 5,
+  /** Messages illimités pour les invités. */
+  maxMessages: 99999,
+  /** 3 fichiers max (assets + pièces jointes chat) pour invités. */
   maxUploads: 3,
 } as const;

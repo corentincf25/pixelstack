@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
+import { useProjectActivity } from "./ProjectActivityProvider";
 
 type Counts = {
   messagesCount: number;
@@ -36,6 +37,7 @@ export function ProjectActivityBanner({
   suppressIfOwnActionWithinMs = 18_000,
 }: Props) {
   const router = useRouter();
+  const { requestRefresh } = useProjectActivity() ?? {};
   const [showBanner, setShowBanner] = useState(false);
   const [baseline, setBaseline] = useState<Counts>(initialCounts);
 
@@ -81,6 +83,7 @@ export function ProjectActivityBanner({
   }, [projectId, baseline, fetchCounts, lastOwnActionAt, suppressIfOwnActionWithinMs]);
 
   const handleRefresh = async () => {
+    requestRefresh?.();
     const counts = await fetchCounts();
     if (counts) setBaseline(counts);
     setShowBanner(false);

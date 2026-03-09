@@ -12,6 +12,9 @@ type Counts = {
 
 type ContextValue = {
   recordOwnAction: () => void;
+  /** Incrémenté quand l'utilisateur clique "Mettre à jour" pour forcer le rechargement des données. */
+  refreshTrigger: number;
+  requestRefresh: () => void;
 };
 
 const ProjectActivityContext = createContext<ContextValue | null>(null);
@@ -30,10 +33,12 @@ const SUPPRESS_BANNER_MS = 18_000; // ~4–5 cycles de poll (4s) pour ne pas aff
 
 export function ProjectActivityProvider({ projectId, initialCounts, children }: Props) {
   const [lastOwnActionAt, setLastOwnActionAt] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const recordOwnAction = useCallback(() => setLastOwnActionAt(Date.now()), []);
+  const requestRefresh = useCallback(() => setRefreshTrigger((t) => t + 1), []);
 
   return (
-    <ProjectActivityContext.Provider value={{ recordOwnAction }}>
+    <ProjectActivityContext.Provider value={{ recordOwnAction, refreshTrigger, requestRefresh }}>
       {children}
       <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-6xl px-4 lg:left-auto lg:right-auto lg:px-0">
         <ProjectActivityBanner

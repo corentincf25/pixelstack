@@ -21,7 +21,7 @@ function getYoutubeEmbedUrl(url: string) {
 type ProjectReferencesProps = { projectId: string };
 
 export function ProjectReferences({ projectId }: ProjectReferencesProps) {
-  const { recordOwnAction } = useProjectActivity() ?? {};
+  const { recordOwnAction, refreshTrigger } = useProjectActivity() ?? {};
   const [refs, setRefs] = useState<Ref[]>([]);
   const [loading, setLoading] = useState(true);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -56,7 +56,7 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
 
   useEffect(() => {
     load();
-  }, [projectId]);
+  }, [projectId, refreshTrigger]);
 
   useEffect(() => {
     if (lightboxRef && refs.length) {
@@ -191,14 +191,15 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
           {refs.map((r) => (
             <div key={r.id} className="glass-card group relative flex max-h-[340px] flex-col overflow-hidden rounded-xl">
               {/* Miniature 16:9 crop, hauteur limitée pour toujours voir les commentaires */}
-              <button
-                type="button"
-                onClick={() => setLightboxRef(r)}
-                className="aspect-video max-h-[200px] w-full shrink-0 cursor-pointer overflow-hidden text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
-              >
-                {r.kind === "image" ? (
-                  <img src={getRefImageUrl(r)} alt="Ref" className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
-                ) : (
+              <div className="relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setLightboxRef(r)}
+                  className="absolute inset-0 z-[1] h-full w-full cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+                >
+                  {r.kind === "image" ? (
+                    <img src={getRefImageUrl(r)} alt="Ref" className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+                  ) : (
                   <div className="flex h-full w-full items-center justify-center bg-black/20">
                     {getYoutubeEmbedUrl(r.url) ? (
                       <img
@@ -211,7 +212,11 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
                     )}
                   </div>
                 )}
-              </button>
+                </button>
+                <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/50 group-hover:opacity-100" aria-hidden>
+                  <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); remove(r.id); }}

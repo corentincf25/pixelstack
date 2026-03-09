@@ -5,7 +5,6 @@ import { BeforeAfter } from "@/components/landing/BeforeAfter";
 import { WhyPixelstack } from "@/components/landing/WhyPixelstack";
 import { ClientNoAccount } from "@/components/landing/ClientNoAccount";
 import { FounderStory } from "@/components/landing/FounderStory";
-import { TrustSection } from "@/components/landing/TrustSection";
 import { Features } from "@/components/landing/Features";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
@@ -38,7 +37,6 @@ export default function LandingPage() {
           <BeforeAfter />
           <WhyPixelstack />
           <ClientNoAccount />
-          <TrustSection />
           <Features />
           <FounderStory />
           <Pricing />

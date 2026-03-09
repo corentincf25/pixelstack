@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { notifyProjectUpdate } from "@/lib/notify";
 
 type Asset = {
@@ -34,6 +35,7 @@ type ProjectAssetsProps = {
 };
 
 export function ProjectAssets({ projectId }: ProjectAssetsProps) {
+  const { refreshTrigger } = useProjectActivity() ?? {};
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
@@ -59,7 +61,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
       setLoading(false);
     };
     load();
-  }, [projectId, refresh]);
+  }, [projectId, refresh, refreshTrigger]);
 
   useEffect(() => {
     if (assets.length === 0) return;
@@ -133,7 +135,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
           {assets.map((asset) => (
             <li
               key={asset.id}
-              className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/20 px-3 py-2"
+              className="group/row relative flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/20 px-3 py-2"
             >
               {asset.kind === "zip" ? (
                 <FileArchive className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -149,13 +151,18 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
                 </p>
               </div>
               {isImage(asset) ? (
-                <button
-                  type="button"
-                  onClick={() => setLightboxAsset(asset)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
-                >
-                  Voir
-                </button>
+                <>
+                  <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center rounded-lg bg-black/0 opacity-0 transition group-hover/row:bg-black/40 group-hover/row:opacity-100" aria-hidden>
+                    <span className="rounded-lg bg-black/75 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLightboxAsset(asset)}
+                    className="relative z-[2] inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
+                  >
+                    Voir
+                  </button>
+                </>
               ) : null}
               <a
                 href={getAssetUrl(asset)}
