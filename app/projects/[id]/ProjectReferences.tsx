@@ -309,7 +309,6 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
                   )}
                 </div>
               </div>
-            </div>
           ))}
         </div>
       ) : (
@@ -366,7 +365,6 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
                 </div>
               )}
             </div>
-          </div>
         )}
       </ImagePreviewModal>
     </div>

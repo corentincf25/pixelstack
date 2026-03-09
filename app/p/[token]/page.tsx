@@ -732,8 +732,8 @@ export default function AnonProjectPage() {
                 {references.map((ref) => {
                   const imgUrl = ref.kind === "image" ? (referenceSignedUrls[ref.id] ?? ref.url) : null;
                   const ytId = ref.kind === "youtube" ? ref.url.match(YOUTUBE_REG)?.[1] : null;
-                  return (
-                    <div key={ref.id} className="glass-card group relative flex max-h-[340px] flex-col overflow-hidden rounded-xl border border-white/10">
+                  const refCard = (
+                    <>
                       <div className="relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden">
                         <button
                           type="button"
@@ -765,39 +765,43 @@ export default function AnonProjectPage() {
                           <MessageSquare className="h-3.5 w-3.5" />
                           Avis
                         </div>
-                          <div className="max-h-24 space-y-1.5 overflow-y-auto">
-                            {(referenceFeedback[ref.id] ?? []).length === 0 ? (
-                              <p className="text-xs text-muted-foreground">Aucun avis.</p>
-                            ) : (
-                              (referenceFeedback[ref.id] ?? []).map((f) => (
-                                <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-foreground">
-                                  {f.content}
-                                  <p className="mt-0.5 text-[10px] text-muted-foreground">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                          <div className="mt-2 flex gap-2">
-                            <AutoResizeTextarea
-                              maxRows={4}
-                              minRows={1}
-                              value={refCommentById[ref.id] ?? ""}
-                              onChange={(e) => setRefCommentById((prev) => ({ ...prev, [ref.id]: e.target.value }))}
-                              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRefComment(ref.id); } }}
-                              placeholder="Ajouter un avis…"
-                              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => sendRefComment(ref.id)}
-                              disabled={sendingRefId === ref.id || !(refCommentById[ref.id] ?? "").trim()}
-                              className="shrink-0 rounded-lg bg-red-500 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
-                            >
-                              <Send className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                        <div className="max-h-24 space-y-1.5 overflow-y-auto">
+                          {(referenceFeedback[ref.id] ?? []).length === 0 ? (
+                            <p className="text-xs text-muted-foreground">Aucun avis.</p>
+                          ) : (
+                            (referenceFeedback[ref.id] ?? []).map((f) => (
+                              <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-foreground">
+                                {f.content}
+                                <p className="mt-0.5 text-[10px] text-muted-foreground">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <div className="mt-2 flex gap-2">
+                          <AutoResizeTextarea
+                            maxRows={4}
+                            minRows={1}
+                            value={refCommentById[ref.id] ?? ""}
+                            onChange={(e) => setRefCommentById((prev) => ({ ...prev, [ref.id]: e.target.value }))}
+                            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRefComment(ref.id); } }}
+                            placeholder="Ajouter un avis…"
+                            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => sendRefComment(ref.id)}
+                            disabled={sendingRefId === ref.id || !(refCommentById[ref.id] ?? "").trim()}
+                            className="shrink-0 rounded-lg bg-red-500 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </div>
+                    </>
+                  );
+                  return (
+                    <div key={ref.id} className="glass-card group relative flex max-h-[340px] flex-col overflow-hidden rounded-xl border border-white/10">
+                      {refCard}
                     </div>
                   );
                 })}
