@@ -39,6 +39,7 @@ export function ProjectActivityBanner({
   const router = useRouter();
   const { requestRefresh } = useProjectActivity() ?? {};
   const [showBanner, setShowBanner] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [baseline, setBaseline] = useState<Counts>(initialCounts);
 
   useEffect(() => {
@@ -83,11 +84,19 @@ export function ProjectActivityBanner({
   }, [projectId, baseline, fetchCounts, lastOwnActionAt, suppressIfOwnActionWithinMs]);
 
   const handleRefresh = async () => {
+    setRefreshing(true);
     requestRefresh?.();
-    const counts = await fetchCounts();
-    if (counts) setBaseline(counts);
-    setShowBanner(false);
     router.refresh();
+    try {
+      const [counts] = await Promise.all([
+        fetchCounts(),
+        new Promise((r) => setTimeout(r, 600)),
+      ]);
+      if (counts) setBaseline(counts);
+    } finally {
+      setShowBanner(false);
+      setRefreshing(false);
+    }
   };
 
   if (!showBanner) return null;
@@ -98,10 +107,11 @@ export function ProjectActivityBanner({
       <button
         type="button"
         onClick={handleRefresh}
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-amber-500/20 px-3 py-2 font-medium hover:bg-amber-500/30"
+        disabled={refreshing}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-amber-500/20 px-3 py-2 font-medium hover:bg-amber-500/30 disabled:opacity-70"
       >
-        <RefreshCw className="h-4 w-4" />
-        Mettre à jour
+        <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        {refreshing ? "Chargement…" : "Mettre à jour"}
       </button>
     </div>
   );
