@@ -23,7 +23,7 @@ import { ANON_LIMITS } from "@/lib/anon-utils";
 import { supabase } from "@/lib/supabase";
 import { BentoCard } from "@/components/BentoCard";
 import { BackLink } from "@/components/BackLink";
-import { ProjectPageNav } from "@/components/ProjectPageNav";
+import { ProjectPageNav } from "@/app/projects/[id]/ProjectPageNav";
 import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
 type Message = {
