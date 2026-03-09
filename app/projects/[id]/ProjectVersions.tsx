@@ -9,6 +9,7 @@ import { markProjectVersionsRead, markProjectFeedbackRead } from "@/lib/project-
 import { Download, Upload, MessageSquare, Send, Reply } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -208,6 +209,7 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
         setCommentByVersion((prev) => ({ ...prev, [versionId]: "" }));
       }
       setRefresh((r) => r + 1);
+      recordOwnAction?.();
       notifyProjectUpdate(projectId, "feedback");
     }
   };
@@ -339,11 +341,12 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
                   ))}
                   {canSendFeedback && (
                     <div className="mt-2 flex gap-2">
-                      <input
-                        type="text"
+                      <AutoResizeTextarea
+                        maxRows={6}
+                        minRows={1}
                         value={commentByVersion[v.id] ?? ""}
                         onChange={(e) => setCommentByVersion((prev) => ({ ...prev, [v.id]: e.target.value }))}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sendComment(v.id); } }}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(v.id); } }}
                         placeholder="Ce que tu aimes, tes retours…"
                         className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       />
@@ -415,11 +418,12 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
               </div>
                   {canSendFeedback && (
                 <div className="flex gap-2 pt-2">
-                  <input
-                    type="text"
+                  <AutoResizeTextarea
+                    maxRows={6}
+                    minRows={1}
                     value={commentByVersion[lightboxVersion.id] ?? ""}
                     onChange={(e) => setCommentByVersion((prev) => ({ ...prev, [lightboxVersion.id]: e.target.value }))}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sendComment(lightboxVersion.id); } }}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(lightboxVersion.id); } }}
                     placeholder="Ce que tu aimes, tes retours…"
                     className="min-w-0 flex-1 rounded-xl border border-white/10 bg-background/80 px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
@@ -505,11 +509,12 @@ function CommentBlock({
       )}
       {isReplying && (
         <div className={large ? "ml-4 mt-2 flex gap-2" : "ml-3 mt-1 flex gap-2"}>
-          <input
-            type="text"
+          <AutoResizeTextarea
+            maxRows={5}
+            minRows={1}
             value={replyContent[feedback.id] ?? ""}
             onChange={(e) => setReplyContent((prev) => ({ ...prev, [feedback.id]: e.target.value }))}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); sendComment(versionId, feedback.id); } }}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendComment(versionId, feedback.id); } }}
             placeholder="Répondre…"
             className={`min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 ${inputCls} placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
           />

@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Send, ArrowDown, ImagePlus, X, FileText, Download, Loader2 } from "lucide-react";
 import { MediaLightbox } from "@/components/MediaLightbox";
+import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
 const RECENT_MESSAGES_COUNT = 5; // Barre "Derniers messages" au-dessus des N derniers
 const MAX_PDF_SIZE_BYTES = 4 * 1024 * 1024; // 4 Mo pour les PDF dans le chat
@@ -646,10 +647,17 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
           >
             <ImagePlus className="h-4 w-4" />
           </button>
-          <input
-            type="text"
+          <AutoResizeTextarea
+            maxRows={6}
+            minRows={2}
             value={content}
             onChange={(e) => setContent(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                (e.target as HTMLTextAreaElement).form?.requestSubmit();
+              }
+            }}
             placeholder={pendingAttachment ? "Légende (optionnel)…" : "Écris un message…"}
             className="min-h-[44px] flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             maxLength={2000}

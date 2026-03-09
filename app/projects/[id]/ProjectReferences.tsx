@@ -8,6 +8,7 @@ import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { ImagePlus, Link as LinkIcon, Trash2, ExternalLink } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
 
 type Ref = { id: string; kind: "image" | "youtube"; url: string; comment: string | null };
 
@@ -226,12 +227,13 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
               </button>
               <div className="glass-card-header relative flex min-h-0 flex-1 flex-col gap-2 p-3">
                 <label className="text-xs font-medium text-muted-foreground">Commentaire (ex. j'aime le texte, style à reproduire)</label>
-                <input
-                  type="text"
+                <AutoResizeTextarea
+                  maxRows={5}
+                  minRows={1}
                   value={commentByRef[r.id] ?? r.comment ?? ""}
                   onChange={(e) => setCommentByRef((prev) => ({ ...prev, [r.id]: e.target.value }))}
                   onBlur={() => saveComment(r.id)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveComment(r.id); } }}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveComment(r.id); } }}
                   placeholder="J'aime bien le texte…"
                   className="w-full rounded-lg border border-white/10 bg-background/80 px-2.5 py-1.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
@@ -259,12 +261,13 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
             <p className="min-h-[2.5rem] text-sm text-[#9CA3AF]">
               {lightboxRef.comment || "Aucun commentaire pour l’instant."}
             </p>
-            <input
-              type="text"
+            <AutoResizeTextarea
+              maxRows={5}
+              minRows={1}
               value={commentByRef[lightboxRef.id] ?? lightboxRef.comment ?? ""}
               onChange={(e) => setCommentByRef((prev) => ({ ...prev, [lightboxRef.id]: e.target.value }))}
               onBlur={() => saveComment(lightboxRef.id)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveComment(lightboxRef.id); } }}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveComment(lightboxRef.id); } }}
               placeholder="J'aime bien le texte, style à reproduire…"
               className="w-full rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
             />

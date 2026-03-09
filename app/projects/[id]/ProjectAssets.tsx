@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
+import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
 import { useProjectActivity } from "@/components/ProjectActivityProvider";
 import { notifyProjectUpdate } from "@/lib/notify";
 
@@ -35,7 +36,7 @@ type ProjectAssetsProps = {
 };
 
 export function ProjectAssets({ projectId }: ProjectAssetsProps) {
-  const { refreshTrigger } = useProjectActivity() ?? {};
+  const { refreshTrigger, recordOwnAction } = useProjectActivity() ?? {};
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
@@ -105,6 +106,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
     if (!error) {
       setCommentByAsset((prev) => ({ ...prev, [assetId]: "" }));
       setRefresh((r) => r + 1);
+      recordOwnAction?.();
       notifyProjectUpdate(projectId, "feedback");
     }
   };
@@ -215,12 +217,13 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
             </div>
             {currentUserId && (
               <div className="flex gap-2 pt-2">
-                <input
-                  type="text"
+                <AutoResizeTextarea
+                  maxRows={6}
+                  minRows={1}
                   value={commentByAsset[lightboxAsset.id] ?? ""}
                   onChange={(e) => setCommentByAsset((prev) => ({ ...prev, [lightboxAsset.id]: e.target.value }))}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       sendComment(lightboxAsset.id);
                     }
