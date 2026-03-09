@@ -1,9 +1,6 @@
 import { ReactNode } from "react";
+import { GuestShell } from "@/components/GuestShell";
 
 export default function AnonProjectLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#E5E7EB]">
-      {children}
-    </div>
-  );
+  return <GuestShell>{children}</GuestShell>;
 }
