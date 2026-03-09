@@ -295,15 +295,17 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
                   <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/0 opacity-0 transition group-hover/img:bg-black/50 group-hover/img:opacity-100" aria-hidden>
                     <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
                   </div>
-                  <a
-                    href={getVersionDownloadUrl(v) ?? getVersionUrl(v)}
-                    download={getVersionDownloadFilename(v)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-lg bg-black/60 px-2 py-1.5 text-xs font-medium text-white hover:bg-black/80"
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    Télécharger
-                  </a>
+                  {getVersionDownloadUrl(v) && (
+                    <a
+                      href={getVersionDownloadUrl(v)!}
+                      download={getVersionDownloadFilename(v)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-lg bg-black/60 px-2 py-1.5 text-xs font-medium text-white hover:bg-black/80"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Télécharger
+                    </a>
+                  )}
                 </div>
                 <div className="glass-card-header flex items-center justify-between gap-2 px-3 py-2">
                   <span className="truncate text-sm font-medium text-foreground">
@@ -381,14 +383,16 @@ export function ProjectVersions({ projectId, isDesigner, isClient, isReviewer = 
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h4 className="text-sm font-semibold text-foreground">Avis et retours</h4>
-                <a
-                  href={getVersionDownloadUrl(lightboxVersion) ?? getVersionUrl(lightboxVersion)}
-                  download={getVersionDownloadFilename(lightboxVersion)}
-                  className="btn-primary-glow inline-flex items-center gap-1.5 px-3 py-2 text-sm"
-                >
-                  <Download className="h-4 w-4" />
-                  Télécharger
-                </a>
+                {getVersionDownloadUrl(lightboxVersion) && (
+                  <a
+                    href={getVersionDownloadUrl(lightboxVersion)!}
+                    download={getVersionDownloadFilename(lightboxVersion)}
+                    className="btn-primary-glow inline-flex items-center gap-1.5 px-3 py-2 text-sm"
+                  >
+                    <Download className="h-4 w-4" />
+                    Télécharger
+                  </a>
+                )}
               </div>
               <div className="max-h-48 space-y-3 overflow-y-auto">
                 {roots.length === 0 ? (

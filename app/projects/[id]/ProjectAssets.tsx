@@ -93,6 +93,13 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
   const getAssetUrl = (asset: Asset) =>
     signedUrls[extractStoragePath(asset.file_url) ?? ""] ?? asset.file_url;
 
+  const getAssetDownloadUrl = (asset: Asset): string | null => {
+    const path = extractStoragePath(asset.file_url);
+    if (!path) return null;
+    return `/api/projects/${projectId}/storage/download?path=${encodeURIComponent(path)}&disposition=attachment`;
+  };
+  const getAssetDownloadFilename = (asset: Asset) => asset.file_name || "asset";
+
   const sendComment = async (assetId: string) => {
     const content = (commentByAsset[assetId] ?? "").trim();
     if (!content || !currentUserId) return;
@@ -157,8 +164,8 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
                     </button>
                   ) : (
                     <a
-                      href={url}
-                      download={asset.file_name ?? "asset"}
+                      href={getAssetDownloadUrl(asset) ?? url}
+                      download={getAssetDownloadFilename(asset)}
                       className="flex h-full w-full items-center justify-center"
                     >
                       {asset.kind === "zip" ? (
@@ -194,8 +201,8 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
                       </button>
                     )}
                     <a
-                      href={url}
-                      download={asset.file_name ?? "asset"}
+                      href={getAssetDownloadUrl(asset) ?? url}
+                      download={getAssetDownloadFilename(asset)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent"
                     >
                       <Download className="h-3.5 w-3.5" />

@@ -554,16 +554,17 @@ export default function AnonProjectPage() {
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {assets.map((a) => {
                     const signedUrl = assetSignedUrls[a.id];
+                    const downloadUrl = `/api/anon/download?token=${encodeURIComponent(token)}&type=asset&id=${encodeURIComponent(a.id)}`;
                     const isImage = a.kind === "image" || (a.file_name?.match(/\.(png|jpg|jpeg|webp|gif)$/i));
                     return (
                       <li key={a.id} className="group/row flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black/20">
                         <div className="relative aspect-video max-h-[140px] w-full shrink-0 overflow-hidden bg-black/40">
                           {isImage && signedUrl ? (
-                            <a href={signedUrl} download={a.file_name ?? "asset"} target="_blank" rel="noopener noreferrer" className="block h-full w-full">
+                            <a href={downloadUrl} download={a.file_name ?? "asset"} className="block h-full w-full">
                               <img src={signedUrl} alt={a.file_name ?? "Asset"} className="h-full w-full object-cover transition group-hover/row:opacity-90" />
                             </a>
                           ) : (
-                            <a href={signedUrl ?? "#"} download={a.file_name ?? "asset"} target="_blank" rel="noopener noreferrer" className="flex h-full w-full items-center justify-center">
+                            <a href={downloadUrl} download={a.file_name ?? "asset"} className="flex h-full w-full items-center justify-center">
                               <FileImage className="h-10 w-10 text-muted-foreground" />
                             </a>
                           )}
@@ -573,11 +574,9 @@ export default function AnonProjectPage() {
                         </div>
                         <div className="flex items-center justify-between gap-2 px-3 py-2">
                           <span className="truncate text-sm text-foreground">{a.file_name || "Fichier"}</span>
-                          {signedUrl && (
-                            <a href={signedUrl} download={a.file_name ?? "asset"} className="shrink-0 rounded-lg bg-red-500/20 p-1.5 text-red-400 hover:bg-red-500/30">
-                              <Download className="h-4 w-4" />
-                            </a>
-                          )}
+                          <a href={downloadUrl} download={a.file_name ?? "asset"} className="shrink-0 rounded-lg bg-red-500/20 p-1.5 text-red-400 hover:bg-red-500/30">
+                            <Download className="h-4 w-4" />
+                          </a>
                         </div>
                       </li>
                     );
@@ -661,17 +660,15 @@ export default function AnonProjectPage() {
                           <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/0 opacity-0 transition group-hover/v:bg-black/50 group-hover/v:opacity-100" aria-hidden>
                             <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
                           </div>
-                          {thumbUrl && (
-                            <a
-                              href={thumbUrl}
-                              download={`version-${v.version_number}.png`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-lg bg-black/60 px-2 py-1.5 text-xs font-medium text-white hover:bg-black/80"
-                            >
-                              <Download className="h-3.5 w-3.5" />
-                              Télécharger
-                            </a>
-                          )}
+                          <a
+                            href={`/api/anon/download?token=${encodeURIComponent(token)}&type=version&id=${encodeURIComponent(v.id)}`}
+                            download={`version-${v.version_number}.png`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded-lg bg-black/60 px-2 py-1.5 text-xs font-medium text-white hover:bg-black/80"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Télécharger
+                          </a>
                         </div>
                         <div className="flex items-center justify-between px-3 py-2">
                           <span className="text-sm font-medium text-foreground">V{v.version_number}</span>
@@ -768,12 +765,10 @@ export default function AnonProjectPage() {
             <div className="space-y-3 border-t border-white/10 pt-4">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-medium text-muted-foreground">Commentaires</p>
-                {lightboxUrl && (
-                  <a href={lightboxUrl} download={`version-${lightboxVersion.version_number}.png`} className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/30">
-                    <Download className="h-3.5 w-3.5" />
-                    Télécharger
-                  </a>
-                )}
+                <a href={`/api/anon/download?token=${encodeURIComponent(token)}&type=version&id=${encodeURIComponent(lightboxVersion.id)}`} download={`version-${lightboxVersion.version_number}.png`} className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/30">
+                  <Download className="h-3.5 w-3.5" />
+                  Télécharger
+                </a>
               </div>
               {(versionFeedback[lightboxVersion.id] ?? []).map((f) => (
                 <div key={f.id} className="rounded-lg bg-white/5 px-3 py-2 text-sm text-foreground">
