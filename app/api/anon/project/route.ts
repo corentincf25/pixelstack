@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     admin.from("projects").select("id, title, status, created_at, due_date, client_id, designer_id").eq("id", projectId).single(),
     admin.from("messages").select("id, content, created_at, image_url, sender_id, anonymous_session_id").eq("project_id", projectId).order("created_at", { ascending: true }),
     admin.from("versions").select("id, image_url, version_number, created_at").eq("project_id", projectId).order("version_number", { ascending: true }),
-    admin.from("assets").select("id, file_url, file_name, kind, created_at").eq("project_id", projectId).order("created_at", { ascending: false }),
+    admin.from("assets").select("id, file_url, file_name, file_size, kind, created_at").eq("project_id", projectId).order("created_at", { ascending: false }),
     admin.from("briefs").select("concept, hook, notes").eq("project_id", projectId).maybeSingle(),
     admin.from("project_references").select("id, kind, url, comment").eq("project_id", projectId),
     admin.from("assets").select("id", { count: "exact", head: true }).eq("anonymous_session_id", sessionId),

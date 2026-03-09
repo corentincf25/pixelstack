@@ -13,6 +13,7 @@ import {
   ImageIcon,
   Link2,
   Download,
+  DownloadCloud,
   RefreshCw,
   FileText,
   Calendar,
@@ -48,7 +49,7 @@ type ProjectData = {
   project: { id: string; title: string; status: string; created_at: string; due_date: string | null; client_id?: string | null; designer_id?: string | null };
   messages: Message[];
   versions: { id: string; image_url: string; version_number: number; created_at: string }[];
-  assets: { id: string; file_url: string; file_name: string | null; kind: string }[];
+  assets: { id: string; file_url: string; file_name: string | null; file_size: number | null; kind: string; created_at: string }[];
   brief: { concept: string | null; hook: string | null; notes: string | null } | null;
   references: Ref[];
   sessionId: string;
@@ -78,6 +79,13 @@ const statusBadgeClass: Record<string, string> = {
 
 const GUEST_BANNER_STORAGE_KEY = "pixelstack_guest_banner_dismissed";
 
+function formatSize(bytes: number | null): string {
+  if (bytes == null) return "—";
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+}
+
 export default function AnonProjectPage() {
   const params = useParams();
   const router = useRouter();
@@ -92,6 +100,8 @@ export default function AnonProjectPage() {
   const [guestBannerDismissed, setGuestBannerDismissed] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [lightboxVersion, setLightboxVersion] = useState<{ id: string; version_number: number } | null>(null);
+  const [lightboxAsset, setLightboxAsset] = useState<ProjectData["assets"][0] | null>(null);
+  const [lightboxRef, setLightboxRef] = useState<Ref | null>(null);
   const [versionComment, setVersionComment] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
   const [newActivityBanner, setNewActivityBanner] = useState(false);
@@ -444,7 +454,7 @@ export default function AnonProjectPage() {
         </div>
 
         <section id="brief" className="scroll-mt-24">
-          <BentoCard title="Brief & Récap" icon={<FileText className="h-4 w-4 text-muted-foreground" />} compact defaultLayout="fit">
+          <BentoCard title="Brief & Récap" icon={<FileText className="h-4 w-4 text-muted-foreground" />} compact controls defaultLayout="fit">
             <div className="space-y-4">
               <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
                 <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -545,6 +555,7 @@ export default function AnonProjectPage() {
             title="Assets"
             icon={<FileImage className="h-4 w-4 text-muted-foreground" />}
             hint="Dépose tes refs et fichiers. PNG, JPG, WEBP ou ZIP, max 10 Mo. Invités : 3 fichiers max."
+            controls
           >
             <div className="space-y-4">
               {canUploadMore ? (
@@ -597,6 +608,18 @@ export default function AnonProjectPage() {
                 </div>
               )}
               {assets.length > 0 && (
+                <div className="flex justify-end">
+                  <a
+                    href={`/api/anon/download-all?token=${encodeURIComponent(token)}`}
+                    download="assets-projet.zip"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+                  >
+                    <DownloadCloud className="h-4 w-4" />
+                    Télécharger tout en ZIP
+                  </a>
+                </div>
+              )}
+              {assets.length > 0 && (
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {assets.map((a) => {
                     const signedUrl = assetSignedUrls[a.id];
@@ -606,23 +629,50 @@ export default function AnonProjectPage() {
                       <li key={a.id} className="group/row flex flex-col overflow-hidden rounded-xl border border-white/10 bg-black/20">
                         <div className="relative aspect-video max-h-[140px] w-full shrink-0 overflow-hidden bg-black/40">
                           {isImage && signedUrl ? (
-                            <a href={downloadUrl} download={a.file_name ?? "asset"} className="block h-full w-full">
+                            <button
+                              type="button"
+                              onClick={() => setLightboxAsset(a)}
+                              className="block h-full w-full text-left"
+                            >
                               <img src={signedUrl} alt={a.file_name ?? "Asset"} className="h-full w-full object-cover transition group-hover/row:opacity-90" />
-                            </a>
+                            </button>
                           ) : (
                             <a href={downloadUrl} download={a.file_name ?? "asset"} className="flex h-full w-full items-center justify-center">
                               <FileImage className="h-10 w-10 text-muted-foreground" />
                             </a>
                           )}
                           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover/row:bg-black/50 group-hover/row:opacity-100" aria-hidden>
-                            <span className="rounded-lg bg-black/70 px-2 py-1 text-xs font-medium text-white">Cliquer pour ouvrir / télécharger</span>
+                            <span className="rounded-lg bg-black/70 px-2 py-1 text-xs font-medium text-white">
+                              {isImage ? "Cliquer pour ouvrir et commenter" : "Cliquer pour télécharger"}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 px-3 py-2">
-                          <span className="truncate text-sm text-foreground">{a.file_name || "Fichier"}</span>
-                          <a href={downloadUrl} download={a.file_name ?? "asset"} className="shrink-0 rounded-lg bg-red-500/20 p-1.5 text-red-400 hover:bg-red-500/30">
-                            <Download className="h-4 w-4" />
-                          </a>
+                        <div className="flex flex-1 items-center justify-between gap-2 px-3 py-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">{a.file_name || "Sans nom"}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatSize(a.file_size ?? null)} · {format(new Date(a.created_at), "d MMM à HH:mm", { locale: fr })}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            {isImage && (
+                              <button
+                                type="button"
+                                onClick={() => setLightboxAsset(a)}
+                                className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent"
+                              >
+                                Voir
+                              </button>
+                            )}
+                            <a
+                              href={downloadUrl}
+                              download={a.file_name ?? "asset"}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              Télécharger
+                            </a>
+                          </div>
                         </div>
                         <div className="flex min-h-0 flex-1 flex-col border-t border-white/10 px-3 py-2">
                           <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -675,6 +725,7 @@ export default function AnonProjectPage() {
             title="Inspirations & Références"
             icon={<ImageIcon className="h-4 w-4 text-muted-foreground" />}
             hint="Images de ref et liens YouTube."
+            controls
           >
             {references.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -682,31 +733,38 @@ export default function AnonProjectPage() {
                   const imgUrl = ref.kind === "image" ? (referenceSignedUrls[ref.id] ?? ref.url) : null;
                   const ytId = ref.kind === "youtube" ? ref.url.match(YOUTUBE_REG)?.[1] : null;
                   return (
-                    <div key={ref.id} className="flex max-h-[340px] flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+                    <div key={ref.id} className="glass-card group relative flex max-h-[340px] flex-col overflow-hidden rounded-xl border border-white/10">
                       <div className="relative aspect-video max-h-[200px] w-full shrink-0 overflow-hidden">
-                        {ref.kind === "image" && imgUrl ? (
-                          <img src={imgUrl} alt="Référence" className="h-full w-full object-cover" />
-                        ) : ytId ? (
-                          <a href={ref.url} target="_blank" rel="noopener noreferrer" className="block h-full w-full">
-                            <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt="YouTube" className="h-full w-full object-cover transition hover:opacity-90" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <ExternalLink className="h-10 w-10 text-white drop-shadow-lg" />
+                        <button
+                          type="button"
+                          onClick={() => setLightboxRef(ref)}
+                          className="absolute inset-0 z-[1] h-full w-full cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset"
+                        >
+                          {ref.kind === "image" && imgUrl ? (
+                            <img src={imgUrl} alt="Référence" className="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+                          ) : ytId ? (
+                            <div className="flex h-full w-full items-center justify-center bg-black/20">
+                              <img
+                                src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
+                                alt="YouTube"
+                                className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+                              />
                             </div>
-                          </a>
-                        ) : (
-                          <a href={ref.url} target="_blank" rel="noopener noreferrer" className="flex h-full w-full items-center justify-center bg-black/20">
-                            <ExternalLink className="h-10 w-10 text-muted-foreground" />
-                          </a>
-                        )}
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-black/20">
+                              <ExternalLink className="h-10 w-10 text-muted-foreground" />
+                            </div>
+                          )}
+                        </button>
+                        <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/50 group-hover:opacity-100" aria-hidden>
+                          <span className="rounded-lg bg-black/70 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
+                        </div>
                       </div>
                       <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
-                        <label className="text-xs font-medium text-muted-foreground">Commentaire</label>
-                        <p className="text-sm text-foreground">{ref.comment || "—"}</p>
-                        <div className="mt-2 border-t border-white/10 pt-2">
-                          <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                            <MessageSquare className="h-3.5 w-3.5" />
-                            Avis
-                          </div>
+                        <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          Avis
+                        </div>
                           <div className="max-h-24 space-y-1.5 overflow-y-auto">
                             {(referenceFeedback[ref.id] ?? []).length === 0 ? (
                               <p className="text-xs text-muted-foreground">Aucun avis.</p>
@@ -920,6 +978,126 @@ export default function AnonProjectPage() {
           }
         />
       )}
+
+      {lightboxAsset && (() => {
+        const url = assetSignedUrls[lightboxAsset.id] ?? null;
+        const isImg = lightboxAsset.kind === "image" || (lightboxAsset.file_name?.match(/\.(png|jpg|jpeg|webp|gif)$/i));
+        if (!isImg || !url) return null;
+        return (
+          <ImagePreviewModal
+            open
+            onClose={() => setLightboxAsset(null)}
+            type="image"
+            url={url}
+            title={lightboxAsset.file_name || "Asset"}
+            showComments
+            children={
+              <div className="space-y-4 border-t border-white/10 pt-4">
+                <h4 className="flex items-center gap-2 text-sm font-semibold text-[#E5E7EB]">
+                  <MessageSquare className="h-4 w-4" />
+                  Avis
+                </h4>
+                <div className="flex items-center justify-between gap-2">
+                  <a
+                    href={`/api/anon/download?token=${encodeURIComponent(token)}&type=asset&id=${encodeURIComponent(lightboxAsset.id)}`}
+                    download={lightboxAsset.file_name ?? "asset"}
+                    className="inline-flex items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/30"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Télécharger
+                  </a>
+                </div>
+                <div className="max-h-40 space-y-2 overflow-y-auto">
+                  {(assetFeedback[lightboxAsset.id] ?? []).length === 0 ? (
+                    <p className="text-sm text-[#6B7280]">Aucun avis pour l&apos;instant.</p>
+                  ) : (
+                    (assetFeedback[lightboxAsset.id] ?? []).map((f) => (
+                      <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#E5E7EB]">
+                        {f.content}
+                        <p className="mt-1 text-xs text-[#6B7280]">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <AutoResizeTextarea
+                    maxRows={4}
+                    minRows={1}
+                    value={assetCommentById[lightboxAsset.id] ?? ""}
+                    onChange={(e) => setAssetCommentById((prev) => ({ ...prev, [lightboxAsset.id]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAssetComment(lightboxAsset.id); } }}
+                    placeholder="Ajouter un avis…"
+                    className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => sendAssetComment(lightboxAsset.id)}
+                    disabled={sendingAssetId === lightboxAsset.id || !(assetCommentById[lightboxAsset.id] ?? "").trim()}
+                    className="shrink-0 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        );
+      })()}
+
+      {lightboxRef && (() => {
+        const imgUrl = lightboxRef.kind === "image" ? (referenceSignedUrls[lightboxRef.id] ?? lightboxRef.url) : null;
+        const modalUrl = lightboxRef.kind === "youtube" ? lightboxRef.url : (imgUrl || "");
+        const modalType = lightboxRef.kind === "youtube" ? "youtube" : "image";
+        return (
+          <ImagePreviewModal
+            open
+            onClose={() => setLightboxRef(null)}
+            type={modalType as "image" | "youtube"}
+            url={modalUrl}
+            title={lightboxRef.kind === "youtube" ? "Référence YouTube" : "Référence"}
+            showComments
+            children={
+              <div className="space-y-4 border-t border-white/10 pt-4">
+                <h4 className="flex items-center gap-2 text-sm font-semibold text-[#E5E7EB]">
+                  <MessageSquare className="h-4 w-4" />
+                  Avis
+                </h4>
+                <div className="max-h-40 space-y-2 overflow-y-auto">
+                  {(referenceFeedback[lightboxRef.id] ?? []).length === 0 ? (
+                    <p className="text-sm text-[#6B7280]">Aucun avis pour l&apos;instant.</p>
+                  ) : (
+                    (referenceFeedback[lightboxRef.id] ?? []).map((f) => (
+                      <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#E5E7EB]">
+                        {f.content}
+                        <p className="mt-1 text-xs text-[#6B7280]">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <AutoResizeTextarea
+                    maxRows={4}
+                    minRows={1}
+                    value={refCommentById[lightboxRef.id] ?? ""}
+                    onChange={(e) => setRefCommentById((prev) => ({ ...prev, [lightboxRef.id]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRefComment(lightboxRef.id); } }}
+                    placeholder="Ajouter un avis…"
+                    className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => sendRefComment(lightboxRef.id)}
+                    disabled={sendingRefId === lightboxRef.id || !(refCommentById[lightboxRef.id] ?? "").trim()}
+                    className="shrink-0 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        );
+      })()}
     </div>
   );
 }

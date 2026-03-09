@@ -38,8 +38,6 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
   const [loading, setLoading] = useState(true);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [commentByRef, setCommentByRef] = useState<Record<string, string>>({});
-  const [savingComment, setSavingComment] = useState<string | null>(null);
   const [feedbackByRef, setFeedbackByRef] = useState<Record<string, RefFeedback[]>>({});
   const [newCommentByRef, setNewCommentByRef] = useState<Record<string, string>>({});
   const [sendingRefComment, setSendingRefComment] = useState<string | null>(null);
@@ -183,14 +181,6 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
     load();
   };
 
-  const saveComment = async (id: string) => {
-    const comment = (commentByRef[id] ?? "").trim();
-    setSavingComment(id);
-    await supabase.from("project_references").update({ comment: comment || null }).eq("id", id);
-    setSavingComment(null);
-    load();
-  };
-
   if (loading) return null;
 
   return (
@@ -280,22 +270,10 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
                 <Trash2 className="h-4 w-4" />
               </button>
               <div className="glass-card-header relative flex min-h-0 flex-1 flex-col gap-2 p-3">
-                <label className="text-xs font-medium text-muted-foreground">Commentaire (ex. j'aime le texte, style à reproduire)</label>
-                <AutoResizeTextarea
-                  maxRows={5}
-                  minRows={1}
-                  value={commentByRef[r.id] ?? r.comment ?? ""}
-                  onChange={(e) => setCommentByRef((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                  onBlur={() => saveComment(r.id)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveComment(r.id); } }}
-                  placeholder="J'aime bien le texte…"
-                  className="w-full rounded-lg border border-white/10 bg-background/80 px-2.5 py-1.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-                <div className="mt-2 border-t border-white/10 pt-2">
-                  <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    Avis
-                  </div>
+                <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Avis
+                </div>
                   <div className="max-h-24 space-y-1.5 overflow-y-auto">
                     {(feedbackByRef[r.id] ?? []).length === 0 ? (
                       <p className="text-xs text-muted-foreground">Aucun avis.</p>
@@ -349,28 +327,13 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
         showComments
       >
         {lightboxRef && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-[#E5E7EB]">Commentaire</h4>
-            <p className="min-h-[2.5rem] text-sm text-[#9CA3AF]">
-              {lightboxRef.comment || "Aucun commentaire pour l’instant."}
-            </p>
-            <AutoResizeTextarea
-              maxRows={5}
-              minRows={1}
-              value={commentByRef[lightboxRef.id] ?? lightboxRef.comment ?? ""}
-              onChange={(e) => setCommentByRef((prev) => ({ ...prev, [lightboxRef.id]: e.target.value }))}
-              onBlur={() => saveComment(lightboxRef.id)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveComment(lightboxRef.id); } }}
-              placeholder="J'aime bien le texte, style à reproduire…"
-              className="w-full rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
-            />
-            <div className="border-t border-white/10 pt-4">
-              <h4 className="flex items-center gap-2 text-sm font-semibold text-[#E5E7EB]">
-                <MessageSquare className="h-4 w-4" />
-                Avis
-              </h4>
-              <div className="mt-2 max-h-40 space-y-2 overflow-y-auto">
-                {(feedbackByRef[lightboxRef.id] ?? []).length === 0 ? (
+          <div className="space-y-4">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-[#E5E7EB]">
+              <MessageSquare className="h-4 w-4" />
+              Avis
+            </h4>
+            <div className="mt-2 max-h-40 space-y-2 overflow-y-auto">
+            {(feedbackByRef[lightboxRef.id] ?? []).length === 0 ? (
                   <p className="text-sm text-[#6B7280]">Aucun avis pour l'instant.</p>
                 ) : (
                   (feedbackByRef[lightboxRef.id] ?? []).map((f) => (
