@@ -58,6 +58,8 @@ type ProjectData = {
   referenceSignedUrls?: Record<string, string>;
   assetSignedUrls?: Record<string, string>;
   memberProfiles?: Record<string, { full_name: string | null; avatar_url: string | null }>;
+  assetFeedback?: Record<string, VersionFeedbackItem[]>;
+  referenceFeedback?: Record<string, VersionFeedbackItem[]>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -101,6 +103,10 @@ export default function AnonProjectPage() {
   const [dueDateEditing, setDueDateEditing] = useState(false);
   const [dueDateValue, setDueDateValue] = useState("");
   const [dueDateSaving, setDueDateSaving] = useState(false);
+  const [assetCommentById, setAssetCommentById] = useState<Record<string, string>>({});
+  const [refCommentById, setRefCommentById] = useState<Record<string, string>>({});
+  const [sendingAssetId, setSendingAssetId] = useState<string | null>(null);
+  const [sendingRefId, setSendingRefId] = useState<string | null>(null);
   const prevSnapshotRef = useRef<string>("");
   const listEndRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -265,7 +271,7 @@ export default function AnonProjectPage() {
 
   if (!data) return null;
 
-  const { project, messages, versions, assets, brief, references, versionFeedback = {}, versionSignedUrls = {}, referenceSignedUrls = {}, assetSignedUrls = {}, memberProfiles = {} } = data;
+  const { project, messages, versions, assets, brief, references, versionFeedback = {}, versionSignedUrls = {}, referenceSignedUrls = {}, assetSignedUrls = {}, memberProfiles = {}, assetFeedback = {}, referenceFeedback = {} } = data;
   const canUploadMore = uploadCount < ANON_LIMITS.maxUploads;
 
   const saveBrief = async () => {
@@ -283,6 +289,46 @@ export default function AnonProjectPage() {
       }
     } finally {
       setBriefSaving(false);
+    }
+  };
+
+  const sendAssetComment = async (assetId: string) => {
+    const content = (assetCommentById[assetId] ?? "").trim();
+    if (!content) return;
+    setSendingAssetId(assetId);
+    try {
+      const res = await fetch("/api/anon/asset-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, asset_id: assetId, content }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        setAssetCommentById((prev) => ({ ...prev, [assetId]: "" }));
+        loadProject();
+      }
+    } finally {
+      setSendingAssetId(null);
+    }
+  };
+
+  const sendRefComment = async (referenceId: string) => {
+    const content = (refCommentById[referenceId] ?? "").trim();
+    if (!content) return;
+    setSendingRefId(referenceId);
+    try {
+      const res = await fetch("/api/anon/reference-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, reference_id: referenceId, content }),
+        credentials: "include",
+      });
+      if (res.ok) {
+        setRefCommentById((prev) => ({ ...prev, [referenceId]: "" }));
+        loadProject();
+      }
+    } finally {
+      setSendingRefId(null);
     }
   };
 
@@ -578,6 +624,43 @@ export default function AnonProjectPage() {
                             <Download className="h-4 w-4" />
                           </a>
                         </div>
+                        <div className="flex min-h-0 flex-1 flex-col border-t border-white/10 px-3 py-2">
+                          <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            Avis
+                          </div>
+                          <div className="max-h-28 space-y-1.5 overflow-y-auto">
+                            {(assetFeedback[a.id] ?? []).length === 0 ? (
+                              <p className="text-xs text-muted-foreground">Aucun commentaire.</p>
+                            ) : (
+                              (assetFeedback[a.id] ?? []).map((f) => (
+                                <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-foreground">
+                                  {f.content}
+                                  <p className="mt-0.5 text-[10px] text-muted-foreground">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                          <div className="mt-2 flex gap-2">
+                            <AutoResizeTextarea
+                              maxRows={4}
+                              minRows={1}
+                              value={assetCommentById[a.id] ?? ""}
+                              onChange={(e) => setAssetCommentById((prev) => ({ ...prev, [a.id]: e.target.value }))}
+                              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAssetComment(a.id); } }}
+                              placeholder="Ajouter un commentaire…"
+                              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => sendAssetComment(a.id)}
+                              disabled={sendingAssetId === a.id || !(assetCommentById[a.id] ?? "").trim()}
+                              className="shrink-0 rounded-lg bg-red-500 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                            >
+                              <Send className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
                       </li>
                     );
                   })}
@@ -616,9 +699,46 @@ export default function AnonProjectPage() {
                           </a>
                         )}
                       </div>
-                      <div className="flex min-h-0 flex-1 flex-col gap-1 p-3">
+                      <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
                         <label className="text-xs font-medium text-muted-foreground">Commentaire</label>
                         <p className="text-sm text-foreground">{ref.comment || "—"}</p>
+                        <div className="mt-2 border-t border-white/10 pt-2">
+                          <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            Avis
+                          </div>
+                          <div className="max-h-24 space-y-1.5 overflow-y-auto">
+                            {(referenceFeedback[ref.id] ?? []).length === 0 ? (
+                              <p className="text-xs text-muted-foreground">Aucun avis.</p>
+                            ) : (
+                              (referenceFeedback[ref.id] ?? []).map((f) => (
+                                <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-foreground">
+                                  {f.content}
+                                  <p className="mt-0.5 text-[10px] text-muted-foreground">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                          <div className="mt-2 flex gap-2">
+                            <AutoResizeTextarea
+                              maxRows={4}
+                              minRows={1}
+                              value={refCommentById[ref.id] ?? ""}
+                              onChange={(e) => setRefCommentById((prev) => ({ ...prev, [ref.id]: e.target.value }))}
+                              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRefComment(ref.id); } }}
+                              placeholder="Ajouter un avis…"
+                              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => sendRefComment(ref.id)}
+                              disabled={sendingRefId === ref.id || !(refCommentById[ref.id] ?? "").trim()}
+                              className="shrink-0 rounded-lg bg-red-500 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                            >
+                              <Send className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );

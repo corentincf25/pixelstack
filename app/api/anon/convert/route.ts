@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       await admin.from("assets").update({ anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
       await admin.from("version_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
       await admin.from("asset_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
+      await admin.from("reference_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
       await admin.from("anonymous_sessions").delete().eq("id", targetSessionId);
     }
   }

@@ -154,6 +154,36 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const assetIds = assetsList.map((a) => a.id);
+  let assetFeedback: Record<string, { id: string; content: string; created_at: string; anonymous_session_id: string | null }[]> = {};
+  if (assetIds.length > 0) {
+    const { data: afList } = await admin
+      .from("asset_feedback")
+      .select("id, asset_id, content, created_at, anonymous_session_id")
+      .in("asset_id", assetIds)
+      .order("created_at", { ascending: true });
+    const af = (afList ?? []) as { id: string; asset_id: string; content: string; created_at: string; anonymous_session_id: string | null }[];
+    af.forEach((f) => {
+      if (!assetFeedback[f.asset_id]) assetFeedback[f.asset_id] = [];
+      assetFeedback[f.asset_id].push({ id: f.id, content: f.content, created_at: f.created_at, anonymous_session_id: f.anonymous_session_id });
+    });
+  }
+
+  const refIds = refsList.map((r) => r.id);
+  let referenceFeedback: Record<string, { id: string; content: string; created_at: string; anonymous_session_id: string | null }[]> = {};
+  if (refIds.length > 0) {
+    const { data: rfList } = await admin
+      .from("reference_feedback")
+      .select("id, reference_id, content, created_at, anonymous_session_id")
+      .in("reference_id", refIds)
+      .order("created_at", { ascending: true });
+    const rf = (rfList ?? []) as { id: string; reference_id: string; content: string; created_at: string; anonymous_session_id: string | null }[];
+    rf.forEach((f) => {
+      if (!referenceFeedback[f.reference_id]) referenceFeedback[f.reference_id] = [];
+      referenceFeedback[f.reference_id].push({ id: f.id, content: f.content, created_at: f.created_at, anonymous_session_id: f.anonymous_session_id });
+    });
+  }
+
   const projectForClient = { id: project.id, title: project.title, status: project.status, created_at: project.created_at, due_date: project.due_date, client_id: project.client_id, designer_id: project.designer_id };
 
   return NextResponse.json({
@@ -170,5 +200,7 @@ export async function GET(request: NextRequest) {
     referenceSignedUrls,
     assetSignedUrls,
     memberProfiles,
+    assetFeedback,
+    referenceFeedback,
   });
 }

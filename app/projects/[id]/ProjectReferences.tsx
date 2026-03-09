@@ -5,12 +5,23 @@ import { supabase } from "@/lib/supabase";
 import { useSignedUrls, extractStoragePath } from "./useSignedUrls";
 import { notifyProjectUpdate } from "@/lib/notify";
 import { useProjectActivity } from "@/components/ProjectActivityProvider";
-import { ImagePlus, Link as LinkIcon, Trash2, ExternalLink } from "lucide-react";
+import { ImagePlus, Link as LinkIcon, Trash2, ExternalLink, MessageSquare, Send } from "lucide-react";
 import { UploadProgress } from "@/components/UploadProgress";
 import { ImagePreviewModal } from "@/components/ImagePreviewModal";
 import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 type Ref = { id: string; kind: "image" | "youtube"; url: string; comment: string | null };
+
+type RefFeedback = {
+  id: string;
+  reference_id: string;
+  user_id: string | null;
+  content: string;
+  parent_id: string | null;
+  created_at: string;
+};
 
 const YOUTUBE_REG = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/;
 
@@ -29,9 +40,18 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
   const [uploading, setUploading] = useState(false);
   const [commentByRef, setCommentByRef] = useState<Record<string, string>>({});
   const [savingComment, setSavingComment] = useState<string | null>(null);
+  const [feedbackByRef, setFeedbackByRef] = useState<Record<string, RefFeedback[]>>({});
+  const [newCommentByRef, setNewCommentByRef] = useState<Record<string, string>>({});
+  const [sendingRefComment, setSendingRefComment] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [refFeedbackRefresh, setRefFeedbackRefresh] = useState(0);
   const [lightboxRef, setLightboxRef] = useState<Ref | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id ?? null));
+  }, []);
 
   const load = async () => {
     const { data } = await supabase
@@ -65,6 +85,40 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
       if (updated) setLightboxRef(updated);
     }
   }, [refs]);
+
+  useEffect(() => {
+    if (refs.length === 0) return;
+    const ids = refs.map((r) => r.id);
+    supabase
+      .from("reference_feedback")
+      .select("id, reference_id, user_id, content, parent_id, created_at")
+      .in("reference_id", ids)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        const list = (data ?? []) as RefFeedback[];
+        const byRef: Record<string, RefFeedback[]> = {};
+        ids.forEach((id) => { byRef[id] = list.filter((f) => f.reference_id === id); });
+        setFeedbackByRef(byRef);
+      });
+  }, [refs, refreshTrigger, refFeedbackRefresh]);
+
+  const sendRefComment = async (referenceId: string) => {
+    const content = (newCommentByRef[referenceId] ?? "").trim();
+    if (!content || !currentUserId) return;
+    setSendingRefComment(referenceId);
+    const { error: err } = await supabase.from("reference_feedback").insert({
+      reference_id: referenceId,
+      user_id: currentUserId,
+      content,
+    });
+    setSendingRefComment(null);
+    if (!err) {
+      setNewCommentByRef((prev) => ({ ...prev, [referenceId]: "" }));
+      setRefFeedbackRefresh((r) => r + 1);
+      recordOwnAction?.();
+      notifyProjectUpdate(projectId, "reference");
+    }
+  };
 
   const addYoutube = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,6 +291,45 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
                   placeholder="J'aime bien le texte…"
                   className="w-full rounded-lg border border-white/10 bg-background/80 px-2.5 py-1.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
+                <div className="mt-2 border-t border-white/10 pt-2">
+                  <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Avis
+                  </div>
+                  <div className="max-h-24 space-y-1.5 overflow-y-auto">
+                    {(feedbackByRef[r.id] ?? []).length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Aucun avis.</p>
+                    ) : (
+                      (feedbackByRef[r.id] ?? []).map((f) => (
+                        <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-foreground">
+                          {f.content}
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {currentUserId && (
+                    <div className="mt-2 flex gap-2">
+                      <AutoResizeTextarea
+                        maxRows={4}
+                        minRows={1}
+                        value={newCommentByRef[r.id] ?? ""}
+                        onChange={(e) => setNewCommentByRef((prev) => ({ ...prev, [r.id]: e.target.value }))}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRefComment(r.id); } }}
+                        placeholder="Ajouter un avis…"
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => sendRefComment(r.id)}
+                        disabled={sendingRefComment === r.id || !(newCommentByRef[r.id] ?? "").trim()}
+                        className="shrink-0 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -271,6 +364,45 @@ export function ProjectReferences({ projectId }: ProjectReferencesProps) {
               placeholder="J'aime bien le texte, style à reproduire…"
               className="w-full rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
             />
+            <div className="border-t border-white/10 pt-4">
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-[#E5E7EB]">
+                <MessageSquare className="h-4 w-4" />
+                Avis
+              </h4>
+              <div className="mt-2 max-h-40 space-y-2 overflow-y-auto">
+                {(feedbackByRef[lightboxRef.id] ?? []).length === 0 ? (
+                  <p className="text-sm text-[#6B7280]">Aucun avis pour l'instant.</p>
+                ) : (
+                  (feedbackByRef[lightboxRef.id] ?? []).map((f) => (
+                    <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-[#E5E7EB]">
+                      {f.content}
+                      <p className="mt-1 text-xs text-[#6B7280]">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              {currentUserId && (
+                <div className="mt-3 flex gap-2">
+                  <AutoResizeTextarea
+                    maxRows={4}
+                    minRows={1}
+                    value={newCommentByRef[lightboxRef.id] ?? ""}
+                    onChange={(e) => setNewCommentByRef((prev) => ({ ...prev, [lightboxRef.id]: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendRefComment(lightboxRef.id); } }}
+                    placeholder="Ajouter un avis…"
+                    className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#111111] px-3 py-2.5 text-sm text-[#E5E7EB] placeholder:text-[#6B7280] focus:border-[#6366F1] focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => sendRefComment(lightboxRef.id)}
+                    disabled={sendingRefComment === lightboxRef.id || !(newCommentByRef[lightboxRef.id] ?? "").trim()}
+                    className="shrink-0 rounded-xl bg-[#6366F1] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#6366F1]/90 disabled:opacity-50"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </ImagePreviewModal>

@@ -78,7 +78,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
         ids.forEach((id) => { byAsset[id] = list.filter((f) => f.asset_id === id); });
         setFeedbackByAsset(byAsset);
       });
-  }, [assets, refresh]);
+  }, [assets, refresh, refreshTrigger]);
 
   const formatSize = (bytes: number | null) => {
     if (bytes == null) return "—";
@@ -209,6 +209,50 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
                       Télécharger
                     </a>
                   </div>
+                </div>
+                <div className="flex min-h-0 flex-1 flex-col border-t border-border/50 px-3 py-2">
+                  <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Avis
+                  </div>
+                  <div className="max-h-32 space-y-2 overflow-y-auto">
+                    {(feedbackByAsset[asset.id] ?? []).length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Aucun commentaire.</p>
+                    ) : (
+                      (feedbackByAsset[asset.id] ?? []).map((f) => (
+                        <div key={f.id} className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-foreground">
+                          {f.content}
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">{format(new Date(f.created_at), "d MMM HH:mm", { locale: fr })}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {currentUserId && (
+                    <div className="mt-2 flex gap-2">
+                      <AutoResizeTextarea
+                        maxRows={4}
+                        minRows={1}
+                        value={commentByAsset[asset.id] ?? ""}
+                        onChange={(e) => setCommentByAsset((prev) => ({ ...prev, [asset.id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            sendComment(asset.id);
+                          }
+                        }}
+                        placeholder="Ajouter un commentaire…"
+                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-background/80 px-2 py-1.5 text-xs placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => sendComment(asset.id)}
+                        disabled={sendingComment === asset.id || !(commentByAsset[asset.id] ?? "").trim()}
+                        className="shrink-0 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </li>
             );
