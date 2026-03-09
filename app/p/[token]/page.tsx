@@ -226,6 +226,16 @@ export default function AnonProjectPage() {
     if (data?.messages?.length) scrollToBottom();
   }, [data?.messages?.length, scrollToBottom]);
 
+  useEffect(() => {
+    if (data?.brief) {
+      setBriefConcept(data.brief.concept ?? "");
+      setBriefHook(data.brief.hook ?? "");
+      setBriefNotes(data.brief.notes ?? "");
+    }
+    if (data?.project?.due_date) setDueDateValue(data.project.due_date.slice(0, 10));
+    else setDueDateValue("");
+  }, [data?.brief, data?.project?.due_date]);
+
   const dismissGuestBanner = () => {
     setGuestBannerDismissed(true);
     try {
@@ -292,16 +302,6 @@ export default function AnonProjectPage() {
       setDueDateSaving(false);
     }
   };
-
-  useEffect(() => {
-    if (data?.brief) {
-      setBriefConcept(data.brief.concept ?? "");
-      setBriefHook(data.brief.hook ?? "");
-      setBriefNotes(data.brief.notes ?? "");
-    }
-    if (data?.project?.due_date) setDueDateValue(data.project.due_date.slice(0, 10));
-    else setDueDateValue("");
-  }, [data?.brief, data?.project?.due_date]);
 
   const submitVersionComment = async (versionId: string) => {
     const text = versionComment.trim();
