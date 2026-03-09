@@ -12,6 +12,7 @@ import { fr } from "date-fns/locale";
 import { Send, ArrowDown, ImagePlus, X, FileText, Download, Loader2 } from "lucide-react";
 import { MediaLightbox } from "@/components/MediaLightbox";
 import { AutoResizeTextarea } from "@/components/AutoResizeTextarea";
+import { ChatMessageContent } from "@/components/ChatMessageContent";
 
 const RECENT_MESSAGES_COUNT = 5; // Barre "Derniers messages" au-dessus des N derniers
 const MAX_PDF_SIZE_BYTES = 4 * 1024 * 1024; // 4 Mo pour les PDF dans le chat
@@ -461,7 +462,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                           <div className="mt-1 h-20 w-24 animate-pulse rounded-lg bg-white/10" />
                         );
                       })()}
-                      {msg.content ? <p className="mt-0.5 whitespace-pre-wrap break-words text-sm">{msg.content}</p> : null}
+                      {msg.content ? <ChatMessageContent content={msg.content} className="mt-0.5 text-sm" /> : null}
                       <p className={`mt-1 text-xs opacity-75 ${isMe ? "text-right" : ""}`}>
                         {format(new Date(msg.created_at), "HH:mm", { locale: fr })}
                       </p>
@@ -566,7 +567,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                         <div className="mt-1 h-20 w-24 animate-pulse rounded-lg bg-white/10" />
                       );
                     })()}
-                    {msg.content ? <p className="mt-0.5 whitespace-pre-wrap break-words text-sm">{msg.content}</p> : null}
+                    {msg.content ? <ChatMessageContent content={msg.content} className="mt-0.5 text-sm" /> : null}
                     <p className={`mt-1 text-xs opacity-75 ${isMe ? "text-right" : ""}`}>
                       {format(new Date(msg.created_at), "HH:mm", { locale: fr })}
                     </p>

@@ -21,12 +21,12 @@ type Props = {
   suppressIfOwnActionWithinMs?: number;
 };
 
-function sameCounts(a: Counts, b: Counts) {
+/** Changement sur versions, assets ou références uniquement (le chat est temps réel, on n’affiche pas le bandeau pour les messages). */
+function nonMessageActivityChanged(a: Counts, b: Counts) {
   return (
-    a.messagesCount === b.messagesCount &&
-    a.versionsCount === b.versionsCount &&
-    a.assetsCount === b.assetsCount &&
-    a.referencesCount === b.referencesCount
+    a.versionsCount !== b.versionsCount ||
+    a.assetsCount !== b.assetsCount ||
+    a.referencesCount !== b.referencesCount
   );
 }
 
@@ -71,7 +71,12 @@ export function ProjectActivityBanner({
     if (!projectId) return;
     const interval = setInterval(async () => {
       const counts = await fetchCounts();
-      if (!counts || sameCounts(counts, baseline)) return;
+      if (!counts) return;
+      // Seule une nouvelle version, asset ou référence déclenche le bandeau (pas les messages, chat en temps réel)
+      if (!nonMessageActivityChanged(counts, baseline)) {
+        setBaseline((prev) => ({ ...prev, messagesCount: counts.messagesCount }));
+        return;
+      }
       const now = Date.now();
       const isLikelyOwnAction = lastOwnActionAt > 0 && now - lastOwnActionAt < suppressIfOwnActionWithinMs;
       if (isLikelyOwnAction) {

@@ -37,7 +37,7 @@ export function GuestSidebar({ embedded }: GuestSidebarProps) {
       </Link>
 
       <div className="border-b border-border px-3 py-3">
-        <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-medium tracking-tight text-amber-200">
+        <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-medium tracking-tight text-red-200">
           <UserPlus className="h-3.5 w-3.5 shrink-0" />
           Vous participez en tant qu&apos;invité
         </div>
@@ -54,7 +54,7 @@ export function GuestSidebar({ embedded }: GuestSidebarProps) {
         <Link
           href={signupHref}
           onClick={handleSignupClick}
-          className="btn-interactive flex items-center gap-2.5 rounded-lg bg-[#6366F1] px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#4f46e5]"
+          className="btn-interactive flex items-center gap-2.5 rounded-lg bg-red-500 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
         >
           <UserPlus className="h-4 w-4" />
           <span className="truncate">Créer un compte</span>

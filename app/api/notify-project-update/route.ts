@@ -88,6 +88,8 @@ async function getEmailForUserId(admin: AdminClient, userId: string): Promise<st
   return null;
 }
 
+const INTERNAL_NOTIFY_HEADER = "x-internal-notify";
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -102,20 +104,32 @@ export async function POST(req: Request) {
 
     console.info("[notify-project-update] Appel reçu", { projectId, type });
 
-    const supabase = await createClient();
-    const {
-      data: { user: actor },
-    } = await supabase.auth.getUser();
-    if (!actor) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    const admin = createAdminClient();
+    if (!admin) {
+      console.warn("[notify-project-update] SUPABASE_SERVICE_ROLE_KEY manquant.");
+      return NextResponse.json({ ok: true, sent: 0, skipped: "no_service_role" });
     }
 
-    const { data: isMember } = await supabase.rpc("is_project_member", { p_project_id: projectId });
-    if (!isMember) {
-      return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+    const internalSecret = req.headers.get(INTERNAL_NOTIFY_HEADER);
+    const isInternalCall = internalSecret && internalSecret === (process.env.CRON_SECRET ?? process.env.NOTIFY_INTERNAL_SECRET ?? "anon-internal");
+
+    let actorId: string | null = null;
+    if (!isInternalCall) {
+      const supabase = await createClient();
+      const {
+        data: { user: actor },
+      } = await supabase.auth.getUser();
+      if (!actor) {
+        return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      }
+      actorId = actor.id;
+      const { data: isMember } = await supabase.rpc("is_project_member", { p_project_id: projectId });
+      if (!isMember) {
+        return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+      }
     }
 
-    const { data: project } = await supabase
+    const { data: project } = await admin
       .from("projects")
       .select("id, title, client_id, designer_id")
       .eq("id", projectId)
@@ -125,16 +139,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
     }
 
-    const admin = createAdminClient();
-    if (!admin) {
-      console.warn("[notify-project-update] SUPABASE_SERVICE_ROLE_KEY manquant.");
-      return NextResponse.json({ ok: true, sent: 0, skipped: "no_service_role" });
-    }
-
-    // Tous les membres à notifier = client + designer + relecteurs, SAUF l'acteur
+    // Tous les membres à notifier = client + designer + relecteurs, SAUF l'acteur (null pour appel interne / invité)
     const recipientIds = new Set<string>();
-    if (project.client_id && project.client_id !== actor.id) recipientIds.add(project.client_id);
-    if (project.designer_id && project.designer_id !== actor.id) recipientIds.add(project.designer_id);
+    if (project.client_id && project.client_id !== actorId) recipientIds.add(project.client_id);
+    if (project.designer_id && project.designer_id !== actorId) recipientIds.add(project.designer_id);
 
     const { data: collaborators } = await admin
       .from("project_collaborators")
@@ -142,12 +150,12 @@ export async function POST(req: Request) {
       .eq("project_id", projectId);
     if (collaborators?.length) {
       for (const c of collaborators) {
-        if (c.user_id && c.user_id !== actor.id) recipientIds.add(c.user_id);
+        if (c.user_id && c.user_id !== actorId) recipientIds.add(c.user_id);
       }
     }
 
     if (recipientIds.size === 0) {
-      console.warn("[notify-project-update] Aucun destinataire. Projet:", projectId, "client_id:", project.client_id, "designer_id:", project.designer_id, "actor:", actor.id);
+      console.warn("[notify-project-update] Aucun destinataire. Projet:", projectId, "client_id:", project.client_id, "designer_id:", project.designer_id, "actor:", actorId);
       return NextResponse.json({ ok: true, sent: 0, skipped: "no_recipients", details: "Aucun autre membre sur le projet (client ou graphiste non assigné)." });
     }
 

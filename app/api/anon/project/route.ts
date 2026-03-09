@@ -14,6 +14,12 @@ function extractStoragePath(url: string, projectId: string): string | null {
   return null;
 }
 
+function toProjectPath(path: string | null, projectId: string): string | null {
+  if (!path?.trim()) return null;
+  const p = path.trim();
+  return p.startsWith(projectId + "/") ? p : `${projectId}/${p.replace(/^\/+/, "")}`;
+}
+
 /**
  * GET /api/anon/project?token=xxx
  * Cookie: ps_anon_sid
@@ -72,7 +78,7 @@ export async function GET(request: NextRequest) {
     admin.from("versions").select("id, image_url, version_number, created_at").eq("project_id", projectId).order("version_number", { ascending: true }),
     admin.from("assets").select("id, file_url, file_name, kind, created_at").eq("project_id", projectId).order("created_at", { ascending: false }),
     admin.from("briefs").select("concept, hook, notes").eq("project_id", projectId).maybeSingle(),
-    admin.from("project_references").select("id, kind, url").eq("project_id", projectId),
+    admin.from("project_references").select("id, kind, url, comment").eq("project_id", projectId),
     admin.from("assets").select("id", { count: "exact", head: true }).eq("anonymous_session_id", sessionId),
   ]);
 
@@ -95,9 +101,8 @@ export async function GET(request: NextRequest) {
       versionFeedback[f.version_id].push({ id: f.id, content: f.content, created_at: f.created_at, anonymous_session_id: f.anonymous_session_id });
     });
     for (const { id, path } of paths) {
-      const safePath = path?.trim();
-      if (!safePath) continue;
-      const pathForProject = safePath.startsWith(projectId + "/") ? safePath : `${projectId}/${safePath.replace(/^\/+/, "")}`;
+      const pathForProject = toProjectPath(path, projectId);
+      if (!pathForProject) continue;
       try {
         const { data: signed } = await admin.storage.from("assets").createSignedUrl(pathForProject, SIGNED_URL_EXPIRES);
         if (signed?.signedUrl) versionSignedUrls[id] = signed.signedUrl;
@@ -107,16 +112,47 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const refsList = (refs ?? []) as { id: string; kind: string; url: string; comment?: string | null }[];
+  const referenceSignedUrls: Record<string, string> = {};
+  for (const r of refsList) {
+    if (r.kind !== "image") continue;
+    const path = extractStoragePath(r.url, projectId);
+    const pathForProject = toProjectPath(path, projectId);
+    if (!pathForProject) continue;
+    try {
+      const { data: signed } = await admin.storage.from("assets").createSignedUrl(pathForProject, SIGNED_URL_EXPIRES);
+      if (signed?.signedUrl) referenceSignedUrls[r.id] = signed.signedUrl;
+    } catch {
+      // ignore
+    }
+  }
+
+  const assetsList = (assets ?? []) as { id: string; file_url: string }[];
+  const assetSignedUrls: Record<string, string> = {};
+  for (const a of assetsList) {
+    const path = extractStoragePath(a.file_url, projectId);
+    const pathForProject = toProjectPath(path, projectId);
+    if (!pathForProject) continue;
+    try {
+      const { data: signed } = await admin.storage.from("assets").createSignedUrl(pathForProject, SIGNED_URL_EXPIRES);
+      if (signed?.signedUrl) assetSignedUrls[a.id] = signed.signedUrl;
+    } catch {
+      // ignore
+    }
+  }
+
   return NextResponse.json({
     project,
     messages: messages ?? [],
     versions: versions ?? [],
     assets: assets ?? [],
     brief: brief ?? null,
-    references: refs ?? [],
+    references: refsList,
     sessionId,
     anonUploadCount: anonUploadCount ?? 0,
     versionFeedback,
     versionSignedUrls,
+    referenceSignedUrls,
+    assetSignedUrls,
   });
 }

@@ -106,5 +106,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Échec d'enregistrement" }, { status: 500 });
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  const secret = process.env.NOTIFY_INTERNAL_SECRET ?? process.env.CRON_SECRET ?? "anon-internal";
+  if (baseUrl) {
+    fetch(`${baseUrl}/api/notify-project-update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-internal-notify": secret },
+      body: JSON.stringify({ projectId, type: "assets" }),
+    }).catch((e) => console.warn("[anon/upload] notify fetch failed", e));
+  }
+
   return NextResponse.json({ id: inserted.id });
 }
