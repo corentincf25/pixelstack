@@ -133,50 +133,79 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
       {loading ? (
         <p className="text-sm text-muted-foreground">Chargement des assets…</p>
       ) : assets.length > 0 ? (
-        <ul className="space-y-2">
-          {assets.map((asset) => (
-            <li
-              key={asset.id}
-              className="group/row relative flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/20 px-3 py-2"
-            >
-              {asset.kind === "zip" ? (
-                <FileArchive className="h-4 w-4 shrink-0 text-muted-foreground" />
-              ) : (
-                <FileImage className="h-4 w-4 shrink-0 text-muted-foreground" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {asset.file_name || "Sans nom"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatSize(asset.file_size)} · {format(new Date(asset.created_at), "d MMM à HH:mm", { locale: fr })}
-                </p>
-              </div>
-              {isImage(asset) ? (
-                <>
-                  <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center rounded-lg bg-black/0 opacity-0 transition group-hover/row:bg-black/40 group-hover/row:opacity-100" aria-hidden>
-                    <span className="rounded-lg bg-black/75 px-3 py-1.5 text-xs font-medium text-white">Cliquer pour ouvrir et commenter</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLightboxAsset(asset)}
-                    className="relative z-[2] inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
-                  >
-                    Voir
-                  </button>
-                </>
-              ) : null}
-              <a
-                href={getAssetUrl(asset)}
-                download
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent"
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {assets.map((asset) => {
+            const url = getAssetUrl(asset);
+            const image = isImage(asset);
+            return (
+              <li
+                key={asset.id}
+                className="group/row flex flex-col overflow-hidden rounded-xl border border-border bg-muted/20"
               >
-                <Download className="h-3.5 w-3.5" />
-                Télécharger
-              </a>
-            </li>
-          ))}
+                <div className="relative aspect-video max-h-[140px] w-full shrink-0 overflow-hidden bg-black/20">
+                  {image && url ? (
+                    <button
+                      type="button"
+                      onClick={() => setLightboxAsset(asset)}
+                      className="block h-full w-full text-left"
+                    >
+                      <img
+                        src={url}
+                        alt={asset.file_name || "Asset"}
+                        className="h-full w-full object-cover transition group-hover/row:opacity-90"
+                      />
+                    </button>
+                  ) : (
+                    <a
+                      href={url}
+                      download={asset.file_name ?? "asset"}
+                      className="flex h-full w-full items-center justify-center"
+                    >
+                      {asset.kind === "zip" ? (
+                        <FileArchive className="h-10 w-10 text-muted-foreground" />
+                      ) : (
+                        <FileImage className="h-10 w-10 text-muted-foreground" />
+                      )}
+                    </a>
+                  )}
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover/row:bg-black/50 group-hover/row:opacity-100" aria-hidden>
+                    <span className="rounded-lg bg-black/70 px-2 py-1 text-xs font-medium text-white">
+                      {image ? "Cliquer pour ouvrir et commenter" : "Cliquer pour télécharger"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-1 items-center justify-between gap-2 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {asset.file_name || "Sans nom"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatSize(asset.file_size)} · {format(new Date(asset.created_at), "d MMM à HH:mm", { locale: fr })}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    {image && (
+                      <button
+                        type="button"
+                        onClick={() => setLightboxAsset(asset)}
+                        className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent"
+                      >
+                        Voir
+                      </button>
+                    )}
+                    <a
+                      href={url}
+                      download={asset.file_name ?? "asset"}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Télécharger
+                    </a>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p className="text-sm text-muted-foreground">

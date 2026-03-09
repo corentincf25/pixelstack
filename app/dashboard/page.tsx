@@ -71,6 +71,21 @@ export default function DashboardPage() {
           const pending = sessionStorage.getItem(PENDING_ANON_KEY);
           if (pending && typeof pending === "string" && pending.length > 0) {
             sessionStorage.removeItem(PENDING_ANON_KEY);
+            try {
+              const res = await fetch("/api/anon/convert", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: pending }),
+                credentials: "include",
+              });
+              const j = await res.json().catch(() => ({}));
+              if (j.projectId) {
+                router.replace(`/projects/${j.projectId}`);
+                return;
+              }
+            } catch {
+              // fallback: send to guest page so convert can retry or user sees the project
+            }
             router.replace(`/p/${pending}`);
             return;
           }

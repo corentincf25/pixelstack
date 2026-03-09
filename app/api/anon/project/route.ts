@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
   }
 
   const [
-    { data: project },
+    { data: projectRow },
     { data: messages },
     { data: versions },
     { data: assets },
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     { data: refs },
     { count: anonUploadCount },
   ] = await Promise.all([
-    admin.from("projects").select("id, title, status, created_at, due_date").eq("id", projectId).single(),
+    admin.from("projects").select("id, title, status, created_at, due_date, client_id, designer_id").eq("id", projectId).single(),
     admin.from("messages").select("id, content, created_at, image_url, sender_id, anonymous_session_id").eq("project_id", projectId).order("created_at", { ascending: true }),
     admin.from("versions").select("id, image_url, version_number, created_at").eq("project_id", projectId).order("version_number", { ascending: true }),
     admin.from("assets").select("id, file_url, file_name, kind, created_at").eq("project_id", projectId).order("created_at", { ascending: false }),
@@ -82,8 +82,21 @@ export async function GET(request: NextRequest) {
     admin.from("assets").select("id", { count: "exact", head: true }).eq("anonymous_session_id", sessionId),
   ]);
 
+  const project = projectRow as { id: string; title: string; status: string; created_at: string; due_date: string | null; client_id: string | null; designer_id: string | null } | null;
   if (!project) {
     return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+  }
+
+  const memberIds = [project.client_id, project.designer_id].filter(Boolean) as string[];
+  let memberProfiles: Record<string, { full_name: string | null; avatar_url: string | null }> = {};
+  if (memberIds.length > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .in("id", memberIds);
+    (profiles ?? []).forEach((p: { id: string; full_name: string | null; avatar_url: string | null }) => {
+      memberProfiles[p.id] = { full_name: p.full_name ?? null, avatar_url: p.avatar_url ?? null };
+    });
   }
 
   const versionIds = (versions ?? []).map((v) => v.id);
@@ -141,8 +154,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const projectForClient = { id: project.id, title: project.title, status: project.status, created_at: project.created_at, due_date: project.due_date, client_id: project.client_id, designer_id: project.designer_id };
+
   return NextResponse.json({
-    project,
+    project: projectForClient,
     messages: messages ?? [],
     versions: versions ?? [],
     assets: assets ?? [],
@@ -154,5 +169,6 @@ export async function GET(request: NextRequest) {
     versionSignedUrls,
     referenceSignedUrls,
     assetSignedUrls,
+    memberProfiles,
   });
 }

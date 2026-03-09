@@ -5,10 +5,11 @@ import { getAnonSessionIdFromRequest } from "@/lib/anon-utils";
 
 /**
  * POST /api/anon/convert
- * Body: { token: string } ou cookie ps_anon_sid
+ * Body: { token: string } (recommandé après inscription) ou cookie ps_anon_sid
  * Utilisateur doit être connecté (vient de s'inscrire).
- * Rattache les messages et assets de la session anonyme au user_id, puis supprime la session.
- * Redirection côté client vers /projects/[id].
+ * 1) Rattache messages/assets/feedback de la session anonyme au user_id si une session existe.
+ * 2) Lie systématiquement l'utilisateur au projet (client_id, designer_id ou project_collaborators) selon l'invite.
+ * Ainsi le projet reste visible après création de compte même si la session anonyme a expiré ou n'existe plus.
  */
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -58,41 +59,48 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!targetSessionId) {
-    return NextResponse.json({ error: "Session anonyme introuvable" }, { status: 400 });
+  if (!projectId) {
+    return NextResponse.json({ error: "Lien invalide ou expiré" }, { status: 404 });
   }
 
-  const { data: session } = await admin
-    .from("anonymous_sessions")
-    .select("id, project_id, invite_token")
-    .eq("id", targetSessionId)
-    .single();
-
-  if (!session) {
-    return NextResponse.json({ error: "Session déjà convertie ou invalide" }, { status: 404 });
+  let inviteToken: string | null = token;
+  if (!inviteToken && targetSessionId) {
+    const { data: sess } = await admin.from("anonymous_sessions").select("invite_token").eq("id", targetSessionId).single();
+    inviteToken = sess?.invite_token ?? null;
   }
 
-  projectId = session.project_id;
+  if (targetSessionId) {
+    const { data: session } = await admin
+      .from("anonymous_sessions")
+      .select("id")
+      .eq("id", targetSessionId)
+      .single();
 
-  const { data: inviteRow } = await admin
-    .from("project_invites")
-    .select("role")
-    .eq("project_id", projectId)
-    .eq("token", session.invite_token)
-    .maybeSingle();
-  const role = inviteRow?.role;
-  if (role === "client") {
-    await admin.from("projects").update({ client_id: user.id }).eq("id", projectId);
-  } else if (role === "designer") {
-    await admin.from("projects").update({ designer_id: user.id }).eq("id", projectId);
+    if (session) {
+      await admin.from("messages").update({ sender_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
+      await admin.from("assets").update({ anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
+      await admin.from("version_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
+      await admin.from("asset_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
+      await admin.from("anonymous_sessions").delete().eq("id", targetSessionId);
+    }
   }
 
-  await admin.from("messages").update({ sender_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
-  await admin.from("assets").update({ anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
-  await admin.from("version_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
-  await admin.from("asset_feedback").update({ user_id: user.id, anonymous_session_id: null }).eq("anonymous_session_id", targetSessionId);
-
-  await admin.from("anonymous_sessions").delete().eq("id", targetSessionId);
+  if (inviteToken) {
+    const { data: inviteRow } = await admin
+      .from("project_invites")
+      .select("role")
+      .eq("project_id", projectId)
+      .eq("token", inviteToken)
+      .maybeSingle();
+    const role = inviteRow?.role;
+    if (role === "client") {
+      await admin.from("projects").update({ client_id: user.id }).eq("id", projectId);
+    } else if (role === "designer") {
+      await admin.from("projects").update({ designer_id: user.id }).eq("id", projectId);
+    } else if (role === "reviewer") {
+      await admin.from("project_collaborators").upsert({ project_id: projectId, user_id: user.id }, { onConflict: "project_id,user_id" });
+    }
+  }
 
   return NextResponse.json({ projectId, converted: true });
 }

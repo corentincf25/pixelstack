@@ -45,7 +45,7 @@ type VersionFeedbackItem = { id: string; content: string; created_at: string; an
 type Ref = { id: string; kind: string; url: string; comment?: string | null };
 
 type ProjectData = {
-  project: { id: string; title: string; status: string; created_at: string; due_date: string | null };
+  project: { id: string; title: string; status: string; created_at: string; due_date: string | null; client_id?: string | null; designer_id?: string | null };
   messages: Message[];
   versions: { id: string; image_url: string; version_number: number; created_at: string }[];
   assets: { id: string; file_url: string; file_name: string | null; kind: string }[];
@@ -57,6 +57,7 @@ type ProjectData = {
   versionSignedUrls?: Record<string, string>;
   referenceSignedUrls?: Record<string, string>;
   assetSignedUrls?: Record<string, string>;
+  memberProfiles?: Record<string, { full_name: string | null; avatar_url: string | null }>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -264,7 +265,7 @@ export default function AnonProjectPage() {
 
   if (!data) return null;
 
-  const { project, messages, versions, assets, brief, references, versionFeedback = {}, versionSignedUrls = {}, referenceSignedUrls = {}, assetSignedUrls = {} } = data;
+  const { project, messages, versions, assets, brief, references, versionFeedback = {}, versionSignedUrls = {}, referenceSignedUrls = {}, assetSignedUrls = {}, memberProfiles = {} } = data;
   const canUploadMore = uploadCount < ANON_LIMITS.maxUploads;
 
   const saveBrief = async () => {
@@ -690,20 +691,28 @@ export default function AnonProjectPage() {
         <section id="chat" className="scroll-mt-24">
           <BentoCard title="Chat" icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />} className="flex flex-col min-h-0" contentNoScroll>
             <div className="min-h-[320px] max-h-[480px] flex flex-col">
-              <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden p-1">
+              <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-1">
                 {messages.length === 0 ? (
                   <p className="py-6 text-center text-sm text-muted-foreground">Aucun message. Envoyez le premier.</p>
                 ) : (
                   messages.map((msg) => {
                     const isGuest = !!msg.anonymous_session_id;
-                    const name = isGuest ? "Invité" : "Membre";
+                    const member = msg.sender_id ? memberProfiles[msg.sender_id] : null;
+                    const name = isGuest ? "Invité" : (member?.full_name?.trim() || "Membre");
+                    const avatarUrl = isGuest ? null : (member?.avatar_url?.trim() || null);
                     return (
-                      <div key={msg.id} className={`flex flex-col ${isGuest ? "items-end" : "items-start"}`}>
+                      <div key={msg.id} className={`flex flex-col gap-1 ${isGuest ? "items-end" : "items-start"}`}>
                         <div className={`flex max-w-[85%] gap-2 ${isGuest ? "flex-row-reverse" : ""}`}>
-                          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${isGuest ? "bg-red-500/90 text-white" : "bg-slate-500/90 text-white"}`}>
-                            {isGuest ? "I" : "M"}
+                          <div className={`flex h-9 w-9 shrink-0 overflow-hidden rounded-full ${isGuest ? "bg-red-500/90" : "bg-slate-500/90"} ring-2 ring-background`} title={name}>
+                            {avatarUrl ? (
+                              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-white">
+                                {isGuest ? "I" : (name.slice(0, 1).toUpperCase() || "M")}
+                              </span>
+                            )}
                           </div>
-                          <div className={`rounded-lg px-3 py-2 ${isGuest ? "border border-red-500/30 bg-red-500/20" : "border border-slate-500/30 bg-slate-500/20"}`}>
+                          <div className={`flex min-w-0 flex-1 flex-col rounded-lg px-3 py-2 ${isGuest ? "border border-red-500/30 bg-red-500/20" : "border border-slate-500/30 bg-slate-500/20"}`}>
                             <p className="text-xs font-medium text-muted-foreground">{name}</p>
                             {msg.content?.trim() ? <ChatMessageContent content={msg.content} className="mt-0.5 text-sm text-foreground" linkClassName="text-sky-400 underline decoration-sky-400/70 underline-offset-2 hover:text-sky-300 hover:decoration-sky-300" /> : null}
                             <p className="mt-1 text-xs text-muted-foreground">{format(new Date(msg.created_at), "HH:mm", { locale: fr })}</p>

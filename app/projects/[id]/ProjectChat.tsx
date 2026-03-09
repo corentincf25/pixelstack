@@ -67,6 +67,7 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
   const { recordOwnAction, refreshTrigger } = useProjectActivity() ?? {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
+  const [senderAvatars, setSenderAvatars] = useState<Record<string, string | null>>({});
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -226,17 +227,20 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
       }
       setMessages((rows as Message[]) ?? []);
 
-      const senderIds = [...new Set((rows ?? []).map((r) => r.sender_id))];
+      const senderIds = [...new Set((rows ?? []).map((r) => r.sender_id).filter(Boolean))] as string[];
       if (senderIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("id, full_name")
+          .select("id, full_name, avatar_url")
           .in("id", senderIds);
-        const map: Record<string, string> = {};
-        (profiles ?? []).forEach((p) => {
-          map[p.id] = p.full_name || "Utilisateur";
+        const nameMap: Record<string, string> = {};
+        const avatarMap: Record<string, string | null> = {};
+        (profiles ?? []).forEach((p: { id: string; full_name: string | null; avatar_url: string | null }) => {
+          nameMap[p.id] = p.full_name || "Utilisateur";
+          avatarMap[p.id] = p.avatar_url?.trim() || null;
         });
-        setSenderNames(map);
+        setSenderNames(nameMap);
+        setSenderAvatars(avatarMap);
       }
       setLoading(false);
       markProjectMessagesRead(projectId);
@@ -261,11 +265,12 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
           setMessages((prev) => [...prev, newRow]);
           const { data: p } = await supabase
             .from("profiles")
-            .select("id, full_name")
+            .select("id, full_name, avatar_url")
             .eq("id", newRow.sender_id)
             .single();
           if (p) {
-            setSenderNames((prev) => ({ ...prev, [p.id]: p.full_name || "Utilisateur" }));
+            setSenderNames((prev) => ({ ...prev, [p.id]: (p as { full_name: string | null }).full_name || "Utilisateur" }));
+            setSenderAvatars((prev) => ({ ...prev, [p.id]: (p as { avatar_url: string | null }).avatar_url?.trim() || null }));
           }
         }
       )
@@ -387,12 +392,18 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                 >
                   <div className={`flex max-w-[85%] gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
                     <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                        msg.sender_id === designerId ? "bg-blue-500/90 text-white" : msg.sender_id === clientId ? "bg-red-500/90 text-white" : "bg-muted text-foreground"
+                      className={`flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-background ${
+                        msg.sender_id === designerId ? "bg-blue-500/90" : msg.sender_id === clientId ? "bg-red-500/90" : "bg-muted"
                       }`}
                       title={name}
                     >
-                      {getInitials(name)}
+                      {senderAvatars[msg.sender_id] ? (
+                        <img src={senderAvatars[msg.sender_id]!} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className={`flex h-full w-full items-center justify-center text-xs font-semibold ${msg.sender_id === designerId || msg.sender_id === clientId ? "text-white" : "text-foreground"}`}>
+                          {getInitials(name)}
+                        </span>
+                      )}
                     </div>
                     <div
                       className={`rounded-lg px-3 py-2 ${
@@ -488,16 +499,22 @@ export function ProjectChat({ projectId, currentUserId, designerId, clientId }: 
                 >
                 <div className={`flex max-w-[85%] gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
                   <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                    className={`flex h-9 w-9 shrink-0 overflow-hidden rounded-full ring-2 ring-background ${
                       msg.sender_id === designerId
-                        ? "bg-blue-500/90 text-white"
+                        ? "bg-blue-500/90"
                         : msg.sender_id === clientId
-                          ? "bg-red-500/90 text-white"
-                          : "bg-muted text-foreground"
+                          ? "bg-red-500/90"
+                          : "bg-muted"
                     }`}
                     title={name}
                   >
-                    {getInitials(name)}
+                    {senderAvatars[msg.sender_id] ? (
+                      <img src={senderAvatars[msg.sender_id]!} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className={`flex h-full w-full items-center justify-center text-xs font-semibold ${msg.sender_id === designerId || msg.sender_id === clientId ? "text-white" : "text-foreground"}`}>
+                        {getInitials(name)}
+                      </span>
+                    )}
                   </div>
                   <div
                     className={`rounded-lg px-3 py-2 ${
