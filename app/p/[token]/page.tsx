@@ -705,7 +705,7 @@ export default function AnonProjectPage() {
                           </div>
                           <div className={`rounded-lg px-3 py-2 ${isGuest ? "border border-red-500/30 bg-red-500/20" : "border border-slate-500/30 bg-slate-500/20"}`}>
                             <p className="text-xs font-medium text-muted-foreground">{name}</p>
-                            {msg.content?.trim() ? <ChatMessageContent content={msg.content} className="mt-0.5 text-sm text-foreground" linkClassName="text-red-400 underline hover:text-red-300" /> : null}
+                            {msg.content?.trim() ? <ChatMessageContent content={msg.content} className="mt-0.5 text-sm text-foreground" linkClassName="text-sky-400 underline decoration-sky-400/70 underline-offset-2 hover:text-sky-300 hover:decoration-sky-300" /> : null}
                             <p className="mt-1 text-xs text-muted-foreground">{format(new Date(msg.created_at), "HH:mm", { locale: fr })}</p>
                           </div>
                         </div>
